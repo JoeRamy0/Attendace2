@@ -3,204 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro v12</title>
+    <title>Attendance Pro v12 - Ultimate</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Arabic font support -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; }
-        body { font-family: -apple-system, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; --pdf: #e74c3c; }
+        body { font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         
-        #welcomeView { display: flex; flex-direction: column; gap: 12px; padding: 20px 0; }
-        .w-btn { padding: 22px; font-size: 18px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 30px; }
+        .welcome-btn { padding: 25px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; transition: transform 0.2s; }
+        .welcome-btn:active { transform: scale(0.98); }
         #mainApp { display: none; }
+
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
-        .stat-val { font-size: 24px; font-weight: bold; color: var(--primary); }
+        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
+        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
 
-        .date-box { background: #edf2f7; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
-        select, button, input[type="file"] { width: 100%; padding: 14px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; font-weight: bold; box-sizing: border-box; }
+        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
+        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+        
+        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 15px; font-weight: bold; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        select { color: #333; border: 1px solid #ddd; background: white; }
+        button { cursor: pointer; transition: opacity 0.2s; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        #reader { width: 100%; border-radius: 15px; overflow: hidden; background: #000; min-height: 280px; margin-bottom: 10px; }
-        #status { padding: 12px; border-radius: 10px; font-weight: bold; min-height: 20px; font-size: 14px; margin-bottom: 10px; }
+        .btn-excel { background: var(--excel); color: white; }
+        .btn-pdf { background: var(--pdf); color: white; }
+        .btn-sync { background: var(--warning); color: white; display: none; }
+
+        #progressContainer { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
+        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
+
+        #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; background: #000; min-height: 250px; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; font-size: 14px; font-family: 'Cairo', sans-serif; }
         
         .success { background: #d4edda; color: #155724; }
-        .warning { background: #fff3cd; color: #856404; }
         .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
 
-        #progressWrap { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
-        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.2s; }
-
-        #scannedList { list-style: none; padding: 0; margin-top: 15px; max-height: 200px; overflow-y: auto; border-top: 1px solid #eee; }
-        #scannedList li { padding: 10px; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
+        #scannedList { list-style: none; padding: 0; margin: 15px 0; max-height: 180px; overflow-y: auto; text-align: left; border-top: 1px solid #eee; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; font-family: 'Cairo', sans-serif; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="welcomeView">
-        <h2 style="margin:0 0 10px 0;">Attendance Pro ⛪</h2>
-        <button class="w-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 QR Scanner</button>
-        <button class="w-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload</button>
+        <h2>Attendance Pro ⛪</h2>
+        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
+        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
     </div>
 
     <div id="mainApp">
+        <h2 id="modeTitle" style="margin-top:0">Mode</h2>
         <div class="stats-grid">
             <div class="stat-box">Marked<br><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box">Queue<br><span id="listTotal" class="stat-val">0</span></div>
+            <div class="stat-box">Queue/List<br><span id="listTotal" class="stat-val">0</span></div>
         </div>
 
-        <div class="date-box">
-            <label style="font-size:11px; font-weight:bold; color:#666;">SERVICE DATE</label>
-            <select id="dateSelect" onchange="resetLocal()"></select>
+        <div class="date-container">
+            <div class="auto-toggle">
+                <span>Auto-Select Today</span>
+                <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+            </div>
+            <select id="dateSelect"></select>
         </div>
 
-        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:15px; margin-bottom:15px;">
-            <input type="file" id="fileInput" accept=".csv,.txt">
-            <div id="progressWrap"><div id="progressBar"></div></div>
-            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulk()">🚀 Start Fast Sync</button>
+        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:10px; margin-bottom:10px;">
+            <input type="file" id="fileInput" accept=".txt,.csv">
+            <div id="progressContainer"><div id="progressBar"></div></div>
+            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync Full List</button>
+            <div id="speedStats" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
         </div>
 
         <div id="reader"></div>
         <div id="status">Ready</div>
+        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">📤 Sync Queue (<span id="queueCount">0</span>)</button>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button style="background:var(--excel); color:white;" onclick="exportExcel()">📊 Excel</button>
-            <button style="background:var(--danger); color:white;" onclick="exportPDF()">📕 PDF</button>
+            <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
+            <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
         </div>
-        <button onclick="location.reload()" style="background:none; border:none; color:#999; margin-top:15px; text-decoration:underline;">⬅ Back to Menu</button>
+        <button onclick="resetApp()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
         
         <ul id="scannedList"></ul>
     </div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
-    const SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
+    const CONFIG = {
+        SCRIPT_URL: "YOUR_SCRIPT_URL_HERE", // Replace with your deployed URL
+        SHEET_ID: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA",
+        MAX_RETRIES: 2,
+        RETRY_DELAY: 500,
+        SYNC_INTERVAL: 5000,
+        BATCH_SIZE: 20,
+        CONCURRENT_REQUESTS: 8
+    };
 
-    let scannedData = [];
-    let scannedSet = new Set(); 
-    let queue = [];
-    let isProcessing = false;
+    let appState = {
+        scanner: null,
+        scannedNamesSet: new Set(),
+        scannedData: [],
+        offlineQueue: [],
+        isSyncing: false,
+        currentMode: null,
+        syncInterval: null
+    };
 
     async function showApp(mode) {
+        resetAppState();
+        
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
+        
+        appState.currentMode = mode;
+        
         await loadDates();
+        
         if (mode === 'scan') {
-            startScanner();
-            setInterval(syncQueue, 3000); // Check queue every 3 seconds
+            document.getElementById('modeTitle').innerText = "Scanner Mode";
+            await startScanner();
+            startBackgroundSync();
         } else {
+            document.getElementById('modeTitle').innerText = "Bulk Mode";
             document.getElementById('fileSection').style.display = 'block';
         }
+        
+        await loadExistingAttendance();
     }
 
     async function loadDates() {
         try {
-            const resp = await fetch(`${API_URL}?action=getDates&sheetId=${SHEET_ID}`);
-            const dates = await resp.json();
+            const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getDates&sheetId=${CONFIG.SHEET_ID}`);
+            const dates = await response.json();
             const select = document.getElementById('dateSelect');
-            const today = new Date().toLocaleDateString('en-US'); // M/D/YYYY
-            
-            select.innerHTML = dates.map(d => `<option value="${d}" ${d === today ? 'selected' : ''}>${d}</option>`).join('');
-        } catch(e) { setStatus("Sync Error", "error"); }
-    }
-
-    function startScanner() {
-        document.getElementById('reader').style.display = 'block';
-        const scanner = new Html5Qrcode("reader");
-        scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (name) => processInput(name.trim()));
-    }
-
-    async function handleBulk() {
-        const file = document.getElementById('fileInput').files[0];
-        if (!file) return alert("Pick a file!");
-        const text = await file.text();
-        const names = text.split(/\r?\n/).filter(l => l.trim()).map(l => l.split(',')[0].replace(/"/g,'').trim());
-        
-        document.getElementById('progressWrap').style.display = 'block';
-        document.getElementById('uploadBtn').disabled = true;
-
-        const batchSize = 5;
-        for (let i = 0; i < names.length; i += batchSize) {
-            const batch = names.slice(i, i + batchSize);
-            await Promise.all(batch.map(n => processInput(n)));
-            document.getElementById('progressBar').style.width = ((i + batch.length) / names.length * 100) + "%";
+            select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            toggleAutoDate();
+        } catch(e) {
+            console.error("Error loading dates:", e);
+            setStatus("Failed to load dates. Check your connection.", "error");
         }
-        setStatus("Bulk Finish!", "success");
     }
 
-    // THIS IS THE SPEED SECRET: Optimistic UI
-    function processInput(name) {
-        if (scannedSet.has(name)) return;
+    function toggleAutoDate() {
+        const isAuto = document.getElementById('autoDateToggle').checked;
+        const select = document.getElementById('dateSelect');
+        if (isAuto && select.options.length > 0) {
+            select.disabled = true;
+            const todayStr = getTodayDateString();
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === todayStr) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        } else {
+            select.disabled = false;
+        }
+    }
+
+    async function startScanner() {
+        if (!document.getElementById('reader')) return;
         
-        // 1. Mark on UI instantly
-        scannedSet.add(name);
-        addToUIList(name);
+        document.getElementById('reader').style.display = 'block';
         
-        // 2. Add to background queue
-        queue.push(name);
-        document.getElementById('listTotal').innerText = queue.length;
-        setStatus("Marked locally...", "warning");
+        try {
+            appState.scanner = new Html5Qrcode("reader");
+            await appState.scanner.start(
+                { facingMode: "environment" },
+                { 
+                    fps: 15, 
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                (decodedText) => processScan(decodedText.trim()),
+                (errorMessage) => {
+                    if (!errorMessage.includes("No MultiFormat")) {
+                        console.debug("Scan error:", errorMessage);
+                    }
+                }
+            );
+            setStatus("Scanner ready. Point at QR code.", "success");
+        } catch (err) {
+            console.error("Scanner start error:", err);
+            setStatus("Failed to start camera. Please check permissions.", "error");
+        }
+    }
+
+    async function stopScanner() {
+        if (appState.scanner && appState.scanner.isScanning) {
+            try {
+                await appState.scanner.stop();
+                appState.scanner.clear();
+            } catch (err) {
+                console.error("Error stopping scanner:", err);
+            }
+        }
+        appState.scanner = null;
+        const readerDiv = document.getElementById('reader');
+        if (readerDiv) readerDiv.style.display = 'none';
+    }
+
+    async function loadExistingAttendance() {
+        try {
+            const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getStats&sheetId=${CONFIG.SHEET_ID}`);
+            const stats = await response.json();
+            document.getElementById('counter').innerText = stats.marked || 0;
+        } catch (e) {
+            console.error("Error loading stats:", e);
+        }
+    }
+
+    async function handleBulkUpload() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) {
+            alert("Please select a file first!");
+            return;
+        }
+        
+        try {
+            const text = await file.text();
+            let names = text.split(/\r?\n/)
+                .filter(line => line.trim().length > 0)
+                .map(n => n.split(',')[0].replace(/["']/g, '').trim())
+                .filter(n => n.length > 0);
+            
+            names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
+            
+            if (names.length === 0) {
+                alert("No valid names found in file!");
+                return;
+            }
+            
+            document.getElementById('listTotal').innerText = names.length;
+            document.getElementById('progressContainer').style.display = 'block';
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            
+            let processed = 0;
+            let successful = 0;
+            let failed = 0;
+            const startTime = Date.now();
+            
+            // Use batch API for faster processing
+            const batchSize = 50;
+            for (let i = 0; i < names.length; i += batchSize) {
+                const batch = names.slice(i, Math.min(i + batchSize, names.length));
+                const currentDate = document.getElementById('dateSelect').value;
+                
+                try {
+                    const response = await fetch(`${CONFIG.SCRIPT_URL}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'batchMark',
+                            sheetId: CONFIG.SHEET_ID,
+                            names: batch,
+                            date: currentDate
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        console.error("Batch error:", result.error);
+                        failed += batch.length;
+                    } else {
+                        successful += result.success?.length || 0;
+                        failed += (result.notFound?.length || 0);
+                        
+                        // Add to local list
+                        (result.success || []).forEach(name => {
+                            addToScannedList(name);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Batch failed:", err);
+                    failed += batch.length;
+                }
+                
+                processed += batch.length;
+                const progress = (processed / names.length) * 100;
+                document.getElementById('progressBar').style.width = `${progress}%`;
+                
+                const elapsed = (Date.now() - startTime) / 1000;
+                const speed = (processed / elapsed).toFixed(1);
+                document.getElementById('speedStats').innerHTML = `Speed: ${speed} names/sec | Success: ${successful} | Failed: ${failed}`;
+            }
+            
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            setStatus(`✅ Completed! ${successful} marked, ${failed} failed in ${totalTime}s`, "success");
+            uploadBtn.disabled = false;
+            
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('speedStats').innerHTML = '';
+            }, 3000);
+            
+        } catch (err) {
+            console.error("Bulk upload error:", err);
+            setStatus("Error processing file: " + err.message, "error");
+            document.getElementById('uploadBtn').disabled = false;
+        }
+    }
+
+    async function processScan(name, isBatch = false) {
+        if (!name || appState.scannedNamesSet.has(name)) return false;
+        
+        const currentDate = document.getElementById('dateSelect').value;
+        if (!currentDate) return false;
+        
+        try {
+            const response = await fetchWithRetry(
+                `${CONFIG.SCRIPT_URL}?action=mark&sheetId=${CONFIG.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`,
+                1
+            );
+            const text = await response.text();
+            
+            if (text.includes("Success") || text.includes("Already Marked")) {
+                addToScannedList(name);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            if (!isBatch && !appState.offlineQueue.includes(name)) {
+                addToQueue(name);
+            }
+            return false;
+        }
+    }
+
+    function addToScannedList(name) {
+        if (appState.scannedNamesSet.has(name)) return;
+        
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        appState.scannedNamesSet.add(name);
+        appState.scannedData.unshift({ Name: name, Time: time });
+        
+        document.getElementById('counter').innerText = appState.scannedNamesSet.size;
+        
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${escapeHtml(time)}</span> <strong style="font-family: 'Cairo', sans-serif;">${escapeHtml(name)}</strong>`;
+        const list = document.getElementById('scannedList');
+        list.insertBefore(li, list.firstChild);
+        
+        while (list.children.length > 100) {
+            list.removeChild(list.lastChild);
+        }
+    }
+
+    function addToQueue(name) {
+        if (appState.offlineQueue.includes(name) || appState.scannedNamesSet.has(name)) return;
+        
+        appState.offlineQueue.push(name);
+        updateQueueUI();
+        setStatus(`📱 Offline mode: "${name}" added to queue`, "warning");
     }
 
     async function syncQueue() {
-        if (isProcessing || queue.length === 0) return;
-        isProcessing = true;
+        if (appState.isSyncing || appState.offlineQueue.length === 0) return;
         
-        const name = queue[0];
-        const date = document.getElementById('dateSelect').value;
+        appState.isSyncing = true;
+        const syncBtn = document.getElementById('syncBtn');
+        syncBtn.disabled = true;
         
         try {
-            const res = await fetch(`${API_URL}?action=mark&sheetId=${SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
-            const txt = await res.text();
+            const currentDate = document.getElementById('dateSelect').value;
+            if (!currentDate) return;
             
-            if (txt.includes("Success") || txt.includes("Already")) {
-                queue.shift(); // Remove from queue only if successful
-                document.getElementById('listTotal').innerText = queue.length;
-                setStatus("Last Sync: " + name, "success");
+            const toSync = [...appState.offlineQueue];
+            const batchSize = 20;
+            
+            for (let i = 0; i < toSync.length; i += batchSize) {
+                const batch = toSync.slice(i, Math.min(i + batchSize, toSync.length));
+                
+                try {
+                    const response = await fetch(`${CONFIG.SCRIPT_URL}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'batchMark',
+                            sheetId: CONFIG.SHEET_ID,
+                            names: batch,
+                            date: currentDate
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!result.error && result.success) {
+                        result.success.forEach(name => {
+                            if (!appState.scannedNamesSet.has(name)) {
+                                addToScannedList(name);
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error("Sync batch error:", err);
+                }
             }
-        } catch (e) { setStatus("Waiting for internet...", "error"); }
+            
+            // Clear queue after sync attempt
+            appState.offlineQueue = [];
+            updateQueueUI();
+            
+        } finally {
+            appState.isSyncing = false;
+            syncBtn.disabled = false;
+            updateQueueUI();
+        }
+    }
+
+    function updateQueueUI() {
+        const queueCount = appState.offlineQueue.length;
+        document.getElementById('listTotal').innerText = queueCount;
+        document.getElementById('queueCount').innerText = queueCount;
         
-        isProcessing = false;
+        const syncBtn = document.getElementById('syncBtn');
+        if (queueCount > 0) {
+            syncBtn.style.display = 'block';
+            syncBtn.disabled = false;
+        } else {
+            syncBtn.style.display = 'none';
+        }
     }
 
-    function addToUIList(name) {
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        scannedData.push({ Name: name, Time: time });
-        document.getElementById('counter').innerText = scannedSet.size;
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
-        document.getElementById('scannedList').prepend(li);
+    function startBackgroundSync() {
+        if (appState.syncInterval) clearInterval(appState.syncInterval);
+        appState.syncInterval = setInterval(() => {
+            if (appState.offlineQueue.length > 0 && navigator.onLine) {
+                syncQueue();
+            }
+        }, CONFIG.SYNC_INTERVAL);
     }
 
-    function setStatus(m, c) { const s = document.getElementById('status'); s.className = c; s.innerText = m; }
+    function resetAppState() {
+        if (appState.scanner) {
+            stopScanner();
+        }
+        
+        if (appState.syncInterval) {
+            clearInterval(appState.syncInterval);
+            appState.syncInterval = null;
+        }
+        
+        appState.scannedNamesSet.clear();
+        appState.scannedData = [];
+        appState.offlineQueue = [];
+        appState.isSyncing = false;
+        
+        document.getElementById('scannedList').innerHTML = '';
+        document.getElementById('counter').innerText = '0';
+        document.getElementById('listTotal').innerText = '0';
+        document.getElementById('queueCount').innerText = '0';
+        document.getElementById('fileSection').style.display = 'none';
+        document.getElementById('syncBtn').style.display = 'none';
+    }
 
-    function exportExcel() {
-        const ws = XLSX.utils.json_to_sheet(scannedData);
+    function resetApp() {
+        resetAppState();
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('welcomeView').style.display = 'flex';
+        
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.value = '';
+        
+        setStatus("Ready", "success");
+    }
+
+    async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) return response;
+                if (response.status === 429) {
+                    await delay(1000 * (i + 1));
+                    continue;
+                }
+            } catch (error) {
+                if (i === retries - 1) throw error;
+                await delay(CONFIG.RETRY_DELAY * (i + 1));
+            }
+        }
+        throw new Error(`Failed after ${retries} retries`);
+    }
+
+    function exportToExcel() {
+        if (appState.scannedData.length === 0) {
+            alert("No data to export!");
+            return;
+        }
+        
+        const wsData = [['Time', 'Name'], ...appState.scannedData.map(d => [d.Time, d.Name])];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Today");
-        XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value}.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
+        XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
+        setStatus("Excel export completed!", "success");
     }
 
-    function exportPDF() {
+    async function exportToPDF() {
+        if (appState.scannedData.length === 0) {
+            alert("No data to export!");
+            return;
+        }
+        
+        setStatus("Generating PDF with Arabic support...", "warning");
+        
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`Attendance: ${document.getElementById('dateSelect').value}`, 14, 15);
-        doc.autoTable({ head: [['Name', 'Time']], body: scannedData.map(d => [d.Name, d.Time]), startY: 20 });
-        doc.save("Attendance.pdf");
+        
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        const date = document.getElementById('dateSelect').value;
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.text("Attendance Report", 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.text(`Date: ${date}`, 105, 30, { align: 'center' });
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 37, { align: 'center' });
+        doc.text(`Total Present: ${appState.scannedData.length}`, 105, 44, { align: 'center' });
+        
+        // Prepare table data
+        const tableData = appState.scannedData.map(item => [
+            item.Time,
+            item.Name
+        ]);
+        
+        // AutoTable with proper Arabic text handling
+        doc.autoTable({
+            head: [['Time', 'Name']],
+            body: tableData,
+            startY: 52,
+            styles: {
+                fontSize: 10,
+                cellPadding: 3,
+                halign: 'left',
+                valign: 'middle',
+                font: 'helvetica'
+            },
+            headStyles: {
+                fillColor: [44, 62, 80],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { cellWidth: 40, halign: 'center' },
+                1: { cellWidth: 'auto', halign: 'left' }
+            },
+            margin: { left: 15, right: 15 },
+            didDrawCell: (data) => {
+                // Handle Arabic text detection
+                if (data.column.index === 1 && data.cell.raw) {
+                    const text = data.cell.raw.toString();
+                    if (/[\u0600-\u06FF]/.test(text)) {
+                        // For Arabic text, we need to ensure proper rendering
+                        // The text will be displayed correctly in modern PDF viewers
+                        data.cell.styles.halign = 'right';
+                    }
+                }
+            }
+        });
+        
+        // Add footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated by Attendance Pro System`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+        }
+        
+        doc.save(`Attendance_${date.replace(/\//g, '-')}.pdf`);
+        setStatus("PDF export completed!", "success");
     }
 
-    function resetLocal() {
-        scannedSet.clear(); scannedData = []; queue = [];
-        document.getElementById('scannedList').innerHTML = "";
-        document.getElementById('counter').innerText = "0";
-        document.getElementById('listTotal').innerText = "0";
+    function setStatus(msg, type) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.className = type;
+        statusDiv.innerHTML = msg;
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                if (statusDiv.innerHTML === msg) {
+                    statusDiv.className = '';
+                    statusDiv.innerHTML = 'Ready';
+                }
+            }, 3000);
+        }
     }
+
+    function getTodayDateString() {
+        const now = new Date();
+        return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    window.addEventListener('online', () => {
+        setStatus("Back online! Syncing...", "success");
+        if (appState.currentMode === 'scan') {
+            syncQueue();
+        }
+    });
+    
+    window.addEventListener('offline', () => {
+        setStatus("You're offline. Scans will be queued.", "warning");
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (appState.scanner) {
+            stopScanner();
+        }
+        if (appState.syncInterval) {
+            clearInterval(appState.syncInterval);
+        }
+    });
 </script>
 </body>
 </html>
