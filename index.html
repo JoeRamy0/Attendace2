@@ -3,162 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro v12</title>
+    <title>Attendance Pro v12 - Ultimate</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --bg: #f0f2f5; }
-        body { font-family: -apple-system, sans-serif; margin: 0; padding: 15px; background: var(--bg); color: var(--primary); }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
-        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 20px; }
-        .btn { padding: 18px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: 700; transition: 0.3s; }
-        .btn-main { background: var(--primary); }
-        .btn-excel { background: #1f7244; margin-top: 10px; width: 100%; }
+        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; --pdf: #e74c3c; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 30px; }
+        .welcome-btn { padding: 25px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; }
         #mainApp { display: none; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .stat-box { background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
-        .date-picker { background: #edf2f7; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
-        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-        #reader { width: 100%; min-height: 320px; border-radius: 15px; overflow: hidden; background: #000; margin-bottom: 10px; }
-        #status { padding: 12px; border-radius: 10px; font-weight: bold; margin-bottom: 15px; font-size: 14px; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
+        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
+        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+        
+        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 15px; font-weight: bold; box-sizing: border-box; }
+        select { color: #333; border: 1px solid #ddd; }
+
+        .btn-excel { background: var(--excel); color: white; }
+        .btn-pdf { background: var(--pdf); color: white; }
+        .btn-sync { background: var(--warning); color: white; display: none; }
+
+        #progressContainer { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
+        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
+
+        #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; background: #000; min-height: 250px; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; font-size: 14px; }
+        
         .success { background: #d4edda; color: #155724; }
-        .warning { background: #fff3cd; color: #856404; }
         .error { background: #f8d7da; color: #721c24; }
-        #scannedList { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; border-top: 1px solid #eee; }
-        #scannedList li { padding: 10px; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
+        .warning { background: #fff3cd; color: #856404; }
+
+        #scannedList { list-style: none; padding: 0; margin: 15px 0; max-height: 180px; overflow-y: auto; text-align: left; border-top: 1px solid #eee; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="welcomeView">
-        <h2 style="margin:0">Attendance Pro ⛪</h2>
-        <p style="color:#666; margin-bottom:10px;">Select an action to begin</p>
-        <button class="btn btn-main" onclick="initApp('scan')">📸 Start Scanning</button>
-        <button class="btn" style="background:var(--success)" onclick="initApp('manual')">⌨ Manual Entry</button>
+        <h2>Attendance Pro ⛪</h2>
+        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
+        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
     </div>
 
     <div id="mainApp">
-        <div class="stat-grid">
-            <div class="stat-box">Total<br><b id="count" style="font-size:20px;">0</b></div>
-            <div class="stat-box">Mode<br><b id="modeDisp" style="font-size:14px;color:var(--success)">Scanner</b></div>
+        <h2 id="modeTitle" style="margin-top:0">Mode</h2>
+        <div class="stats-grid">
+            <div class="stat-box">Marked<br><span id="counter" class="stat-val">0</span></div>
+            <div class="stat-box">Queue/List<br><span id="listTotal" class="stat-val">0</span></div>
         </div>
 
-        <div class="date-picker">
-            <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">SERVICE DATE</label>
-            <select id="dateSelect" onchange="resetData()"></select>
+        <div class="date-container">
+            <div class="auto-toggle">
+                <span>Auto-Select Today</span>
+                <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+            </div>
+            <select id="dateSelect"></select>
+        </div>
+
+        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:10px; margin-bottom:10px;">
+            <input type="file" id="fileInput" accept=".txt,.csv">
+            <div id="progressContainer"><div id="progressBar"></div></div>
+            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync Full List</button>
         </div>
 
         <div id="reader"></div>
-        <div id="status">Waiting...</div>
+        <div id="status">Ready</div>
+        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Queue...</button>
 
-        <button class="btn btn-excel" onclick="exportExcel()">📊 Export Today to Excel</button>
-        <button onclick="location.reload()" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">⬅ Back to Menu</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
+            <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
+        </div>
+        <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
         
         <ul id="scannedList"></ul>
     </div>
 </div>
 
 <script>
-    // 1. CONFIGURATION
-    const SCRIPT_URL = "YOUR_DEPLOYED_URL_HERE"; 
-    const SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
+    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
     let scannedData = [];
-    let scannedSet = new Set();
-    let html5QrCode = null;
+    let scannedNamesSet = new Set(); 
+    let offlineQueue = [];
+    let isSyncing = false;
 
-    // 2. INITIALIZATION
-    async function initApp(mode) {
+    async function showApp(mode) {
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         await loadDates();
-        
         if (mode === 'scan') {
-            startCamera();
+            document.getElementById('modeTitle').innerText = "Scanner Mode";
+            startScanner();
+            setInterval(syncQueue, 5000); // Start background sync
         } else {
-            document.getElementById('reader').innerHTML = '<input type="text" id="manualIn" placeholder="Enter Name..." style="width:80%; padding:15px; margin-top:40px; border-radius:10px; border:1px solid #ccc;">' +
-                                                          '<button class="btn btn-main" style="margin-top:10px; width:80%" onclick="processScan(document.getElementById(\'manualIn\').value)">Submit</button>';
-            document.getElementById('modeDisp').innerText = "Manual";
+            document.getElementById('modeTitle').innerText = "Bulk Mode";
+            document.getElementById('fileSection').style.display = 'block';
         }
     }
 
-    // 3. AUTO-CHECK TODAY'S DATE
     async function loadDates() {
         try {
-            const res = await fetch(`${SCRIPT_URL}?action=getDates&sheetId=${SHEET_ID}`);
-            const dates = await res.json();
+            const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
+            const dates = await resp.json();
             const select = document.getElementById('dateSelect');
-            
-            // Get today in M/D/YYYY
-            const today = new Date();
-            const todayStr = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
-            
-            select.innerHTML = dates.map(d => `<option value="${d}" ${d === todayStr ? 'selected' : ''}>${d}</option>`).join('');
-            setStatus("Ready to sync", "success");
-        } catch(e) { setStatus("Connection Error", "error"); }
+            select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
+            toggleAutoDate();
+        } catch(e) { setStatus("Offline/Sync Error", "warning"); }
     }
 
-    // 4. FAST SCANNER LOGIC
-    function startCamera() {
-        html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 15, qrbox: { width: 250, height: 250 } };
-
-        html5QrCode.start({ facingMode: "environment" }, config, (text) => {
-            processScan(text.trim());
-        }).catch(err => {
-            setStatus("Camera Error: Open in Chrome/Safari", "error");
-        });
-    }
-
-    async function processScan(name) {
-        if (!name || scannedSet.has(name)) return;
-        
-        setStatus(`Syncing: ${name}...`, "warning");
-        try {
-            const date = document.getElementById('dateSelect').value;
-            const res = await fetch(`${SCRIPT_URL}?action=mark&sheetId=${SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
-            const msg = await res.text();
-            
-            if (msg.includes("Success") || msg.includes("Already")) {
-                scannedSet.add(name);
-                logAttendance(name);
-                setStatus(msg, "success");
-                if(document.getElementById('manualIn')) document.getElementById('manualIn').value = "";
-            } else {
-                setStatus(msg, "error");
+    function toggleAutoDate() {
+        const isAuto = document.getElementById('autoDateToggle').checked;
+        const select = document.getElementById('dateSelect');
+        if (isAuto && select.options.length > 0) {
+            select.disabled = true;
+            const now = new Date();
+            const todayStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === todayStr) { select.selectedIndex = i; break; }
             }
-        } catch (e) { setStatus("Network Timeout", "error"); }
+        } else { select.disabled = false; }
     }
 
-    function logAttendance(name) {
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        scannedData.push({ Name: name, Time: time, Date: document.getElementById('dateSelect').value });
-        document.getElementById('count').innerText = scannedSet.size;
+    function startScanner() {
+        document.getElementById('reader').style.display = 'block';
+        const scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (name) => processScan(name.trim()));
+    }
+
+    async function handleBulkUpload() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert("Select a file!");
+        const text = await file.text();
+        const names = text.split(/\r?\n/).filter(line => line.trim().length > 0).map(n => n.split(',')[0].replace(/"/g, '').trim());
         
+        document.getElementById('listTotal').innerText = names.length;
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('uploadBtn').disabled = true;
+
+        const batchSize = 5; 
+        for (let i = 0; i < names.length; i += batchSize) {
+            const batch = names.slice(i, i + batchSize);
+            setStatus(`Processing batch ${Math.ceil((i+1)/batchSize)}...`, "warning");
+            await Promise.all(batch.map(name => processScan(name, true)));
+            document.getElementById('progressBar').style.width = Math.round(((i + batch.length) / names.length) * 100) + "%";
+            await new Promise(r => setTimeout(r, 100));
+        }
+        setStatus("Bulk Upload Finished!", "success");
+        document.getElementById('uploadBtn').disabled = false;
+    }
+
+    async function processScan(name, isBatch = false) {
+        if (scannedNamesSet.has(name)) return;
+        if (!isBatch) setStatus("Marking: " + name, "warning");
+
+        try {
+            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
+            const text = await res.text();
+            if (text.includes("Success") || text.includes("Already Marked")) {
+                addToList(name);
+                if (!isBatch) setStatus(text, "success");
+            } else { setStatus(text, "error"); }
+        } catch (e) { 
+            if(!isBatch) { addToQueue(name); }
+        }
+    }
+
+    function addToList(name) {
+        if(scannedNamesSet.has(name)) return;
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        scannedNamesSet.add(name);
+        scannedData.push({ Name: name, Time: time });
+        document.getElementById('counter').innerText = scannedNamesSet.size;
         const li = document.createElement('li');
         li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
         document.getElementById('scannedList').prepend(li);
     }
 
-    // 5. EXCEL EXPORT
-    function exportExcel() {
-        if (scannedData.length === 0) return alert("No scans to export!");
+    function addToQueue(name) {
+        if(offlineQueue.includes(name) || scannedNamesSet.has(name)) return;
+        offlineQueue.push(name);
+        document.getElementById('listTotal').innerText = offlineQueue.length;
+        document.getElementById('syncBtn').style.display = 'block';
+        setStatus("Offline! Saved to Queue", "warning");
+    }
+
+    async function syncQueue() {
+        if (isSyncing || offlineQueue.length === 0) return;
+        isSyncing = true;
+        const nameToSync = offlineQueue[0];
+        try {
+            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(nameToSync)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
+            if (res.ok) { offlineQueue.shift(); addToList(nameToSync); document.getElementById('listTotal').innerText = offlineQueue.length; }
+        } catch (e) {}
+        isSyncing = false;
+        if(offlineQueue.length === 0) document.getElementById('syncBtn').style.display = 'none';
+    }
+
+    function setStatus(msg, cls) { const s = document.getElementById('status'); s.className = cls; s.innerText = msg; }
+
+    function exportToExcel() {
         const ws = XLSX.utils.json_to_sheet(scannedData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Attendance_${new Date().toLocaleDateString()}.xlsx`);
+        XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value}.xlsx`);
     }
 
-    function setStatus(msg, cls) {
-        const s = document.getElementById('status');
-        s.className = cls; s.innerText = msg;
-    }
-
-    function resetData() {
-        scannedSet.clear(); scannedData = [];
-        document.getElementById('scannedList').innerHTML = "";
-        document.getElementById('count').innerText = "0";
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(`Attendance: ${document.getElementById('dateSelect').value}`, 14, 15);
+        doc.autoTable({ head: [['Name', 'Time']], body: scannedData.map(d => [d.Name, d.Time]), startY: 20 });
+        doc.save(`Attendance.pdf`);
     }
 </script>
 </body>
