@@ -90,20 +90,26 @@
     const isAuto = document.getElementById('autoDateToggle').checked;
     const select = document.getElementById('dateSelect');
     
-    if (isAuto) {
+    if (isAuto && select.options.length > 0) {
         select.disabled = true;
         select.style.opacity = "0.6";
         
-        // Build M/d/yyyy string manually to avoid timezone/zero issues
         const now = new Date();
-        const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
-        
-        console.log("Looking for today:", todayStr); // You can see this in browser inspect
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const year = now.getFullYear();
 
         let found = false;
         for (let i = 0; i < select.options.length; i++) {
-            // Trim and remove any hidden characters
-            if (select.options[i].value.trim() === todayStr) {
+            let optVal = select.options[i].value.toString().trim();
+            
+            // FUZZY CHECK: Does the option contain the month AND day AND year?
+            // This catches 3/23/2026, 03/23/2026, and 2026-03-23
+            const hasMonth = new RegExp(`(^|/|-|0)${month}(/|-|$)`).test(optVal);
+            const hasDay = new RegExp(`(^|/|-|0)${day}(/|-|$)`).test(optVal);
+            const hasYear = optVal.includes(year.toString());
+
+            if (hasMonth && hasDay && hasYear) {
                 select.selectedIndex = i;
                 found = true;
                 break;
@@ -111,7 +117,7 @@
         }
         
         if(!found) {
-            setStatus("Today (" + todayStr + ") not found in sheet list.", "error");
+            setStatus(`Today (${month}/${day}) not matched in list.`, "error");
         } else {
             setStatus("Auto-selected: " + select.value, "success");
         }
