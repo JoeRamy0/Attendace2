@@ -3,60 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Church Attendance Pro</title>
+    <title>Attendance Pro + Export</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; }
+        :root { --primary: #2c3e50; --success: #27ae60; --csv: #f39c12; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: var(--primary); margin: 0 0 15px 0; }
-        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .stat-label { font-size: 12px; color: #666; display: block; }
         .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
-
-        select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        
-        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 2px solid var(--primary); display: none; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; }
-        
+        button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; }
+        .btn-scan { background: var(--primary); }
+        .btn-csv { background: var(--csv); margin-top: 10px; }
+        #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; }
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        .list-title { font-weight: bold; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; margin-bottom: 10px; display: block; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; font-size: 14px; }
-        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
-        .warning { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Attendance System ⛪</h2>
+    <h2>Attendance Pro ⛪</h2>
 
     <div class="stats-grid">
-        <div class="stat-box">
-            <span class="stat-label">Total Present</span>
-            <span id="counter" class="stat-val">0</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">Offline Queue</span>
-            <span id="queueCounter" class="stat-val">0</span>
-        </div>
+        <div class="stat-box"><div>Total</div><span id="counter" class="stat-val">0</span></div>
+        <div class="stat-box"><div>Queue</div><span id="queueCounter" class="stat-val">0</span></div>
     </div>
 
-    <p style="text-align:left; margin:0; font-size:12px; color:#666;">Select Date:</p>
-    <select id="dateSelect"><option>Loading dates...</option></select>
+    <select id="dateSelect" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;"></select>
     
-    <button id="startBtn" onclick="startScanner()">Open Scanner</button>
+    <button class="btn-scan" onclick="startScanner()">Open Scanner</button>
+    <button class="btn-csv" onclick="exportToCSV()">📥 Export Scanned Names (.CSV)</button>
+
     <div id="reader"></div>
     <div id="status">Ready</div>
 
     <div class="list-container">
-        <span class="list-title">Recently Scanned (Last 10)</span>
+        <strong>Scanned Names Today:</strong>
         <ul id="scannedList"></ul>
     </div>
 </div>
@@ -65,110 +52,72 @@
     const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
     const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
-    const statusDiv = document.getElementById('status');
-    const dateSelect = document.getElementById('dateSelect');
-    const counterDisplay = document.getElementById('counter');
-    const queueDisplay = document.getElementById('queueCounter');
-    const scannedList = document.getElementById('scannedList');
-
-    let attendanceCount = 0;
+    let scannedNames = new Set(); // Tracks duplicates locally
     let offlineQueue = [];
 
     window.onload = async () => {
-        try {
-            const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
-            const dates = await resp.json();
-            dateSelect.innerHTML = "";
-            dates.forEach(d => {
-                let opt = document.createElement('option');
-                opt.value = d; opt.innerText = d;
-                dateSelect.appendChild(opt);
-            });
-            statusDiv.innerText = "Ready to scan.";
-        } catch (e) {
-            statusDiv.className = "error";
-            statusDiv.innerText = "Connection Error. Reload Page.";
-        }
+        const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
+        const dates = await resp.json();
+        document.getElementById('dateSelect').innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
     };
 
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
-        const html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: 250 },
-            async (decodedText) => {
-                processScan(decodedText);
-            }
-        ).catch(err => { statusDiv.innerText = "Camera access denied."; });
+        const scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (name) => processScan(name.trim()));
     }
 
     async function processScan(name) {
-        statusDiv.className = "warning";
-        statusDiv.innerText = "Checking: " + name;
-
-        // Prevent duplicate scans in the current session list
-        if (Array.from(scannedList.children).some(li => li.innerText.includes(name))) {
-            statusDiv.className = "error";
-            statusDiv.innerText = "Already Scanned Recently";
+        // DUPLICATE CHECK: Skip if already in the list
+        if (scannedNames.has(name)) {
+            document.getElementById('status').className = "error";
+            document.getElementById('status').innerText = "Already Scanned: " + name;
             return;
         }
 
-        try {
-            const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(dateSelect.value)}`;
-            const response = await fetch(markUrl);
-            const result = await response.text();
+        document.getElementById('status').className = "";
+        document.getElementById('status').innerText = "Processing: " + name;
 
-            if (result.includes("Success")) {
-                handleSuccess(name, result);
-            } else {
-                statusDiv.className = "error";
-                statusDiv.innerText = result;
+        try {
+            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
+            const text = await res.text();
+            
+            if (text.includes("Success") || text.includes("Already Marked")) {
+                addToList(name);
             }
-        } catch (err) {
-            // OFFLINE LOGIC: If network fails, add to queue
+            document.getElementById('status').className = text.includes("Success") ? "success" : "error";
+            document.getElementById('status').innerText = text;
+        } catch (e) {
             addToQueue(name);
         }
     }
 
-    function handleSuccess(name, msg) {
-        statusDiv.className = "success";
-        statusDiv.innerText = msg;
-        window.navigator.vibrate(100);
-        
-        attendanceCount++;
-        counterDisplay.innerText = attendanceCount;
+    function addToList(name) {
+        scannedNames.add(name);
+        document.getElementById('counter').innerText = scannedNames.size;
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${new Date().toLocaleTimeString()}</span> <strong>${name}</strong>`;
+        document.getElementById('scannedList').prepend(li);
+    }
 
-        // Add to the visual list
-        let li = document.createElement('li');
-        li.innerHTML = `<span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span> <strong>${name}</strong>`;
-        scannedList.prepend(li);
-        if (scannedList.children.length > 10) scannedList.removeChild(scannedList.lastChild);
+    function exportToCSV() {
+        if (scannedNames.size === 0) return alert("No names to export!");
+        let csvContent = "data:text/csv;charset=utf-8,Name,Scan Time\n";
+        scannedNames.forEach(name => {
+            csvContent += `"${name}","${new Date().toLocaleDateString()}"\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Attendance_${document.getElementById('dateSelect').value}.csv`);
+        document.body.appendChild(link);
+        link.click();
     }
 
     function addToQueue(name) {
         offlineQueue.push(name);
-        queueDisplay.innerText = offlineQueue.length;
-        statusDiv.className = "warning";
-        statusDiv.innerText = "Offline! Saved to Queue: " + name;
-        
-        // Try to sync queue every 10 seconds
-        if (offlineQueue.length === 1) {
-            let syncInterval = setInterval(async () => {
-                if (offlineQueue.length === 0) { clearInterval(syncInterval); return; }
-                
-                let nextName = offlineQueue[0];
-                try {
-                    const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(nextName)}&date=${encodeURIComponent(dateSelect.value)}`;
-                    const response = await fetch(markUrl);
-                    if (response.ok) {
-                        offlineQueue.shift();
-                        queueDisplay.innerText = offlineQueue.length;
-                        handleSuccess(nextName, "Synced: " + nextName);
-                    }
-                } catch (e) { console.log("Still offline..."); }
-            }, 10000);
-        }
+        document.getElementById('queueCounter').innerText = offlineQueue.length;
+        document.getElementById('status').innerText = "Offline! Saved to Queue.";
     }
 </script>
 
