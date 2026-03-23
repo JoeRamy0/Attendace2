@@ -3,159 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro v11</title>
+    <title>Attendance Pro v12</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 40px; }
-        .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; }
+        :root { --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --bg: #f0f2f5; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 15px; background: var(--bg); color: var(--primary); }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 20px; }
+        .btn { padding: 18px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .btn-main { background: var(--primary); }
+        .btn-excel { background: #1f7244; margin-top: 10px; width: 100%; }
         #mainApp { display: none; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
-        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
-        select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-weight: bold; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; min-height: 20px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .stat-box { background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
+        .date-picker { background: #edf2f7; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
+        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        #reader { width: 100%; min-height: 320px; border-radius: 15px; overflow: hidden; background: #000; margin-bottom: 10px; }
+        #status { padding: 12px; border-radius: 10px; font-weight: bold; margin-bottom: 15px; font-size: 14px; }
         .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
         .warning { background: #fff3cd; color: #856404; }
-        /* Critical: Reader must have a minimum height to show the camera feed */
-        #reader { width: 100%; min-height: 300px; border-radius: 10px; overflow: hidden; margin-bottom: 10px; display: none; background: #000; }
-        #scannedList { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; text-align: left; border-top: 1px solid #eee; }
-        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 14px; }
+        .error { background: #f8d7da; color: #721c24; }
+        #scannedList { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; border-top: 1px solid #eee; }
+        #scannedList li { padding: 10px; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="welcomeView">
-        <h2>Attendance Pro ⛪</h2>
-        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
-        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
+        <h2 style="margin:0">Attendance Pro ⛪</h2>
+        <p style="color:#666; margin-bottom:10px;">Select an action to begin</p>
+        <button class="btn btn-main" onclick="initApp('scan')">📸 Start Scanning</button>
+        <button class="btn" style="background:var(--success)" onclick="initApp('manual')">⌨ Manual Entry</button>
     </div>
 
     <div id="mainApp">
-        <h2 id="modeTitle">Mode</h2>
-        <div class="stats-grid">
-            <div class="stat-box"><div>Marked</div><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box"><div>Total</div><span id="listTotal" class="stat-val">-</span></div>
+        <div class="stat-grid">
+            <div class="stat-box">Total<br><b id="count" style="font-size:20px;">0</b></div>
+            <div class="stat-box">Mode<br><b id="modeDisp" style="font-size:14px;color:var(--success)">Scanner</b></div>
         </div>
 
-        <div class="date-container">
-            <label style="font-size:12px; font-weight:bold;">Service Date:</label>
-            <select id="dateSelect" onchange="resetLocalData()"></select>
+        <div class="date-picker">
+            <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">SERVICE DATE</label>
+            <select id="dateSelect" onchange="resetData()"></select>
         </div>
 
         <div id="reader"></div>
-        <div id="status">Ready</div>
+        <div id="status">Waiting...</div>
 
-        <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Back to Menu</button>
+        <button class="btn btn-excel" onclick="exportExcel()">📊 Export Today to Excel</button>
+        <button onclick="location.reload()" style="background:none; border:none; color:#999; margin-top:15px; cursor:pointer;">⬅ Back to Menu</button>
         
-        <div style="margin-top:20px; font-weight:bold;">Recent Scans:</div>
         <ul id="scannedList"></ul>
     </div>
 </div>
 
 <script>
-    // Update this after deployment!
-    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
-    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
+    // 1. CONFIGURATION
+    const SCRIPT_URL = "YOUR_DEPLOYED_URL_HERE"; 
+    const SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
-    let scannedNamesSet = new Set(); 
+    let scannedData = [];
+    let scannedSet = new Set();
     let html5QrCode = null;
 
-    async function showApp(mode) {
+    // 2. INITIALIZATION
+    async function initApp(mode) {
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         await loadDates();
+        
         if (mode === 'scan') {
-            document.getElementById('modeTitle').innerText = "📸 QR Scanner";
-            startScanner();
+            startCamera();
+        } else {
+            document.getElementById('reader').innerHTML = '<input type="text" id="manualIn" placeholder="Enter Name..." style="width:80%; padding:15px; margin-top:40px; border-radius:10px; border:1px solid #ccc;">' +
+                                                          '<button class="btn btn-main" style="margin-top:10px; width:80%" onclick="processScan(document.getElementById(\'manualIn\').value)">Submit</button>';
+            document.getElementById('modeDisp').innerText = "Manual";
         }
     }
 
+    // 3. AUTO-CHECK TODAY'S DATE
     async function loadDates() {
         try {
-            const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
-            const dates = await resp.json();
+            const res = await fetch(`${SCRIPT_URL}?action=getDates&sheetId=${SHEET_ID}`);
+            const dates = await res.json();
             const select = document.getElementById('dateSelect');
-            select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-        } catch(e) { setStatus("Sync Error: Check Script URL", "error"); }
+            
+            // Get today in M/D/YYYY
+            const today = new Date();
+            const todayStr = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+            
+            select.innerHTML = dates.map(d => `<option value="${d}" ${d === todayStr ? 'selected' : ''}>${d}</option>`).join('');
+            setStatus("Ready to sync", "success");
+        } catch(e) { setStatus("Connection Error", "error"); }
     }
 
-    function startScanner() {
-        const readerDiv = document.getElementById('reader');
-        readerDiv.style.display = 'block';
-        
+    // 4. FAST SCANNER LOGIC
+    function startCamera() {
         html5QrCode = new Html5Qrcode("reader");
-        
-        const config = { 
-            fps: 10, 
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0
-        };
+        const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
-        // Attempt to start camera
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            (decodedText) => {
-                processScan(decodedText.trim());
-            }
-        ).catch(err => {
-            console.error("Camera Error: ", err);
-            setStatus("Camera Access Denied or Not Found", "error");
+        html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+            processScan(text.trim());
+        }).catch(err => {
+            setStatus("Camera Error: Open in Chrome/Safari", "error");
         });
     }
 
     async function processScan(name) {
-        if (scannedNamesSet.has(name)) return;
-
-        // Visual feedback that we are working
+        if (!name || scannedSet.has(name)) return;
+        
         setStatus(`Syncing: ${name}...`, "warning");
-
         try {
             const date = document.getElementById('dateSelect').value;
-            const fetchUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`;
-            
-            const res = await fetch(fetchUrl);
+            const res = await fetch(`${SCRIPT_URL}?action=mark&sheetId=${SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
             const msg = await res.text();
             
             if (msg.includes("Success") || msg.includes("Already")) {
-                scannedNamesSet.add(name);
-                updateUI(name, msg);
+                scannedSet.add(name);
+                logAttendance(name);
+                setStatus(msg, "success");
+                if(document.getElementById('manualIn')) document.getElementById('manualIn').value = "";
             } else {
                 setStatus(msg, "error");
             }
-        } catch (e) {
-            setStatus("Network Error. Check Internet.", "error");
-        }
+        } catch (e) { setStatus("Network Timeout", "error"); }
     }
 
-    function updateUI(name, msg) {
+    function logAttendance(name) {
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        document.getElementById('counter').innerText = scannedNamesSet.size;
-        setStatus(msg, "success");
+        scannedData.push({ Name: name, Time: time, Date: document.getElementById('dateSelect').value });
+        document.getElementById('count').innerText = scannedSet.size;
         
         const li = document.createElement('li');
         li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
         document.getElementById('scannedList').prepend(li);
     }
 
-    function setStatus(msg, className) {
-        const s = document.getElementById('status');
-        s.className = className; 
-        s.innerText = msg;
+    // 5. EXCEL EXPORT
+    function exportExcel() {
+        if (scannedData.length === 0) return alert("No scans to export!");
+        const ws = XLSX.utils.json_to_sheet(scannedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, `Attendance_${new Date().toLocaleDateString()}.xlsx`);
     }
 
-    function resetLocalData() {
-        scannedNamesSet.clear();
+    function setStatus(msg, cls) {
+        const s = document.getElementById('status');
+        s.className = cls; s.innerText = msg;
+    }
+
+    function resetData() {
+        scannedSet.clear(); scannedData = [];
         document.getElementById('scannedList').innerHTML = "";
-        document.getElementById('counter').innerText = "0";
+        document.getElementById('count').innerText = "0";
     }
 </script>
 </body>
