@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Smart Attendance System</title>
+    <title>Attendance Pro - Simple Attendance System</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -14,26 +14,11 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --success: #06d6a0;
-            --success-dark: #05c28f;
-            --warning: #ffb703;
-            --danger: #ef476f;
-            --danger-dark: #e53e5e;
-            --dark: #2d3e50;
-            --light: #f8f9fa;
-            --gray: #6c757d;
-            --border: #e9ecef;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f7fa;
             min-height: 100vh;
             padding: 20px;
-            margin: 0;
         }
 
         /* Main Container */
@@ -42,77 +27,81 @@
             margin: 0 auto;
         }
 
-        /* Cards */
+        /* Card */
         .card {
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            transition: transform 0.3s ease;
         }
 
         .card-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 25px;
+            background: white;
+            padding: 25px 20px;
             text-align: center;
+            border-bottom: 1px solid #eef2f6;
         }
 
         .card-header h2 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 600;
+            color: #1a2c3e;
+            margin-bottom: 5px;
         }
 
         .card-header p {
-            font-size: 14px;
-            opacity: 0.9;
+            font-size: 13px;
+            color: #7f8c8d;
         }
 
         .card-body {
-            padding: 25px;
+            padding: 20px;
         }
 
-        /* Welcome View */
-        #welcomeView {
+        /* Welcome Buttons - Aligned nicely */
+        .welcome-buttons {
             display: flex;
-            flex-direction: column;
             gap: 15px;
+            margin-top: 10px;
         }
 
         .welcome-btn {
-            padding: 20px;
-            font-size: 18px;
+            flex: 1;
+            padding: 18px 12px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
-            border-radius: 16px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background: white;
-            border: 2px solid var(--border);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .welcome-btn.scanner {
+            background: #2c7da0;
+            color: white;
+        }
+
+        .welcome-btn.scanner:hover {
+            background: #1f5e7a;
+            transform: translateY(-2px);
+        }
+
+        .welcome-btn.upload {
+            background: #27ae60;
+            color: white;
+        }
+
+        .welcome-btn.upload:hover {
+            background: #1e8e50;
+            transform: translateY(-2px);
         }
 
         .welcome-btn:active {
             transform: scale(0.98);
         }
 
-        .welcome-btn.scanner {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-        }
-
-        .welcome-btn.upload {
-            background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-            color: white;
-            border: none;
-        }
-
-        /* Stats Grid */
+        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -121,16 +110,16 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, var(--light) 0%, white 100%);
+            background: #f8fafc;
             padding: 15px;
             border-radius: 16px;
             text-align: center;
-            border: 1px solid var(--border);
+            border: 1px solid #eef2f6;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: var(--gray);
+            font-size: 12px;
+            color: #7f8c8d;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -139,17 +128,17 @@
 
         .stat-value {
             font-size: 32px;
-            font-weight: 800;
-            color: var(--primary);
+            font-weight: 700;
+            color: #2c7da0;
         }
 
         /* Date Selector */
         .date-section {
-            background: var(--light);
+            background: #f8fafc;
             padding: 15px;
             border-radius: 16px;
             margin-bottom: 20px;
-            border: 1px solid var(--border);
+            border: 1px solid #eef2f6;
         }
 
         .auto-toggle {
@@ -159,7 +148,7 @@
             margin-bottom: 12px;
             font-size: 14px;
             font-weight: 500;
-            color: var(--dark);
+            color: #2c3e50;
         }
 
         .toggle-switch {
@@ -182,7 +171,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #cbd5e1;
             transition: 0.3s;
             border-radius: 24px;
         }
@@ -200,7 +189,7 @@
         }
 
         input:checked + .toggle-slider {
-            background-color: var(--success);
+            background-color: #27ae60;
         }
 
         input:checked + .toggle-slider:before {
@@ -210,30 +199,28 @@
         select {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--border);
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             font-size: 14px;
-            font-weight: 500;
             background: white;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         select:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            border-color: #2c7da0;
         }
 
-        /* Logs Container */
+        /* Logs - Simple Name and Status */
         .logs-container {
-            background: #1e1e2e;
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 20px 0;
-            max-height: 350px;
+            max-height: 320px;
             overflow-y: auto;
-            font-family: 'Courier New', monospace;
+            border: 1px solid #eef2f6;
         }
 
         .logs-header {
@@ -242,83 +229,95 @@
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #2a2a3a;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .logs-title {
-            color: #fff;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
+            color: #475569;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .clear-logs {
-            background: rgba(255, 255, 255, 0.1);
+            background: none;
             border: none;
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+            color: #94a3b8;
+            font-size: 12px;
             cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
             transition: all 0.2s;
         }
 
         .clear-logs:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: #e2e8f0;
+            color: #475569;
         }
 
         .log-entry {
             padding: 10px;
             margin-bottom: 8px;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: 13px;
             display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            animation: slideIn 0.3s ease;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.2s ease;
         }
 
-        @keyframes slideIn {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateX(-20px);
+                transform: translateY(-5px);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
 
-        .log-time {
-            color: #8b8b9e;
-            font-size: 10px;
-            min-width: 65px;
+        .log-icon {
+            font-size: 14px;
+            min-width: 24px;
         }
 
-        .log-message {
+        .log-name {
+            font-weight: 500;
             flex: 1;
-            word-break: break-word;
         }
 
-        .log-processing {
-            background: rgba(255, 183, 3, 0.15);
-            border-left: 3px solid var(--warning);
+        .log-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
         }
 
-        .log-success {
-            background: rgba(6, 214, 160, 0.15);
-            border-left: 3px solid var(--success);
+        .log-status.processing {
+            background: #fef3c7;
+            color: #d97706;
         }
 
-        .log-error {
-            background: rgba(239, 71, 111, 0.15);
-            border-left: 3px solid var(--danger);
+        .log-status.success {
+            background: #d1fae5;
+            color: #059669;
         }
 
-        .log-info {
-            background: rgba(67, 97, 238, 0.15);
-            border-left: 3px solid var(--primary);
+        .log-status.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .log-status.warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .log-status.notfound {
+            background: #fee2e2;
+            color: #dc2626;
         }
 
         /* QR Reader */
@@ -331,35 +330,49 @@
             background: #000;
         }
 
+        .scanner-status {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 13px;
+            margin: 10px 0;
+            display: none;
+            color: #475569;
+        }
+
         /* File Upload Section */
         .upload-section {
-            border: 2px dashed var(--border);
+            border: 2px dashed #e2e8f0;
             border-radius: 16px;
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
             margin: 15px 0;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            background: #fafcff;
         }
 
         .upload-section.drag-over {
-            border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.05);
+            border-color: #27ae60;
+            background: #f0fdf4;
         }
 
         .file-input-label {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 12px 24px;
-            background: var(--primary);
+            background: #2c7da0;
             color: white;
             border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
         }
 
         .file-input-label:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+            background: #1f5e7a;
         }
 
         input[type="file"] {
@@ -367,17 +380,16 @@
         }
 
         .file-name {
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 13px;
-            color: var(--gray);
+            color: #64748b;
         }
 
-        /* Progress Bar */
         .progress-container {
             width: 100%;
-            background: var(--border);
+            background: #e2e8f0;
             border-radius: 20px;
-            height: 8px;
+            height: 6px;
             margin: 15px 0;
             display: none;
             overflow: hidden;
@@ -386,51 +398,58 @@
         .progress-bar {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%);
+            background: #27ae60;
             transition: width 0.3s ease;
             border-radius: 20px;
         }
 
         /* Buttons */
         .btn {
-            padding: 14px;
+            padding: 12px;
             border: none;
             border-radius: 12px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
             width: 100%;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: #2c7da0;
             color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1f5e7a;
         }
 
         .btn-success {
-            background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+            background: #27ae60;
             color: white;
         }
 
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
-            color: white;
+        .btn-success:hover {
+            background: #1e8e50;
         }
 
         .btn-secondary {
-            background: var(--light);
-            color: var(--dark);
-            border: 1px solid var(--border);
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
         }
 
         .btn:active {
             transform: scale(0.98);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
         }
 
         .button-group {
@@ -440,59 +459,32 @@
             margin-top: 15px;
         }
 
-        /* Status Badge */
-        .status-badge {
-            background: var(--light);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 500;
-            margin: 15px 0;
-        }
-
-        /* Scanner Status */
-        .scanner-status {
-            background: var(--light);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 13px;
-            margin: 10px 0;
+        .hidden {
             display: none;
         }
 
-        /* Animations */
+        /* Processing Pulse Animation */
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         .processing-pulse {
             animation: pulse 1s ease-in-out infinite;
         }
 
-        /* Hide elements */
-        .hidden {
-            display: none;
-        }
-
         /* Scrollbar */
         .logs-container::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
 
         .logs-container::-webkit-scrollbar-track {
-            background: #2a2a3a;
+            background: #e2e8f0;
             border-radius: 10px;
         }
 
         .logs-container::-webkit-scrollbar-thumb {
-            background: var(--primary);
+            background: #94a3b8;
             border-radius: 10px;
         }
     </style>
@@ -503,15 +495,17 @@
         <div class="card" id="welcomeView">
             <div class="card-header">
                 <h2>⛪ Attendance Pro</h2>
-                <p>Smart Attendance Management System</p>
+                <p>Simple & Fast Attendance System</p>
             </div>
             <div class="card-body">
-                <button class="welcome-btn scanner" onclick="showApp('scan')">
-                    📸 Start QR Scanner
-                </button>
-                <button class="welcome-btn upload" onclick="showApp('upload')">
-                    📁 Bulk Upload List
-                </button>
+                <div class="welcome-buttons">
+                    <button class="welcome-btn scanner" onclick="showApp('scan')">
+                        📸 Start QR Scanner
+                    </button>
+                    <button class="welcome-btn upload" onclick="showApp('upload')">
+                        📁 Bulk Upload
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -519,25 +513,25 @@
         <div class="card hidden" id="mainApp">
             <div class="card-header">
                 <h2 id="modeTitle">Scanner Mode</h2>
-                <p id="modeDescription">Scan QR codes to mark attendance</p>
+                <p id="modeDescription">Scan QR code to mark attendance</p>
             </div>
             <div class="card-body">
                 <!-- Stats -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">✅ Marked Today</div>
+                        <div class="stat-label">✓ Marked Today</div>
                         <div class="stat-value" id="counter">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">📋 Pending Queue</div>
-                        <div class="stat-value" id="listTotal">0</div>
+                        <div class="stat-label">⏳ Pending</div>
+                        <div class="stat-value" id="pendingCount">0</div>
                     </div>
                 </div>
 
                 <!-- Date Selector -->
                 <div class="date-section">
                     <div class="auto-toggle">
-                        <span>📅 Auto-select today's date</span>
+                        <span>📅 Auto-select today</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
                             <span class="toggle-slider"></span>
@@ -548,47 +542,51 @@
 
                 <!-- Scanner Container -->
                 <div id="reader"></div>
-                
-                <!-- Scanner Status -->
                 <div class="scanner-status" id="scannerStatus">
-                    <span>📷 Waiting for QR code...</span>
+                    <span>📷 Ready to scan</span>
                 </div>
 
                 <!-- File Upload Section (Bulk Mode) -->
                 <div id="fileSection" class="hidden">
                     <div class="upload-section" id="uploadArea">
                         <label class="file-input-label">
-                            📁 Choose File
+                            📁 Choose File (.txt or .csv)
                             <input type="file" id="fileInput" accept=".txt,.csv">
                         </label>
                         <div class="file-name" id="fileName">No file selected</div>
                         <div class="progress-container" id="progressContainer">
                             <div class="progress-bar" id="progressBar"></div>
                         </div>
-                        <button class="btn btn-success" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 10px;">
+                        <button class="btn btn-success" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 12px;">
                             🚀 Start Upload
                         </button>
-                        <div id="speedStats" style="font-size: 12px; color: var(--gray); margin-top: 10px;"></div>
+                        <div id="uploadStats" style="font-size: 12px; color: #64748b; margin-top: 10px;"></div>
                     </div>
                 </div>
 
-                <!-- Live Logs -->
+                <!-- Simple Logs - Name + Status -->
                 <div class="logs-container">
                     <div class="logs-header">
-                        <span class="logs-title">📋 Live Activity Logs</span>
+                        <span class="logs-title">📋 Activity Log</span>
                         <button class="clear-logs" onclick="clearLogs()">Clear</button>
                     </div>
-                    <div id="logsList"></div>
+                    <div id="logsList">
+                        <div class="log-entry">
+                            <div class="log-icon">⏳</div>
+                            <div class="log-name">Ready to start</div>
+                            <div class="log-status">waiting</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export to Excel</button>
-                    <button class="btn btn-danger" onclick="resetApp()">🏠 Main Menu</button>
+                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+                    <button class="btn btn-secondary" onclick="resetApp()">🏠 Main Menu</button>
                 </div>
                 
-                <!-- Sync Button (Hidden by default) -->
-                <button id="syncBtn" class="btn btn-warning hidden" onclick="syncQueue()" style="margin-top: 10px; background: var(--warning); color: var(--dark);">
+                <!-- Sync Button -->
+                <button id="syncBtn" class="btn btn-warning hidden" onclick="syncQueue()" style="margin-top: 12px;">
                     📤 Sync Queue (<span id="queueCount">0</span>)
                 </button>
             </div>
@@ -613,45 +611,76 @@
             isSyncing: false,
             currentMode: null,
             syncInterval: null,
-            isProcessing: false
+            isProcessing: false,
+            bulkSuccessCount: 0
         };
 
-        // Logs Management
-        let logs = [];
-
-        function addLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const logEntry = { timestamp, message, type };
-            logs.unshift(logEntry);
-            
-            // Keep only last 50 logs
-            if (logs.length > 50) logs.pop();
-            
-            renderLogs();
-        }
-
-        function renderLogs() {
+        // Simple Log - Just Name and Status
+        function addLog(name, status, icon = '📌') {
             const logsContainer = document.getElementById('logsList');
             if (!logsContainer) return;
             
-            logsContainer.innerHTML = logs.map(log => `
-                <div class="log-entry log-${log.type}">
-                    <span class="log-time">[${log.timestamp}]</span>
-                    <span class="log-message">${escapeHtml(log.message)}</span>
-                </div>
-            `).join('');
+            let statusClass = '';
+            let statusText = '';
+            let statusIcon = icon;
             
-            // Auto-scroll to top (newest logs)
-            const logsContainerParent = document.querySelector('.logs-container');
-            if (logsContainerParent) {
-                logsContainerParent.scrollTop = 0;
+            switch(status) {
+                case 'processing':
+                    statusClass = 'processing';
+                    statusText = 'processing';
+                    statusIcon = '⏳';
+                    break;
+                case 'success':
+                    statusClass = 'success';
+                    statusText = '✓ marked';
+                    statusIcon = '✅';
+                    break;
+                case 'error':
+                    statusClass = 'error';
+                    statusText = 'error';
+                    statusIcon = '❌';
+                    break;
+                case 'notfound':
+                    statusClass = 'notfound';
+                    statusText = 'not found';
+                    statusIcon = '🔍';
+                    break;
+                case 'already':
+                    statusClass = 'warning';
+                    statusText = 'already marked';
+                    statusIcon = '⚠️';
+                    break;
+                case 'queued':
+                    statusClass = 'warning';
+                    statusText = 'queued (offline)';
+                    statusIcon = '📱';
+                    break;
+                default:
+                    statusClass = 'processing';
+                    statusText = status;
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="log-icon">${statusIcon}</div>
+                <div class="log-name">${escapeHtml(name)}</div>
+                <div class="log-status ${statusClass}">${statusText}</div>
+            `;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 30 logs
+            while (logsContainer.children.length > 30) {
+                logsContainer.removeChild(logsContainer.lastChild);
             }
         }
 
         function clearLogs() {
-            logs = [];
-            renderLogs();
-            addLog('Logs cleared', 'info');
+            const logsContainer = document.getElementById('logsList');
+            if (logsContainer) {
+                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">📌</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div>';
+            }
         }
 
         // Show/Hide App
@@ -662,40 +691,38 @@
             document.getElementById('mainApp').classList.remove('hidden');
             
             appState.currentMode = mode;
+            appState.bulkSuccessCount = 0;
             
             if (mode === 'scan') {
                 document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
-                document.getElementById('modeDescription').innerText = 'Point camera at QR code to mark attendance';
+                document.getElementById('modeDescription').innerText = 'Scan QR code to mark attendance';
                 document.getElementById('fileSection').classList.add('hidden');
                 await loadDates();
                 await startScanner();
                 startBackgroundSync();
-                addLog('Scanner mode activated. Ready to scan QR codes.', 'success');
+                addLog('System', 'Scanner ready', '📸');
             } else {
                 document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
-                document.getElementById('modeDescription').innerText = 'Upload file with names to mark attendance';
+                document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
                 document.getElementById('fileSection').classList.remove('hidden');
                 await loadDates();
                 setupDragAndDrop();
-                addLog('Bulk upload mode activated. Select a file to begin.', 'info');
+                addLog('System', 'Upload mode ready', '📁');
             }
             
             await loadExistingAttendance();
         }
 
-        // Load Dates
         async function loadDates() {
             try {
-                addLog('Loading available dates from sheet...', 'processing');
                 const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getDates&sheetId=${CONFIG.SHEET_ID}`);
                 const dates = await response.json();
                 const select = document.getElementById('dateSelect');
-                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
                 toggleAutoDate();
-                addLog(`Loaded ${dates.length} available dates`, 'success');
             } catch(e) {
                 console.error("Error loading dates:", e);
-                addLog('Failed to load dates. Please check your connection.', 'error');
+                addLog('System', 'Failed to load dates', '❌');
             }
         }
 
@@ -708,7 +735,6 @@
                 for (let i = 0; i < select.options.length; i++) {
                     if (select.options[i].value === todayStr) {
                         select.selectedIndex = i;
-                        addLog(`Auto-selected today's date: ${todayStr}`, 'info');
                         break;
                     }
                 }
@@ -717,7 +743,6 @@
             }
         }
 
-        // Scanner Functions
         async function startScanner() {
             if (!document.getElementById('reader')) return;
             
@@ -728,25 +753,17 @@
                 appState.scanner = new Html5Qrcode("reader");
                 await appState.scanner.start(
                     { facingMode: "environment" },
-                    { 
-                        fps: 10, 
-                        qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1.0
-                    },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
                     (decodedText) => {
                         if (!appState.isProcessing) {
                             processScan(decodedText.trim());
                         }
                     },
-                    (errorMessage) => {
-                        // Silent fail for scanning errors
-                    }
+                    () => {}
                 );
-                addLog('Scanner ready. Waiting for QR codes...', 'success');
-                document.getElementById('scannerStatus').innerHTML = '<span>📷 Scanner active - Point at QR code</span>';
+                document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
             } catch (err) {
-                console.error("Scanner start error:", err);
-                addLog('Failed to start camera. Please check permissions.', 'error');
+                addLog('System', 'Camera access failed', '❌');
                 document.getElementById('scannerStatus').innerHTML = '<span>❌ Camera access denied</span>';
             }
         }
@@ -756,10 +773,7 @@
                 try {
                     await appState.scanner.stop();
                     appState.scanner.clear();
-                    addLog('Scanner stopped', 'info');
-                } catch (err) {
-                    console.error("Error stopping scanner:", err);
-                }
+                } catch (err) {}
             }
             appState.scanner = null;
             const readerDiv = document.getElementById('reader');
@@ -767,21 +781,18 @@
             document.getElementById('scannerStatus').style.display = 'none';
         }
 
-        // Process Scan
         async function processScan(name, isBatch = false) {
             if (!name || appState.scannedNamesSet.has(name) || appState.isProcessing) return false;
             
             appState.isProcessing = true;
             
-            // Show processing status
             if (!isBatch) {
-                addLog(`🔄 Processing: "${name}"...`, 'processing');
+                addLog(name, 'processing', '⏳');
                 document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ Processing: ${escapeHtml(name)}...</span>`;
             }
             
             const currentDate = document.getElementById('dateSelect').value;
             if (!currentDate) {
-                addLog('Error: No date selected', 'error');
                 appState.isProcessing = false;
                 return false;
             }
@@ -794,39 +805,43 @@
                 const text = await response.text();
                 
                 if (text.includes("Success")) {
-                    addLog(`✅ SUCCESS: "${name}" marked for ${currentDate}`, 'success');
+                    addLog(name, 'success', '✅');
                     addToScannedList(name);
                     if (!isBatch) {
                         document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Scanner active - Point at QR code</span>';
-                        }, 2000);
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
                     }
                     appState.isProcessing = false;
                     return true;
                 } else if (text.includes("Already Marked")) {
-                    addLog(`⚠️ ALREADY MARKED: "${name}" was already marked today`, 'warning');
+                    addLog(name, 'already', '⚠️');
                     if (!isBatch) {
                         document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Scanner active - Point at QR code</span>';
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
+                    appState.isProcessing = false;
+                    return false;
+                } else if (text.includes("not found")) {
+                    addLog(name, 'notfound', '🔍');
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
                         }, 1500);
                     }
                     appState.isProcessing = false;
                     return false;
                 } else {
-                    addLog(`❌ ERROR: ${text}`, 'error');
-                    if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>❌ Error: ${escapeHtml(text)}</span>`;
-                        setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Scanner active - Point at QR code</span>';
-                        }, 2000);
-                    }
+                    addLog(name, 'error', '❌');
                     appState.isProcessing = false;
                     return false;
                 }
             } catch (error) {
-                addLog(`📱 OFFLINE: "${name}" added to queue (will sync later)`, 'warning');
+                addLog(name, 'queued', '📱');
                 if (!isBatch && !appState.offlineQueue.includes(name)) {
                     addToQueue(name);
                 }
@@ -834,14 +849,13 @@
                 if (!isBatch) {
                     document.getElementById('scannerStatus').innerHTML = '<span>📱 Offline - Saved to queue</span>';
                     setTimeout(() => {
-                        document.getElementById('scannerStatus').innerHTML = '<span>📷 Scanner active - Point at QR code</span>';
-                    }, 2000);
+                        document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                    }, 1500);
                 }
                 return false;
             }
         }
 
-        // Bulk Upload
         function setupDragAndDrop() {
             const uploadArea = document.getElementById('uploadArea');
             if (!uploadArea) return;
@@ -862,9 +876,6 @@
                 if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv'))) {
                     document.getElementById('fileInput').files = e.dataTransfer.files;
                     document.getElementById('fileName').innerText = file.name;
-                    addLog(`File selected: ${file.name}`, 'info');
-                } else {
-                    addLog('Please select a .txt or .csv file', 'error');
                 }
             });
             
@@ -872,7 +883,6 @@
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files[0]) {
                     document.getElementById('fileName').innerText = e.target.files[0].name;
-                    addLog(`File selected: ${e.target.files[0].name}`, 'info');
                 }
             });
         }
@@ -880,8 +890,7 @@
         async function handleBulkUpload() {
             const file = document.getElementById('fileInput').files[0];
             if (!file) {
-                addLog('Please select a file first!', 'error');
-                alert("Please select a file first!");
+                alert("Please select a file!");
                 return;
             }
             
@@ -895,13 +904,13 @@
                 names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
                 
                 if (names.length === 0) {
-                    addLog('No valid names found in file', 'error');
-                    alert("No valid names found in file!");
+                    alert("No valid names found!");
                     return;
                 }
                 
-                addLog(`Starting bulk upload: ${names.length} unique names to process`, 'processing');
-                document.getElementById('listTotal').innerText = names.length;
+                // Reset counters for this upload
+                appState.bulkSuccessCount = 0;
+                document.getElementById('pendingCount').innerText = names.length;
                 document.getElementById('progressContainer').style.display = 'block';
                 const uploadBtn = document.getElementById('uploadBtn');
                 uploadBtn.disabled = true;
@@ -909,15 +918,15 @@
                 let processed = 0;
                 let successful = 0;
                 let alreadyMarked = 0;
-                let failed = 0;
+                let notFound = 0;
                 const startTime = Date.now();
+                
+                addLog('System', `Starting upload: ${names.length} names`, '📁');
                 
                 const batchSize = 50;
                 for (let i = 0; i < names.length; i += batchSize) {
                     const batch = names.slice(i, Math.min(i + batchSize, names.length));
                     const currentDate = document.getElementById('dateSelect').value;
-                    
-                    addLog(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(names.length/batchSize)} (${batch.length} names)...`, 'processing');
                     
                     try {
                         const response = await fetch(`${CONFIG.SCRIPT_URL}`, {
@@ -933,22 +942,30 @@
                         const result = await response.json();
                         
                         if (result.error) {
-                            addLog(`Batch error: ${result.error}`, 'error');
-                            failed += batch.length;
+                            batch.forEach(name => addLog(name, 'error', '❌'));
+                            notFound += batch.length;
                         } else {
-                            successful += result.success?.length || 0;
-                            alreadyMarked += result.alreadyMarked?.length || 0;
-                            failed += result.notFound?.length || 0;
-                            
+                            // Process results and add logs
                             (result.success || []).forEach(name => {
+                                addLog(name, 'success', '✅');
                                 addToScannedList(name);
+                                successful++;
+                                appState.bulkSuccessCount++;
                             });
                             
-                            addLog(`Batch complete: +${result.success?.length || 0} new, ${result.alreadyMarked?.length || 0} already marked`, 'success');
+                            (result.alreadyMarked || []).forEach(name => {
+                                addLog(name, 'already', '⚠️');
+                                alreadyMarked++;
+                            });
+                            
+                            (result.notFound || []).forEach(name => {
+                                addLog(name, 'notfound', '🔍');
+                                notFound++;
+                            });
                         }
                     } catch (err) {
-                        addLog(`Batch failed: ${err.message}`, 'error');
-                        failed += batch.length;
+                        batch.forEach(name => addLog(name, 'error', '❌'));
+                        notFound += batch.length;
                     }
                     
                     processed += batch.length;
@@ -957,28 +974,31 @@
                     
                     const elapsed = (Date.now() - startTime) / 1000;
                     const speed = (processed / elapsed).toFixed(1);
-                    document.getElementById('speedStats').innerHTML = `⚡ Speed: ${speed} names/sec | ✅ ${successful} | ⚠️ ${alreadyMarked} | ❌ ${failed}`;
+                    document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${alreadyMarked} | 🔍 ${notFound} | ⚡ ${speed}/s`;
+                    
+                    // Update counter in real-time
+                    document.getElementById('counter').innerText = appState.scannedNamesSet.size;
                 }
                 
                 const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-                addLog(`✅ Bulk upload completed! ${successful} marked, ${alreadyMarked} already marked, ${failed} failed in ${totalTime}s`, 'success');
-                setStatus(`Completed! ${successful} marked, ${failed} failed`, 'success');
+                addLog('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found in ${totalTime}s`, '✅');
+                
                 uploadBtn.disabled = false;
+                document.getElementById('pendingCount').innerText = '0';
                 
                 setTimeout(() => {
                     document.getElementById('progressContainer').style.display = 'none';
                     document.getElementById('progressBar').style.width = '0%';
-                    document.getElementById('speedStats').innerHTML = '';
+                    document.getElementById('uploadStats').innerHTML = '';
                 }, 3000);
                 
             } catch (err) {
                 console.error("Bulk upload error:", err);
-                addLog(`Bulk upload error: ${err.message}`, 'error');
+                addLog('System', 'Upload failed: ' + err.message, '❌');
                 document.getElementById('uploadBtn').disabled = false;
             }
         }
 
-        // UI Helpers
         function addToScannedList(name) {
             if (appState.scannedNamesSet.has(name)) return;
             
@@ -987,8 +1007,6 @@
             appState.scannedData.unshift({ Name: name, Time: time });
             
             document.getElementById('counter').innerText = appState.scannedNamesSet.size;
-            
-            addLog(`📝 Added to list: ${name} at ${time}`, 'success');
         }
 
         function addToQueue(name) {
@@ -996,14 +1014,13 @@
             
             appState.offlineQueue.push(name);
             updateQueueUI();
-            addLog(`📱 Queued for offline sync: ${name}`, 'warning');
         }
 
         async function syncQueue() {
             if (appState.isSyncing || appState.offlineQueue.length === 0) return;
             
             appState.isSyncing = true;
-            addLog(`🔄 Syncing ${appState.offlineQueue.length} pending items...`, 'processing');
+            addLog('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
             
             try {
                 const currentDate = document.getElementById('dateSelect').value;
@@ -1011,7 +1028,6 @@
                 
                 const toSync = [...appState.offlineQueue];
                 const batchSize = 20;
-                let synced = 0;
                 
                 for (let i = 0; i < toSync.length; i += batchSize) {
                     const batch = toSync.slice(i, Math.min(i + batchSize, toSync.length));
@@ -1033,19 +1049,17 @@
                             result.success.forEach(name => {
                                 if (!appState.scannedNamesSet.has(name)) {
                                     addToScannedList(name);
+                                    addLog(name, 'success', '✅');
                                 }
                             });
-                            synced += result.success?.length || 0;
-                            addLog(`Synced ${result.success?.length || 0} names`, 'success');
                         }
-                    } catch (err) {
-                        addLog(`Sync batch error: ${err.message}`, 'error');
-                    }
+                    } catch (err) {}
                 }
                 
                 appState.offlineQueue = [];
                 updateQueueUI();
-                addLog(`✅ Sync completed! ${synced} names synced successfully`, 'success');
+                addLog('System', 'Sync completed', '✅');
+                document.getElementById('counter').innerText = appState.scannedNamesSet.size;
                 
             } finally {
                 appState.isSyncing = false;
@@ -1055,13 +1069,12 @@
 
         function updateQueueUI() {
             const queueCount = appState.offlineQueue.length;
-            document.getElementById('listTotal').innerText = queueCount;
+            document.getElementById('pendingCount').innerText = queueCount;
             document.getElementById('queueCount').innerText = queueCount;
             
             const syncBtn = document.getElementById('syncBtn');
             if (queueCount > 0) {
                 syncBtn.classList.remove('hidden');
-                syncBtn.disabled = false;
             } else {
                 syncBtn.classList.add('hidden');
             }
@@ -1070,7 +1083,7 @@
         function startBackgroundSync() {
             if (appState.syncInterval) clearInterval(appState.syncInterval);
             appState.syncInterval = setInterval(() => {
-                if (appState.offlineQueue.length > 0 && navigator.onLine) {
+                if (appState.offlineQueue.length > 0 && navigator.onLine && appState.currentMode === 'scan') {
                     syncQueue();
                 }
             }, CONFIG.SYNC_INTERVAL);
@@ -1081,15 +1094,11 @@
                 const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getStats&sheetId=${CONFIG.SHEET_ID}`);
                 const stats = await response.json();
                 document.getElementById('counter').innerText = stats.marked || 0;
-                addLog(`Loaded existing attendance: ${stats.marked || 0} marked today`, 'info');
-            } catch (e) {
-                console.error("Error loading stats:", e);
-            }
+            } catch (e) {}
         }
 
         function exportToExcel() {
             if (appState.scannedData.length === 0) {
-                addLog('No data to export', 'warning');
                 alert("No data to export!");
                 return;
             }
@@ -1100,7 +1109,7 @@
             XLSX.utils.book_append_sheet(wb, ws, "Attendance");
             const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
             XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
-            addLog(`Exported ${appState.scannedData.length} records to Excel`, 'success');
+            addLog('System', `Exported ${appState.scannedData.length} records`, '📊');
         }
 
         function resetAppState() {
@@ -1118,11 +1127,10 @@
             appState.offlineQueue = [];
             appState.isSyncing = false;
             appState.isProcessing = false;
+            appState.bulkSuccessCount = 0;
             
-            document.getElementById('scannedList') && (document.getElementById('scannedList').innerHTML = '');
             document.getElementById('counter') && (document.getElementById('counter').innerText = '0');
-            document.getElementById('listTotal') && (document.getElementById('listTotal').innerText = '0');
-            document.getElementById('queueCount') && (document.getElementById('queueCount').innerText = '0');
+            document.getElementById('pendingCount') && (document.getElementById('pendingCount').innerText = '0');
         }
 
         function resetApp() {
@@ -1134,21 +1142,7 @@
             if (fileInput) fileInput.value = '';
             document.getElementById('fileName') && (document.getElementById('fileName').innerText = 'No file selected');
             
-            addLog('Returned to main menu', 'info');
-        }
-
-        function setStatus(msg, type) {
-            const statusDiv = document.getElementById('status');
-            if (statusDiv) {
-                statusDiv.className = `status-badge ${type}`;
-                statusDiv.innerHTML = msg;
-                setTimeout(() => {
-                    if (statusDiv.innerHTML === msg) {
-                        statusDiv.className = 'status-badge';
-                        statusDiv.innerHTML = 'Ready';
-                    }
-                }, 3000);
-            }
+            clearLogs();
         }
 
         async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
@@ -1161,12 +1155,12 @@
                     
                     if (response.ok) return response;
                     if (response.status === 429) {
-                        await delay(1000 * (i + 1));
+                        await delay(1000);
                         continue;
                     }
                 } catch (error) {
                     if (i === retries - 1) throw error;
-                    await delay(1000 * (i + 1));
+                    await delay(1000);
                 }
             }
             throw new Error(`Failed after ${retries} retries`);
@@ -1179,12 +1173,12 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
 
         function delay(ms) {
@@ -1193,28 +1187,16 @@
 
         // Network Status
         window.addEventListener('online', () => {
-            addLog('Back online! Attempting to sync queue...', 'success');
-            if (appState.currentMode === 'scan') {
+            if (appState.currentMode === 'scan' && appState.offlineQueue.length > 0) {
                 syncQueue();
             }
-        });
-        
-        window.addEventListener('offline', () => {
-            addLog('You are offline. Scans will be saved to queue.', 'warning');
         });
 
         // Clean up
         window.addEventListener('beforeunload', () => {
-            if (appState.scanner) {
-                stopScanner();
-            }
-            if (appState.syncInterval) {
-                clearInterval(appState.syncInterval);
-            }
+            if (appState.scanner) stopScanner();
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
         });
-
-        // Initial setup
-        addLog('Attendance Pro v12 ready', 'success');
     </script>
 </body>
 </html>
