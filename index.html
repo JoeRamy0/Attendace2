@@ -87,32 +87,43 @@
     };
 
     function toggleAutoDate() {
-        const isAuto = document.getElementById('autoDateToggle').checked;
-        const select = document.getElementById('dateSelect');
+    const isAuto = document.getElementById('autoDateToggle').checked;
+    const select = document.getElementById('dateSelect');
+    
+    if (isAuto) {
+        select.disabled = true;
+        select.style.opacity = "0.6";
         
-        if (isAuto) {
-            select.disabled = true;
-            select.style.opacity = "0.6";
-            
-            // Format today's date to match sheet (M/d/yyyy)
-            const today = new Date();
-            const formattedToday = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
-            
-            // Try to find today's date in the dropdown options
-            let found = false;
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === formattedToday) {
-                    select.selectedIndex = i;
-                    found = true;
-                    break;
-                }
+        const today = new Date();
+        const m = today.getMonth() + 1;
+        const d = today.getDate();
+        const y = today.getFullYear();
+
+        // We create a few variations to be safe
+        const format1 = `${m}/${d}/${y}`;          // 3/23/2026
+        const format2 = `${m < 10 ? '0'+m : m}/${d < 10 ? '0'+d : d}/${y}`; // 03/23/2026
+        const format3 = `${y}-${m < 10 ? '0'+m : m}-${d < 10 ? '0'+d : d}`; // 2026-03-23
+
+        let found = false;
+        for (let i = 0; i < select.options.length; i++) {
+            let val = select.options[i].value.trim();
+            if (val === format1 || val === format2 || val === format3) {
+                select.selectedIndex = i;
+                found = true;
+                break;
             }
-            if(!found) setStatus("Today's date not found in sheet!", "error");
-        } else {
-            select.disabled = false;
-            select.style.opacity = "1";
         }
+        
+        if(!found) {
+            setStatus("Today (" + format1 + ") not found in list.", "error");
+        } else {
+            setStatus("Auto-selected: " + select.value, "success");
+        }
+    } else {
+        select.disabled = false;
+        select.style.opacity = "1";
     }
+}
 
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
