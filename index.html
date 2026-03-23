@@ -3,48 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Church Attendance QR</title>
+    <title>Church Attendance Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: var(--primary); margin-top: 0; }
-        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); }
-        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 15px; border: 2px solid var(--primary); }
-        #status { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; min-height: 20px; }
+        :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { color: var(--primary); margin: 0 0 15px 0; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
+        .stat-label { font-size: 12px; color: #666; display: block; }
+        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 2px solid var(--primary); display: none; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        
+        .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
+        .list-title { font-weight: bold; border-bottom: 2px solid #f0f2f5; padding-bottom: 5px; margin-bottom: 10px; display: block; }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; font-size: 14px; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>Attendance System ⛪</h2>
-    
-<script>
-    // 1. This is your Apps Script Web App URL
-    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
 
-    // 2. This is your extracted Sheet ID
-    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
-</script>
-    <p>1. Select Date</p>
+    <div class="stats-grid">
+        <div class="stat-box">
+            <span class="stat-label">Total Present</span>
+            <span id="counter" class="stat-val">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Offline Queue</span>
+            <span id="queueCounter" class="stat-val">0</span>
+        </div>
+    </div>
+
+    <p style="text-align:left; margin:0; font-size:12px; color:#666;">Select Date:</p>
     <select id="dateSelect"><option>Loading dates...</option></select>
     
-    <button id="startBtn" onclick="startScanner()">2. Open Scanner</button>
-    
-    <div id="reader" style="display:none;"></div>
+    <button id="startBtn" onclick="startScanner()">Open Scanner</button>
+    <div id="reader"></div>
     <div id="status">Ready</div>
+
+    <div class="list-container">
+        <span class="list-title">Recently Scanned (Last 10)</span>
+        <ul id="scannedList"></ul>
+    </div>
 </div>
 
 <script>
+    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
+
     const statusDiv = document.getElementById('status');
     const dateSelect = document.getElementById('dateSelect');
+    const counterDisplay = document.getElementById('counter');
+    const queueDisplay = document.getElementById('queueCounter');
+    const scannedList = document.getElementById('scannedList');
 
-    // Load dates automatically when page opens
+    let attendanceCount = 0;
+    let offlineQueue = [];
+
     window.onload = async () => {
         try {
             const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
@@ -55,10 +84,10 @@
                 opt.value = d; opt.innerText = d;
                 dateSelect.appendChild(opt);
             });
-            statusDiv.innerText = "Dates loaded. Ready to scan.";
+            statusDiv.innerText = "Ready to scan.";
         } catch (e) {
             statusDiv.className = "error";
-            statusDiv.innerText = "Connection Error. Check Script URL/Permissions.";
+            statusDiv.innerText = "Connection Error. Reload Page.";
         }
     };
 
@@ -69,29 +98,77 @@
             { facingMode: "environment" }, 
             { fps: 10, qrbox: 250 },
             async (decodedText) => {
-                // Flash status to show it read something
-                statusDiv.className = "";
-                statusDiv.innerText = "Verifying: " + decodedText;
-                
-                try {
-                    const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(decodedText)}&date=${encodeURIComponent(dateSelect.value)}`;
-                    const response = await fetch(markUrl);
-                    const result = await response.text();
-                    
-                    if(result.includes("Success")) {
-                        statusDiv.className = "success";
-                        window.navigator.vibrate(100); // Vibrate on success
-                    } else {
-                        statusDiv.className = "error";
-                    }
-                    statusDiv.innerText = result;
-                } catch (err) {
-                    statusDiv.innerText = "Network Error";
-                }
+                processScan(decodedText);
             }
-        ).catch(err => {
-            statusDiv.innerText = "Camera access denied.";
-        });
+        ).catch(err => { statusDiv.innerText = "Camera access denied."; });
+    }
+
+    async function processScan(name) {
+        statusDiv.className = "warning";
+        statusDiv.innerText = "Checking: " + name;
+
+        // Prevent duplicate scans in the current session list
+        if (Array.from(scannedList.children).some(li => li.innerText.includes(name))) {
+            statusDiv.className = "error";
+            statusDiv.innerText = "Already Scanned Recently";
+            return;
+        }
+
+        try {
+            const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(dateSelect.value)}`;
+            const response = await fetch(markUrl);
+            const result = await response.text();
+
+            if (result.includes("Success")) {
+                handleSuccess(name, result);
+            } else {
+                statusDiv.className = "error";
+                statusDiv.innerText = result;
+            }
+        } catch (err) {
+            // OFFLINE LOGIC: If network fails, add to queue
+            addToQueue(name);
+        }
+    }
+
+    function handleSuccess(name, msg) {
+        statusDiv.className = "success";
+        statusDiv.innerText = msg;
+        window.navigator.vibrate(100);
+        
+        attendanceCount++;
+        counterDisplay.innerText = attendanceCount;
+
+        // Add to the visual list
+        let li = document.createElement('li');
+        li.innerHTML = `<span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span> <strong>${name}</strong>`;
+        scannedList.prepend(li);
+        if (scannedList.children.length > 10) scannedList.removeChild(scannedList.lastChild);
+    }
+
+    function addToQueue(name) {
+        offlineQueue.push(name);
+        queueDisplay.innerText = offlineQueue.length;
+        statusDiv.className = "warning";
+        statusDiv.innerText = "Offline! Saved to Queue: " + name;
+        
+        // Try to sync queue every 10 seconds
+        if (offlineQueue.length === 1) {
+            let syncInterval = setInterval(async () => {
+                if (offlineQueue.length === 0) { clearInterval(syncInterval); return; }
+                
+                let nextName = offlineQueue[0];
+                try {
+                    const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(nextName)}&date=${encodeURIComponent(dateSelect.value)}`;
+                    const response = await fetch(markUrl);
+                    if (response.ok) {
+                        offlineQueue.shift();
+                        queueDisplay.innerText = offlineQueue.length;
+                        handleSuccess(nextName, "Synced: " + nextName);
+                    }
+                } catch (e) { console.log("Still offline..."); }
+            }, 10000);
+        }
     }
 </script>
 
