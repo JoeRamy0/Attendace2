@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro + Auto Sync</title>
+    <title>Attendance Pro + Auto Date</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --csv: #f39c12; --warning: #e67e22; }
@@ -12,16 +12,22 @@
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
         .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
+        
+        /* Date Selector Styling */
+        .date-container { background: #edf2f7; padding: 10px; border-radius: 10px; margin-bottom: 10px; text-align: left; }
+        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 14px; font-weight: bold; }
+        
         button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; }
         .btn-scan { background: var(--primary); }
         .btn-csv { background: var(--csv); }
-        .btn-sync { background: var(--warning); display: none; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .btn-sync { background: var(--warning); display: none; }
+        
         #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
         #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; }
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
         #scannedList { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
         #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
+        
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
         .offline { background: #fff3cd; color: #856404; }
@@ -37,10 +43,16 @@
         <div class="stat-box"><div>In Queue</div><span id="queueCounter" class="stat-val">0</span></div>
     </div>
 
-    <select id="dateSelect" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;"></select>
+    <div class="date-container">
+        <div class="auto-toggle">
+            <span>Auto-Select Today</span>
+            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+        </div>
+        <select id="dateSelect" style="width:100%; padding:8px; border-radius:5px;"></select>
+    </div>
     
     <button class="btn-scan" onclick="startScanner()">Open Scanner</button>
-    <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Attempting to Reconnect...</button>
+    <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Queue...</button>
     <button class="btn-csv" onclick="exportToCSV()">📥 Export List (.CSV)</button>
 
     <div id="reader"></div>
@@ -64,12 +76,43 @@
         try {
             const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
             const dates = await resp.json();
-            document.getElementById('dateSelect').innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-        } catch(e) { document.getElementById('status').innerText = "Offline Mode Active"; }
+            const select = document.getElementById('dateSelect');
+            select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
+            
+            // Trigger auto-selection logic
+            toggleAutoDate();
+        } catch(e) { setStatus("Offline Mode Active", "offline"); }
         
-        // HEARTBEAT: Check queue every 5 seconds
         setInterval(syncQueue, 5000);
     };
+
+    function toggleAutoDate() {
+        const isAuto = document.getElementById('autoDateToggle').checked;
+        const select = document.getElementById('dateSelect');
+        
+        if (isAuto) {
+            select.disabled = true;
+            select.style.opacity = "0.6";
+            
+            // Format today's date to match sheet (M/d/yyyy)
+            const today = new Date();
+            const formattedToday = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+            
+            // Try to find today's date in the dropdown options
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === formattedToday) {
+                    select.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) setStatus("Today's date not found in sheet!", "error");
+        } else {
+            select.disabled = false;
+            select.style.opacity = "1";
+        }
+    }
 
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
@@ -82,22 +125,15 @@
             setStatus("Already Scanned: " + name, "error");
             return;
         }
-
         setStatus("Processing: " + name, "");
-
         try {
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
             const text = await res.text();
-            
             if (text.includes("Success") || text.includes("Already Marked")) {
                 addToList(name);
                 setStatus(text, "success");
-            } else {
-                setStatus(text, "error");
-            }
-        } catch (e) {
-            addToQueue(name);
-        }
+            } else { setStatus(text, "error"); }
+        } catch (e) { addToQueue(name); }
     }
 
     function setStatus(msg, className) {
@@ -119,7 +155,7 @@
         if(offlineQueue.includes(name) || scannedNames.has(name)) return;
         offlineQueue.push(name);
         updateQueueUI();
-        setStatus("Offline! Saved to Queue: " + name, "offline");
+        setStatus("Offline! Saved to Queue", "offline");
     }
 
     function updateQueueUI() {
@@ -130,21 +166,15 @@
     async function syncQueue() {
         if (isSyncing || offlineQueue.length === 0) return;
         isSyncing = true;
-        
         const nameToSync = offlineQueue[0];
         try {
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(nameToSync)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
             if (res.ok) {
-                const text = await res.text();
-                if (text.includes("Success") || text.includes("Already Marked")) {
-                    offlineQueue.shift(); // Remove from queue
-                    addToList(nameToSync);
-                    updateQueueUI();
-                    setStatus("Synced: " + nameToSync, "success");
-                }
+                offlineQueue.shift();
+                addToList(nameToSync);
+                updateQueueUI();
             }
-        } catch (e) { console.log("Still offline, retrying later..."); }
-        
+        } catch (e) {}
         isSyncing = false;
     }
 
