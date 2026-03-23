@@ -53,7 +53,7 @@
             transition: transform 0.3s ease;
         }
 
-        /* Welcome View - Attractive Homepage */
+        /* Welcome View */
         #welcomeView .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -124,17 +124,19 @@
             padding: 30px 25px;
         }
 
-        /* Welcome Buttons */
+        /* Welcome Buttons - 3 buttons now */
         .welcome-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
         .welcome-btn {
             flex: 1;
-            padding: 18px 12px;
-            font-size: 16px;
+            min-width: 100px;
+            padding: 18px 8px;
+            font-size: 14px;
             font-weight: 600;
             border: none;
             border-radius: 20px;
@@ -148,11 +150,11 @@
         }
 
         .welcome-btn .btn-icon {
-            font-size: 32px;
+            font-size: 28px;
         }
 
         .welcome-btn .btn-text {
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .welcome-btn.scanner {
@@ -175,6 +177,17 @@
         .welcome-btn.upload:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        .welcome-btn.absence {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+        }
+
+        .welcome-btn.absence:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.4);
         }
 
         .welcome-btn:active {
@@ -631,6 +644,21 @@
             background: #94a3b8;
             border-radius: 10px;
         }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -666,6 +694,10 @@
                         <div class="btn-icon">📁</div>
                         <div class="btn-text">Bulk Upload</div>
                     </button>
+                    <button class="welcome-btn absence" onclick="showAbsenceExport()">
+                        <div class="btn-icon">📋</div>
+                        <div class="btn-text">Export Absence</div>
+                    </button>
                 </div>
                 
                 <div class="info-cards">
@@ -676,8 +708,8 @@
                     </div>
                     <div class="info-card">
                         <div class="info-icon">📊</div>
-                        <div class="info-title">Export Data</div>
-                        <div class="info-desc">Excel reports</div>
+                        <div class="info-title">Export Reports</div>
+                        <div class="info-desc">Attendance & Absence lists</div>
                     </div>
                     <div class="info-card">
                         <div class="info-icon">📱</div>
@@ -693,7 +725,7 @@
             </div>
         </div>
 
-        <!-- Main App View -->
+        <!-- Main App View (Scanner & Upload) -->
         <div class="card hidden" id="mainApp">
             <div class="card-header">
                 <h2 id="modeTitle">Scanner Mode</h2>
@@ -775,6 +807,66 @@
                 </button>
             </div>
         </div>
+
+        <!-- Absence Export View -->
+        <div class="card hidden" id="absenceView">
+            <div class="card-header">
+                <h2>📋 Export Absence List</h2>
+                <p>Get list of absent names for a specific date</p>
+            </div>
+            <div class="card-body">
+                <!-- Date Selector for Absence -->
+                <div class="date-section">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Select Date:</label>
+                    <select id="absenceDateSelect"></select>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="absenceLoading" style="display: none; text-align: center; padding: 20px;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px; color: #64748b;">Loading attendance data...</p>
+                </div>
+
+                <!-- Stats Preview -->
+                <div class="stats-grid" id="absenceStats" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-label">👥 Total Students</div>
+                        <div class="stat-value" id="totalStudents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">✓ Present</div>
+                        <div class="stat-value" id="presentCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">❌ Absent</div>
+                        <div class="stat-value" id="absentCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">📊 Attendance %</div>
+                        <div class="stat-value" id="attendancePercent">0%</div>
+                    </div>
+                </div>
+
+                <!-- Absence List Preview -->
+                <div class="logs-container" id="absenceListPreview" style="display: none;">
+                    <div class="logs-header">
+                        <span class="logs-title">📋 Absent Students List</span>
+                        <span id="absentCountBadge" style="font-size: 12px; color: #e67e22;"></span>
+                    </div>
+                    <div id="absenceList"></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display: none;">
+                        📥 Export Absence List
+                    </button>
+                    <button class="btn btn-secondary" onclick="backToHome()">
+                        🏠 Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -797,6 +889,14 @@
             syncInterval: null,
             isProcessing: false,
             bulkSuccessCount: 0
+        };
+
+        // Absence Data
+        let absenceData = {
+            allNames: [],
+            presentNames: [],
+            absentNames: [],
+            selectedDate: null
         };
 
         // Simple Log - Just Name and Status
@@ -854,7 +954,6 @@
             
             logsContainer.insertBefore(logEntry, logsContainer.firstChild);
             
-            // Keep only last 30 logs
             while (logsContainer.children.length > 30) {
                 logsContainer.removeChild(logsContainer.lastChild);
             }
@@ -867,11 +966,139 @@
             }
         }
 
-        // Show/Hide App
+        // Show Absence Export View
+        async function showAbsenceExport() {
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.remove('hidden');
+            
+            // Load dates for absence selector
+            await loadAbsenceDates();
+        }
+
+        async function loadAbsenceDates() {
+            try {
+                const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getDates&sheetId=${CONFIG.SHEET_ID}`);
+                const dates = await response.json();
+                const select = document.getElementById('absenceDateSelect');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                
+                // Add event listener for date change
+                select.onchange = () => loadAbsenceData();
+                
+                // Auto-select today if available
+                const todayStr = getTodayDateString();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                // Load initial data
+                await loadAbsenceData();
+            } catch(e) {
+                console.error("Error loading dates:", e);
+                addLogToAbsence('Failed to load dates', 'error');
+            }
+        }
+
+        async function loadAbsenceData() {
+            const date = document.getElementById('absenceDateSelect').value;
+            if (!date) return;
+            
+            absenceData.selectedDate = date;
+            
+            // Show loading
+            document.getElementById('absenceLoading').style.display = 'block';
+            document.getElementById('absenceStats').style.display = 'none';
+            document.getElementById('absenceListPreview').style.display = 'none';
+            document.getElementById('exportAbsenceBtn').style.display = 'none';
+            
+            try {
+                // Fetch all names and attendance data
+                const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getAllAttendance&sheetId=${CONFIG.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const data = await response.json();
+                
+                absenceData.allNames = data.allNames || [];
+                absenceData.presentNames = data.presentNames || [];
+                absenceData.absentNames = data.absentNames || [];
+                
+                // Update stats
+                const total = absenceData.allNames.length;
+                const present = absenceData.presentNames.length;
+                const absent = absenceData.absentNames.length;
+                const percent = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+                
+                document.getElementById('totalStudents').innerText = total;
+                document.getElementById('presentCount').innerText = present;
+                document.getElementById('absentCount').innerText = absent;
+                document.getElementById('attendancePercent').innerText = `${percent}%`;
+                
+                // Show stats
+                document.getElementById('absenceStats').style.display = 'grid';
+                
+                // Display absence list
+                const absenceListDiv = document.getElementById('absenceList');
+                if (absenceData.absentNames.length === 0) {
+                    absenceListDiv.innerHTML = '<div class="log-entry"><div class="log-icon">✅</div><div class="log-name">All students are present!</div><div class="log-status success">complete</div></div>';
+                } else {
+                    absenceListDiv.innerHTML = absenceData.absentNames.map(name => `
+                        <div class="log-entry">
+                            <div class="log-icon">❌</div>
+                            <div class="log-name">${escapeHtml(name)}</div>
+                            <div class="log-status notfound">absent</div>
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('absentCountBadge').innerHTML = `${absenceData.absentNames.length} absent`;
+                document.getElementById('absenceListPreview').style.display = 'block';
+                document.getElementById('exportAbsenceBtn').style.display = 'block';
+                
+            } catch (error) {
+                console.error("Error loading absence data:", error);
+                addLogToAbsence('Failed to load attendance data', 'error');
+            } finally {
+                document.getElementById('absenceLoading').style.display = 'none';
+            }
+        }
+
+        function addLogToAbsence(message, type) {
+            const absenceListDiv = document.getElementById('absenceList');
+            if (absenceListDiv) {
+                absenceListDiv.innerHTML = `<div class="log-entry"><div class="log-icon">⚠️</div><div class="log-name">${message}</div><div class="log-status error">error</div></div>`;
+            }
+        }
+
+        async function exportAbsenceToExcel() {
+            if (absenceData.absentNames.length === 0) {
+                alert("No absent students to export!");
+                return;
+            }
+            
+            // Create Excel with just absent names
+            const wsData = [['Absent Students List'], ['Date: ' + absenceData.selectedDate], [''], ...absenceData.absentNames.map(name => [name])];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Add metadata
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 0 } }];
+            ws['!cols'] = [{wch: 30}];
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Absent Students");
+            const fileName = `Absent_Students_${absenceData.selectedDate.replace(/\//g, '-')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            addLogToAbsence(`Exported ${absenceData.absentNames.length} absent names`, 'success');
+        }
+
+        // Show/Hide App (Scanner & Upload)
         async function showApp(mode) {
             resetAppState();
             
             document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
             appState.currentMode = mode;
@@ -1183,9 +1410,8 @@
         function addToScannedList(name) {
             if (appState.scannedNamesSet.has(name)) return;
             
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             appState.scannedNamesSet.add(name);
-            appState.scannedData.unshift({ Name: name, Time: time });
+            appState.scannedData.unshift({ Name: name });
             
             document.getElementById('counter').innerText = appState.scannedNamesSet.size;
         }
@@ -1285,13 +1511,9 @@
                 return;
             }
             
-            // Create array with just names (no time column)
             const namesList = appState.scannedData.map(item => [item.Name]);
-            
             const wsData = [['Name'], ...namesList];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            // Adjust column width
             ws['!cols'] = [{wch: 30}];
             
             const wb = XLSX.utils.book_new();
@@ -1332,6 +1554,11 @@
             document.getElementById('fileName') && (document.getElementById('fileName').innerText = 'No file selected');
             
             clearLogs();
+        }
+
+        function backToHome() {
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('welcomeView').classList.remove('hidden');
         }
 
         async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
