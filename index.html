@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro v3</title>
+    <title>Attendance Pro v4</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -13,42 +13,32 @@
         :root { --primary: #2c3e50; --success: #27ae60; --excel: #1f7244; --pdf: #e74c3c; --warning: #e67e22; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        
-        /* Welcome View */
         #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 50px; }
         .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; }
         .bg-scan { background: var(--primary); }
         .bg-upload { background: var(--success); }
-
-        /* Main View */
         #mainApp { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
-
+        .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
         .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
         .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
-        
         select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
-        button { border: none; cursor: pointer; color: white; }
-
+        button { border: none; cursor: pointer; color: white; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
         .btn-action { background: var(--primary); }
         .btn-excel { background: var(--excel); }
         .btn-pdf { background: var(--pdf); }
-        .btn-sync { background: var(--warning); display: none; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-
+        .btn-sync { background: var(--warning); display: none; }
         #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid var(--primary); }
-        #fileSection { display: none; background: #fff; padding: 10px; border: 2px dashed #ccc; border-radius: 10px; margin-top: 10px; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; }
-        
+        #fileSection { display: none; background: #fff; padding: 15px; border: 2px dashed #ccc; border-radius: 10px; margin-top: 10px; }
+        #status { margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; transition: all 0.3s; }
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
-        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
-        
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .offline { background: #fff3cd; color: #856404; }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        #scannedList li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
@@ -61,7 +51,7 @@
     </div>
 
     <div id="mainApp">
-        <h2 id="modeTitle">Scanner Mode</h2>
+        <h2 id="modeTitle" style="margin-bottom:10px;">Scanner Mode</h2>
         
         <div class="stats-grid">
             <div class="stat-box"><div>Present</div><span id="counter" class="stat-val">0</span></div>
@@ -77,25 +67,23 @@
         </div>
         
         <div id="fileSection">
-            <p style="font-size: 13px; color: #666;">Upload .TXT or .CSV (one name per line)</p>
             <input type="file" id="fileInput" accept=".txt,.csv">
-            <button class="btn-action" style="background:var(--success)" onclick="processUploadedFile()">Process File</button>
+            <button class="btn-action" style="background:var(--success)" onclick="processUploadedFile()">Process & Ignore Mismatches</button>
         </div>
 
-        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Offline Queue...</button>
-
         <div id="reader"></div>
-        <div id="status">Ready</div>
+        <div id="status">System Ready</div>
 
-        <div class="export-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
             <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
             <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
         </div>
 
-        <button onclick="location.reload()" style="background:#666; font-size: 12px; margin-top: 15px;">⬅ Back to Start</button>
+        <button onclick="location.reload()" style="background:#666; font-size: 12px; margin-top: 15px;">⬅ Main Menu</button>
+        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Queue...</button>
 
         <div class="list-container">
-            <strong>Activity History:</strong>
+            <strong>Activity Log:</strong>
             <ul id="scannedList"></ul>
         </div>
     </div>
@@ -109,14 +97,25 @@
     let scannedNamesSet = new Set(); 
     let offlineQueue = [];
     let isSyncing = false;
+    let amiriFontBase64 = "";
 
-    // VIEW LOGIC
+    // Pre-load Arabic Font for PDF
+    async function preloadFont() {
+        try {
+            const fontUrl = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
+            const buffer = await fetch(fontUrl).then(r => r.arrayBuffer());
+            let binary = '';
+            let bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            amiriFontBase64 = window.btoa(binary);
+        } catch(e) { console.error("Font preload failed"); }
+    }
+    preloadFont();
+
     async function showApp(mode) {
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        
         await loadDates();
-
         if (mode === 'scan') {
             document.getElementById('modeTitle').innerText = "📸 QR Scanner";
             startScanner();
@@ -133,7 +132,7 @@
             const select = document.getElementById('dateSelect');
             select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
             toggleAutoDate();
-        } catch(e) { setStatus("Offline Mode Active", "offline"); }
+        } catch(e) { setStatus("Connection Lost: Using Offline Mode", "warning"); }
         setInterval(syncQueue, 5000);
     }
 
@@ -144,39 +143,31 @@
             select.disabled = true; select.style.opacity = "0.6";
             const now = new Date();
             const todayKey = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
-            let found = false;
             for (let i = 0; i < select.options.length; i++) {
                 let optDate = new Date(select.options[i].value.trim());
                 if (!isNaN(optDate)) {
                     const optKey = optDate.getFullYear() + "-" + (optDate.getMonth() + 1) + "-" + optDate.getDate();
-                    if (todayKey === optKey) { select.selectedIndex = i; found = true; break; }
+                    if (todayKey === optKey) { select.selectedIndex = i; break; }
                 }
             }
-            if(!found) setStatus("Today's date not in list.", "error");
         } else { select.disabled = false; select.style.opacity = "1"; }
     }
 
-    // FILE UPLOAD LOGIC
     function processUploadedFile() {
         const fileInput = document.getElementById('fileInput');
-        if (!fileInput.files.length) return alert("Please select a file first!");
-
-        const file = fileInput.files[0];
+        if (!fileInput.files.length) return alert("Select a file first!");
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            // Split by lines and remove empty ones
-            const names = text.split(/\r?\n/).map(n => n.trim()).filter(n => n.length > 0);
-            setStatus(`Processing ${names.length} names...`, "warning");
-            
-            names.forEach((name, index) => {
-                setTimeout(() => processScan(name), index * 500); // Stagger requests
-            });
+        reader.onload = async function(e) {
+            const names = e.target.result.split(/\r?\n/).map(n => n.trim()).filter(n => n.length > 0);
+            setStatus(`Processing ${names.length} names... Please wait.`, "warning");
+            for (let name of names) {
+                try { await processScan(name); } catch(err) { console.log("Skipping mismatch: " + name); }
+            }
+            setStatus(`Batch complete! Check list below.`, "success");
         };
-        reader.readAsText(file);
+        reader.readAsText(fileInput.files[0]);
     }
 
-    // SCAN/MARK LOGIC
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
         const scanner = new Html5Qrcode("reader");
@@ -184,20 +175,27 @@
     }
 
     async function processScan(name) {
-        if (scannedNamesSet.has(name)) return;
+        if (scannedNamesSet.has(name)) { setStatus(`Duplicate: ${name}`, "warning"); return; }
         
+        // Keep status visible during the fetch
+        const currentMsg = `Processing: ${name}`;
+        setStatus(currentMsg, "warning");
+
         try {
-            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
+            const url = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`;
+            const res = await fetch(url);
             const text = await res.text();
             if (text.includes("Success") || text.includes("Already Marked")) {
                 addToList(name);
                 setStatus(text, "success");
-            } else { setStatus(text, "error"); }
+            } else {
+                // If it's a mismatch error, we still show it but code keeps running
+                setStatus(text, "error");
+            }
         } catch (e) { addToQueue(name); }
     }
 
     function addToList(name) {
-        if(scannedNamesSet.has(name)) return;
         const time = new Date().toLocaleTimeString();
         scannedNamesSet.add(name);
         scannedData.push({ Name: name, Time: time });
@@ -212,50 +210,47 @@
         s.className = className; s.innerText = msg;
     }
 
-    // PDF EXPORT (ARABIC SUPPORT)
     async function exportToPDF() {
-        if (scannedData.length === 0) return alert("No data!");
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Load Amiri Font for Arabic Support
-        const fontUrl = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
-        const fontBase64 = await fetch(fontUrl).then(r => r.arrayBuffer()).then(buffer => {
-            let binary = '';
-            let bytes = new Uint8Array(buffer);
-            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-            return window.btoa(binary);
-        });
-
-        doc.addFileToVFS("Amiri.ttf", fontBase64);
-        doc.addFont("Amiri.ttf", "Amiri", "normal");
-        doc.setFont("Amiri");
-
-        doc.text(`Attendance: ${document.getElementById('dateSelect').value}`, 105, 15, { align: "center" });
-        
-        const rows = scannedData.map(item => [item.Time, item.Name]);
-        doc.autoTable({
-            head: [['Time', 'Name']],
-            body: rows,
-            startY: 25,
-            styles: { font: "Amiri", halign: 'right' },
-            headStyles: { fillColor: [44, 62, 80] }
-        });
-        doc.save("Report.pdf");
+        if (scannedData.length === 0) return alert("No data to export!");
+        if (!amiriFontBase64) {
+            alert("Font still loading, try again in 3 seconds.");
+            return;
+        }
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.addFileToVFS("Amiri.ttf", amiriFontBase64);
+            doc.addFont("Amiri.ttf", "Amiri", "normal");
+            doc.setFont("Amiri");
+            doc.text(`Attendance Report: ${document.getElementById('dateSelect').value}`, 105, 15, { align: "center" });
+            const rows = scannedData.map(item => [item.Time, item.Name]);
+            doc.autoTable({
+                head: [['Time', 'Name']],
+                body: rows,
+                startY: 25,
+                styles: { font: "Amiri", halign: 'right' },
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            doc.save(`Attendance_${Date.now()}.pdf`);
+        } catch(e) { 
+            console.error(e);
+            alert("PDF Generation Error. Please check browser console.");
+        }
     }
 
     function exportToExcel() {
+        if (scannedData.length === 0) return alert("No data!");
         const ws = XLSX.utils.json_to_sheet(scannedData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, "Report.xlsx");
+        XLSX.writeFile(wb, "Attendance_Report.xlsx");
     }
 
     function addToQueue(name) {
         if(offlineQueue.includes(name) || scannedNamesSet.has(name)) return;
         offlineQueue.push(name);
         updateQueueUI();
-        setStatus("Saved to Offline Queue", "offline");
+        setStatus("Network Error: Name added to Sync Queue", "warning");
     }
 
     function updateQueueUI() {
