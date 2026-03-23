@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro v10 - Final</title>
+    <title>Attendance Pro v11</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,62 +11,54 @@
     
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background: #f0f2f5; text-align: center; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        
-        #welcomeView { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; }
-        .welcome-btn { padding: 25px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .welcome-btn:active { transform: scale(0.95); }
-
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 40px; }
+        .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .welcome-btn:active { transform: scale(0.98); }
         #mainApp { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .stat-val { font-size: 24px; font-weight: bold; color: var(--primary); }
-
+        .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
         .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
         select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
-        
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; transition: 0.3s; border: 1px solid transparent; }
-        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        .warning { background: #fff3cd; color: #856404; border-color: #ffeeba; }
-
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; transition: 0.3s; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
         #progressContainer { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
         #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
-
         .list-container { margin-top: 20px; text-align: left; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
-        #scannedList li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 14px; }
-        
-        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin: 10px 0; display: none; border: 3px solid var(--primary); }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="welcomeView">
-        <h2 style="margin-top:0">Attendance Pro ⛪</h2>
+        <h2>Attendance Pro ⛪</h2>
         <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
-        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Fast Bulk Upload</button>
+        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
     </div>
 
     <div id="mainApp">
-        <h2 id="modeTitle" style="margin: 0 0 10px 0;">Mode</h2>
-        
+        <h2 id="modeTitle">Mode</h2>
         <div class="stats-grid">
             <div class="stat-box"><div>Marked</div><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box"><div>Today's Date</div><span id="dateDisplay" style="font-size: 14px; font-weight: bold; color: #666;">-</span></div>
+            <div class="stat-box"><div>Total in List</div><span id="listTotal" class="stat-val">0</span></div>
         </div>
 
         <div class="date-container">
-            <label style="font-size:12px; font-weight:bold; color: #555;">Select Sheet Date:</label>
+            <label style="font-size:12px; font-weight:bold;">Select Service Date:</label>
             <select id="dateSelect" onchange="resetLocalData()"></select>
         </div>
         
         <div id="fileSection" style="display:none; padding:15px; border:2px dashed #ccc; border-radius:10px;">
             <input type="file" id="fileInput" accept=".txt,.csv">
             <div id="progressContainer"><div id="progressBar"></div></div>
-            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Start High-Speed Sync</button>
+            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync CSV List</button>
         </div>
 
         <div id="reader"></div>
@@ -76,11 +68,7 @@
             <button style="background:#1f7244; color:white;" onclick="exportToExcel()">📊 Excel</button>
             <button style="background:#e74c3c; color:white;" onclick="exportToPDF()">📕 PDF</button>
         </div>
-        
-        <div style="display: flex; gap: 8px;">
-            <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Back</button>
-            <button onclick="resetLocalData(true)" style="background:var(--danger); color:white; font-size: 12px; margin-top: 10px;">🗑 Clear List</button>
-        </div>
+        <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
         
         <div class="list-container">
             <strong>Activity Log:</strong>
@@ -96,16 +84,13 @@
     let scannedData = [];
     let scannedNamesSet = new Set(); 
     let amiriFont = "";
-    let lastScannedName = "";
-    let lastScannedTime = 0;
 
-    // Helper: Simple Arabic Reverse for PDF
+    // Arabic PDF Support
     function fixArabic(text) {
         if (!text) return "";
         return text.split(' ').map(word => word.split('').reverse().join('')).reverse().join(' ');
     }
 
-    // Helper: Clean Name for Matching
     function normalizeName(name) {
         return name.replace(/"/g, '').replace(/\s+/g, ' ').trim();
     }
@@ -128,7 +113,7 @@
             document.getElementById('modeTitle').innerText = "📸 QR Scanner";
             startScanner();
         } else {
-            document.getElementById('modeTitle').innerText = "📁 Bulk Uploader";
+            document.getElementById('modeTitle').innerText = "📁 Bulk Upload";
             document.getElementById('fileSection').style.display = 'block';
         }
     }
@@ -142,66 +127,52 @@
             
             const now = new Date();
             const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
-            document.getElementById('dateDisplay').innerText = todayStr;
-            
             for (let i = 0; i < select.options.length; i++) {
                 if (select.options[i].value.trim() === todayStr) { select.selectedIndex = i; break; }
             }
-        } catch(e) { setStatus("Connection Failed", "error"); }
+        } catch(e) { setStatus("Sync Error", "error"); }
     }
 
-    // --- QR SCANNER LOGIC ---
+    // --- YOUR REQUESTED SCANNER CODE ---
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
-        const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 15, qrbox: { width: 250, height: 250 } };
-
-        html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-            const name = decodedText.trim();
-            const now = Date.now();
-            
-            // 3-second cooldown for same QR
-            if (name === lastScannedName && (now - lastScannedTime) < 3000) return;
-
-            lastScannedName = name;
-            lastScannedTime = now;
-
-            if (navigator.vibrate) navigator.vibrate(70); 
-            processScan(name);
-        }).catch(err => setStatus("Camera Permission Denied", "error"));
+        const scanner = new Html5Qrcode("reader");
+        // config from v5: fps 10, qrbox 250
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (name) => processScan(name.trim()));
     }
 
-    // --- HIGH-SPEED UPLOADER ---
+    // --- FAST BATCH UPLOADER ---
     async function handleBulkUpload() {
         const file = document.getElementById('fileInput').files[0];
-        if (!file) return alert("Select a CSV file!");
+        if (!file) return alert("Select a file!");
         
         const text = await file.text();
         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
         
         let names = [];
         lines.forEach((line, index) => {
-            let name = normalizeName(line.split(',')[0]); 
+            let name = normalizeName(line.split(',')[0]); // Extraction logic for column 1
             if (index === 0 && (name.toUpperCase().includes("NAME") || name.includes("الاسم"))) return;
             if (name) names.push(name);
         });
 
+        document.getElementById('listTotal').innerText = names.length;
         document.getElementById('progressContainer').style.display = 'block';
         document.getElementById('uploadBtn').disabled = true;
 
         const batchSize = 5; 
         for (let i = 0; i < names.length; i += batchSize) {
             const batch = names.slice(i, i + batchSize);
-            setStatus(`Syncing batch ${Math.ceil((i+1)/batchSize)}...`, "warning");
+            setStatus(`Processing batch ${Math.ceil((i+1)/batchSize)}...`, "warning");
             
             await Promise.all(batch.map(name => processScan(name, true)));
             
             let percent = Math.round(((i + batch.length) / names.length) * 100);
             document.getElementById('progressBar').style.width = percent + "%";
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 200));
         }
 
-        setStatus("Finished! All matched names marked.", "success");
+        setStatus("Bulk marking finished!", "success");
         document.getElementById('uploadBtn').disabled = false;
     }
 
@@ -209,7 +180,7 @@
         const cleanName = normalizeName(name);
         if (scannedNamesSet.has(cleanName)) return;
 
-        if (!isBatch) setStatus(`Marking: ${name}...`, "warning");
+        if (!isBatch) setStatus(`Checking: ${name}...`, "warning");
 
         try {
             const date = document.getElementById('dateSelect').value;
@@ -219,14 +190,12 @@
             if (msg.includes("Success") || msg.includes("Already Marked")) {
                 scannedNamesSet.add(cleanName);
                 addToList(name);
-                if (!isBatch) setStatus(`✅ ${name} Recorded`, "success");
+                if (!isBatch) setStatus(msg, "success");
             } else {
-                if (!isBatch) setStatus(`❌ Not Found: ${name}`, "error");
-                lastScannedName = ""; 
+                if (!isBatch) setStatus(`Not found: ${name}`, "error");
             }
         } catch (e) { 
-            if (!isBatch) setStatus("Sync Error", "error");
-            lastScannedName = ""; 
+            if (!isBatch) setStatus("Network error: " + name, "error");
         }
     }
 
@@ -246,15 +215,14 @@
     }
 
     function exportToExcel() {
-        if (!scannedData.length) return alert("List is empty!");
         const ws = XLSX.utils.json_to_sheet(scannedData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, "Attendance_Report.xlsx");
+        XLSX.writeFile(wb, "Attendance.xlsx");
     }
 
     async function exportToPDF() {
-        if (!scannedData.length) return alert("List is empty!");
+        if (!scannedData.length) return alert("No data!");
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
@@ -274,14 +242,12 @@
         doc.save(`Attendance.pdf`);
     }
 
-    function resetLocalData(confirmAction = false) {
-        if (confirmAction && !confirm("Clear today's local log? (This won't delete data from Google Sheets)")) return;
+    function resetLocalData() {
         scannedNamesSet.clear();
         scannedData = [];
         document.getElementById('scannedList').innerHTML = "";
         document.getElementById('counter').innerText = "0";
         document.getElementById('progressBar').style.width = "0%";
-        setStatus("Log cleared. Ready.", "success");
     }
 </script>
 </body>
