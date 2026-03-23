@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro + Auto Date</title>
+    <title>Attendance Pro + Smart Sync</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --csv: #f39c12; --warning: #e67e22; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        :root { --primary: #2c3e50; --success: #27ae60; --csv: #f39c12; --warning: #e67e22; --error: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
+        .stat-label { font-size: 12px; color: #666; display: block; }
         .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; border: 1px solid #cbd5e0; }
+        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; color: var(--primary); }
         
-        /* Date Selector Styling */
-        .date-container { background: #edf2f7; padding: 10px; border-radius: 10px; margin-bottom: 10px; text-align: left; }
-        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 14px; font-weight: bold; }
+        select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        button { border: none; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         
-        button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; }
         .btn-scan { background: var(--primary); }
-        .btn-csv { background: var(--csv); }
+        .btn-csv { background: var(--csv); margin-top: 10px; }
         .btn-sync { background: var(--warning); display: none; }
+
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 2px solid var(--primary); display: none; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; font-size: 14px; }
         
-        #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; }
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
-        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; color: #333; }
         
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
@@ -36,11 +41,18 @@
 <body>
 
 <div class="card">
-    <h2>Attendance Pro ⛪</h2>
+    <h2>St Joseph Attendance Pro ⛪</h2>
+    <h4>Created by:Youssef Ramy</h4>
 
     <div class="stats-grid">
-        <div class="stat-box"><div>Present</div><span id="counter" class="stat-val">0</span></div>
-        <div class="stat-box"><div>In Queue</div><span id="queueCounter" class="stat-val">0</span></div>
+        <div class="stat-box">
+            <span class="stat-label">Present</span>
+            <span id="counter" class="stat-val">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">In Queue</span>
+            <span id="queueCounter" class="stat-val">0</span>
+        </div>
     </div>
 
     <div class="date-container">
@@ -48,7 +60,7 @@
             <span>Auto-Select Today</span>
             <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
         </div>
-        <select id="dateSelect" style="width:100%; padding:8px; border-radius:5px;"></select>
+        <select id="dateSelect"></select>
     </div>
     
     <button class="btn-scan" onclick="startScanner()">Open Scanner</button>
@@ -77,55 +89,63 @@
             const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
             const dates = await resp.json();
             const select = document.getElementById('dateSelect');
-            select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
             
-            // Trigger auto-selection logic
+            select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
+            
             toggleAutoDate();
-        } catch(e) { setStatus("Offline Mode Active", "offline"); }
+        } catch(e) { setStatus("Offline Mode: Sync unavailable", "offline"); }
         
         setInterval(syncQueue, 5000);
     };
 
     function toggleAutoDate() {
-    const isAuto = document.getElementById('autoDateToggle').checked;
-    const select = document.getElementById('dateSelect');
-    
-    if (isAuto && select.options.length > 0) {
-        select.disabled = true;
-        select.style.opacity = "0.6";
+        const isAuto = document.getElementById('autoDateToggle').checked;
+        const select = document.getElementById('dateSelect');
         
-        const now = new Date();
-        const month = now.getMonth() + 1;
-        const day = now.getDate();
-        const year = now.getFullYear();
-
-        let found = false;
-        for (let i = 0; i < select.options.length; i++) {
-            let optVal = select.options[i].value.toString().trim();
+        if (isAuto && select.options.length > 0) {
+            select.disabled = true;
+            select.style.opacity = "0.6";
             
-            // FUZZY CHECK: Does the option contain the month AND day AND year?
-            // This catches 3/23/2026, 03/23/2026, and 2026-03-23
-            const hasMonth = new RegExp(`(^|/|-|0)${month}(/|-|$)`).test(optVal);
-            const hasDay = new RegExp(`(^|/|-|0)${day}(/|-|$)`).test(optVal);
-            const hasYear = optVal.includes(year.toString());
+            const now = new Date();
+            const todayKey = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
 
-            if (hasMonth && hasDay && hasYear) {
-                select.selectedIndex = i;
-                found = true;
-                break;
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                let optVal = select.options[i].value.trim();
+                let optDate = new Date(optVal);
+                
+                if (!isNaN(optDate)) {
+                    const optKey = optDate.getFullYear() + "-" + (optDate.getMonth() + 1) + "-" + optDate.getDate();
+                    if (todayKey === optKey) {
+                        select.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
             }
-        }
-        
-        if(!found) {
-            setStatus(`Today (${month}/${day}) not matched in list.`, "error");
+            
+            // Backup text-based match
+            if(!found) {
+                const simpleToday = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value.trim() === simpleToday) {
+                        select.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if(found) {
+                setStatus("Auto-selected: " + select.value, "success");
+            } else {
+                setStatus("Today's date not found in sheet list.", "error");
+            }
         } else {
-            setStatus("Auto-selected: " + select.value, "success");
+            select.disabled = false;
+            select.style.opacity = "1";
         }
-    } else {
-        select.disabled = false;
-        select.style.opacity = "1";
     }
-}
 
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
@@ -138,15 +158,23 @@
             setStatus("Already Scanned: " + name, "error");
             return;
         }
+        
         setStatus("Processing: " + name, "");
+
         try {
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
             const text = await res.text();
+            
             if (text.includes("Success") || text.includes("Already Marked")) {
                 addToList(name);
                 setStatus(text, "success");
-            } else { setStatus(text, "error"); }
-        } catch (e) { addToQueue(name); }
+                window.navigator.vibrate(100);
+            } else {
+                setStatus(text, "error");
+            }
+        } catch (e) {
+            addToQueue(name);
+        }
     }
 
     function setStatus(msg, className) {
@@ -160,7 +188,7 @@
         scannedNames.add(name);
         document.getElementById('counter').innerText = scannedNames.size;
         const li = document.createElement('li');
-        li.innerHTML = `<span>${new Date().toLocaleTimeString()}</span> <strong>${name}</strong>`;
+        li.innerHTML = `<span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span> <strong>${name}</strong>`;
         document.getElementById('scannedList').prepend(li);
     }
 
@@ -183,17 +211,20 @@
         try {
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(nameToSync)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
             if (res.ok) {
-                offlineQueue.shift();
-                addToList(nameToSync);
-                updateQueueUI();
+                const text = await res.text();
+                if (text.includes("Success") || text.includes("Already Marked")) {
+                    offlineQueue.shift();
+                    addToList(nameToSync);
+                    updateQueueUI();
+                }
             }
-        } catch (e) {}
+        } catch (e) { console.log("Still offline..."); }
         isSyncing = false;
     }
 
     function exportToCSV() {
         if (scannedNames.size === 0) return alert("No names to export!");
-        let csvContent = "data:text/csv;charset=utf-8,Name,Scan Time\n";
+        let csvContent = "data:text/csv;charset=utf-8,Name,Time\n";
         scannedNames.forEach(name => {
             csvContent += `"${name}","${new Date().toLocaleTimeString()}"\n`;
         });
