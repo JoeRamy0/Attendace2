@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Pro v11</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -15,23 +15,19 @@
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 40px; }
         .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .welcome-btn:active { transform: scale(0.98); }
         #mainApp { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
         .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
         .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
-        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; transition: 0.3s; }
+        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; cursor: pointer; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
         .warning { background: #fff3cd; color: #856404; }
-        #progressContainer { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
-        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
-        .list-container { margin-top: 20px; text-align: left; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 10px; display: none; background: #000; }
+        #scannedList { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; text-align: left; }
         #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -47,17 +43,16 @@
         <h2 id="modeTitle">Mode</h2>
         <div class="stats-grid">
             <div class="stat-box"><div>Marked</div><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box"><div>Total in List</div><span id="listTotal" class="stat-val">0</span></div>
+            <div class="stat-box"><div>Total</div><span id="listTotal" class="stat-val">0</span></div>
         </div>
 
         <div class="date-container">
-            <label style="font-size:12px; font-weight:bold;">Select Service Date:</label>
+            <label style="font-size:12px; font-weight:bold;">Service Date:</label>
             <select id="dateSelect" onchange="resetLocalData()"></select>
         </div>
         
         <div id="fileSection" style="display:none; padding:15px; border:2px dashed #ccc; border-radius:10px;">
             <input type="file" id="fileInput" accept=".txt,.csv">
-            <div id="progressContainer"><div id="progressBar"></div></div>
             <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync CSV List</button>
         </div>
 
@@ -70,40 +65,18 @@
         </div>
         <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
         
-        <div class="list-container">
-            <strong>Activity Log:</strong>
-            <ul id="scannedList"></ul>
-        </div>
+        <ul id="scannedList"></ul>
     </div>
 </div>
 
 <script>
-    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+    // Replace these with your actual details
+    const MY_SCRIPT_URL = "YOUR_DEPLOYED_WEB_APP_URL"; 
     const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
     let scannedData = [];
     let scannedNamesSet = new Set(); 
-    let amiriFont = "";
-
-    // Arabic PDF Support
-    function fixArabic(text) {
-        if (!text) return "";
-        return text.split(' ').map(word => word.split('').reverse().join('')).reverse().join(' ');
-    }
-
-    function normalizeName(name) {
-        return name.replace(/"/g, '').replace(/\s+/g, ' ').trim();
-    }
-
-    async function loadArabicFont() {
-        const url = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
-        try {
-            const res = await fetch(url);
-            const buffer = await res.arrayBuffer();
-            amiriFont = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-        } catch (e) { console.error("Font error"); }
-    }
-    loadArabicFont();
+    let html5QrCode = null;
 
     async function showApp(mode) {
         document.getElementById('welcomeView').style.display = 'none';
@@ -123,87 +96,49 @@
             const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
             const dates = await resp.json();
             const select = document.getElementById('dateSelect');
-            select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
-            
-            const now = new Date();
-            const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value.trim() === todayStr) { select.selectedIndex = i; break; }
-            }
+            select.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
         } catch(e) { setStatus("Sync Error", "error"); }
     }
 
-    // --- YOUR REQUESTED SCANNER CODE ---
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
-        const scanner = new Html5Qrcode("reader");
-        // config from v5: fps 10, qrbox 250
-        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (name) => processScan(name.trim()));
-    }
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
-    // --- FAST BATCH UPLOADER ---
-    async function handleBulkUpload() {
-        const file = document.getElementById('fileInput').files[0];
-        if (!file) return alert("Select a file!");
-        
-        const text = await file.text();
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-        
-        let names = [];
-        lines.forEach((line, index) => {
-            let name = normalizeName(line.split(',')[0]); // Extraction logic for column 1
-            if (index === 0 && (name.toUpperCase().includes("NAME") || name.includes("الاسم"))) return;
-            if (name) names.push(name);
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            (decodedText) => processScan(decodedText.trim())
+        ).catch(err => {
+            setStatus("Camera Error: Check Permissions", "error");
+            console.error(err);
         });
-
-        document.getElementById('listTotal').innerText = names.length;
-        document.getElementById('progressContainer').style.display = 'block';
-        document.getElementById('uploadBtn').disabled = true;
-
-        const batchSize = 5; 
-        for (let i = 0; i < names.length; i += batchSize) {
-            const batch = names.slice(i, i + batchSize);
-            setStatus(`Processing batch ${Math.ceil((i+1)/batchSize)}...`, "warning");
-            
-            await Promise.all(batch.map(name => processScan(name, true)));
-            
-            let percent = Math.round(((i + batch.length) / names.length) * 100);
-            document.getElementById('progressBar').style.width = percent + "%";
-            await new Promise(r => setTimeout(r, 200));
-        }
-
-        setStatus("Bulk marking finished!", "success");
-        document.getElementById('uploadBtn').disabled = false;
     }
 
-    async function processScan(name, isBatch = false) {
-        const cleanName = normalizeName(name);
+    async function processScan(name) {
+        const cleanName = name.replace(/"/g, '').trim();
         if (scannedNamesSet.has(cleanName)) return;
 
-        if (!isBatch) setStatus(`Checking: ${name}...`, "warning");
-
+        setStatus(`Checking: ${cleanName}...`, "warning");
         try {
             const date = document.getElementById('dateSelect').value;
-            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(cleanName)}&date=${encodeURIComponent(date)}&t=${Date.now()}`);
+            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(cleanName)}&date=${encodeURIComponent(date)}`);
             const msg = await res.text();
             
             if (msg.includes("Success") || msg.includes("Already Marked")) {
                 scannedNamesSet.add(cleanName);
-                addToList(name);
-                if (!isBatch) setStatus(msg, "success");
+                addToList(cleanName);
+                setStatus(msg, "success");
             } else {
-                if (!isBatch) setStatus(`Not found: ${name}`, "error");
+                setStatus(msg, "error");
             }
-        } catch (e) { 
-            if (!isBatch) setStatus("Network error: " + name, "error");
-        }
+        } catch (e) { setStatus("Network Error", "error"); }
     }
 
     function addToList(name) {
-        const time = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         scannedData.push({ Name: name, Time: time });
         document.getElementById('counter').innerText = scannedNamesSet.size;
-        
         const li = document.createElement('li');
         li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
         document.getElementById('scannedList').prepend(li);
@@ -221,33 +156,11 @@
         XLSX.writeFile(wb, "Attendance.xlsx");
     }
 
-    async function exportToPDF() {
-        if (!scannedData.length) return alert("No data!");
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        if (amiriFont) {
-            doc.addFileToVFS("Amiri.ttf", amiriFont);
-            doc.addFont("Amiri.ttf", "Amiri", "normal");
-            doc.setFont("Amiri");
-        }
-
-        doc.text(fixArabic(`Attendance: ${document.getElementById('dateSelect').value}`), 105, 15, { align: 'center' });
-        doc.autoTable({
-            head: [['Time', 'Name']],
-            body: scannedData.map(d => [d.Time, fixArabic(d.Name)]),
-            startY: 25,
-            styles: { font: amiriFont ? "Amiri" : "helvetica", halign: 'right' }
-        });
-        doc.save(`Attendance.pdf`);
-    }
-
     function resetLocalData() {
         scannedNamesSet.clear();
         scannedData = [];
         document.getElementById('scannedList').innerHTML = "";
         document.getElementById('counter').innerText = "0";
-        document.getElementById('progressBar').style.width = "0%";
     }
 </script>
 </body>
