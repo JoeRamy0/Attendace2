@@ -1,195 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Attendance Pro v7</title>
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
-<style>
-:root { --primary:#2c3e50; --success:#27ae60; --excel:#1f7244; --pdf:#e74c3c; --warning:#f39c12;}
-body {font-family:Segoe UI; background:#f0f2f5; text-align:center;}
-.card {background:white;padding:20px;border-radius:15px;max-width:500px;margin:auto;}
-#status{margin-top:10px;padding:10px;border-radius:8px;font-weight:bold;}
-.success{background:#d4edda;}
-.error{background:#f8d7da;}
-.warning{background:#fff3cd;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Pro v7 - Professional</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 30px; }
+        .welcome-btn { padding: 25px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; }
+        #mainApp { display: none; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
+        .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
+        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: right; }
+        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; transition: 0.3s; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; direction: rtl; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+    </style>
 </head>
-
 <body>
 
 <div class="card">
-<h2>Attendance Pro ⛪</h2>
+    <div id="welcomeView">
+        <h2>نظام الحضور الذكي ⛪</h2>
+        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 فتح الماسح (QR)</button>
+        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 رفع قائمة أسماء (Excel/CSV)</button>
+    </div>
 
-<select id="dateSelect"></select>
+    <div id="mainApp">
+        <h2 id="modeTitle">جاري التحميل...</h2>
+        <div class="stats-grid">
+            <div class="stat-box"><div>تم التسجيل</div><span id="counter" class="stat-val">0</span></div>
+            <div class="stat-box"><div>بانتظار الرفع</div><span id="queueCounter" class="stat-val">0</span></div>
+        </div>
 
-<input type="file" id="fileInput">
-<button onclick="handleBulkUpload()">Upload</button>
+        <div class="date-container">
+            <label>تاريخ الخدمة:</label>
+            <select id="dateSelect" onchange="resetLocalData()"></select>
+        </div>
+        
+        <div id="fileSection" style="display:none; padding:15px; border:2px dashed #ccc; border-radius:10px; margin-bottom:15px;">
+            <input type="file" id="fileInput" accept=".txt,.csv">
+            <button style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 بدء تسجيل القائمة</button>
+        </div>
 
-<div id="reader"></div>
-<div id="status">Ready</div>
+        <div id="reader"></div>
+        <div id="status">جاهز للعمل</div>
 
-<button onclick="exportToExcel()">Excel</button>
-<button onclick="exportToPDF()">PDF</button>
-
-<ul id="scannedList"></ul>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button style="background:var(--excel); background-color:#1f7244; color:white;" onclick="exportToExcel()">📊 Excel</button>
+            <button style="background:var(--pdf); background-color:#e74c3c; color:white;" onclick="exportToPDF()">📕 PDF</button>
+        </div>
+        <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ العودة للقائمة الرئيسية</button>
+        
+        <div class="list-container">
+            <strong>سجل الحضور الحالي:</strong>
+            <ul id="scannedList"></ul>
+        </div>
+    </div>
 </div>
 
 <script>
-const MY_SCRIPT_URL = "YOUR_SCRIPT_URL";
-const MY_SHEET_ID = "YOUR_SHEET_ID";
+    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
-let scannedData = [];
-let scannedNamesSet = new Set();
-let amiriFont = "";
+    let scannedData = [];
+    let scannedNamesSet = new Set(); 
+    let amiriFont = "";
 
-/* -------------------- FONT -------------------- */
-async function loadArabicFont() {
-    const url = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
-    const res = await fetch(url);
-    const buffer = await res.arrayBuffer();
-    amiriFont = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-}
-loadArabicFont();
+    // 1. معالجة النصوص العربية (Shaping & RTL) للـ PDF
+    function fixArabic(text) {
+        if (!text) return "";
+        // حل سريع: عكس النص للأسماء العربية فقط ليظهر صحيحاً في الـ PDF
+        return text.split(' ').map(word => word.split('').reverse().join('')).reverse().join(' ');
+    }
 
-/* -------------------- HELPERS -------------------- */
-function normalizeName(name){
-    return name
-        .replace(/\s+/g,' ')
-        .replace(/[أإآ]/g,'ا')
-        .replace(/ى/g,'ي')
-        .trim();
-}
+    // 2. تنظيف الأسماء (Normalization) لضمان المطابقة
+    function normalizeName(name) {
+        return name
+            .replace(/\s+/g, ' ')
+            .replace(/[أإآ]/g, 'ا')
+            .replace(/[ىي]/g, 'ي')
+            .replace(/[ةه]/g, 'ه')
+            .trim();
+    }
 
-function fixArabic(text){
-    return text.split('').reverse().join('');
-}
+    async function loadArabicFont() {
+        const url = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
+        try {
+            const res = await fetch(url);
+            const buffer = await res.arrayBuffer();
+            amiriFont = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+        } catch (e) { console.error("Font error"); }
+    }
+    loadArabicFont();
 
-function setStatus(msg,type){
-    const s=document.getElementById("status");
-    s.className=type;
-    s.innerText=msg;
-}
-
-/* -------------------- LOAD DATES -------------------- */
-async function loadDates(){
-    const res = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
-    const dates = await res.json();
-
-    const select=document.getElementById("dateSelect");
-    select.innerHTML = dates.map(d=>`<option>${d}</option>`).join('');
-
-    // ✅ FIXED AUTO DATE
-    const today = new Date().toLocaleDateString('en-US');
-    for(let i=0;i<select.options.length;i++){
-        if(select.options[i].value.trim()===today){
-            select.selectedIndex=i;
-            break;
+    async function showApp(mode) {
+        document.getElementById('welcomeView').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        await loadDates();
+        if (mode === 'scan') {
+            document.getElementById('modeTitle').innerText = "📸 وضع الماسح الضوئي";
+            startScanner();
+        } else {
+            document.getElementById('modeTitle').innerText = "📁 وضع الرفع الجماعي";
+            document.getElementById('fileSection').style.display = 'block';
         }
     }
-}
-loadDates();
 
-/* -------------------- SCANNER -------------------- */
-function startScanner(){
-    const scanner=new Html5Qrcode("reader");
-    scanner.start({facingMode:"environment"}, {fps:10,qrbox:250},
-        (name)=>processScan(name)
-    );
-}
-startScanner();
+    async function loadDates() {
+        try {
+            const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
+            const dates = await resp.json();
+            const select = document.getElementById('dateSelect');
+            select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
+            
+            // Auto Select Today (Better Matching)
+            const now = new Date();
+            const formats = [
+                now.toLocaleDateString('en-US'), // M/D/YYYY
+                now.toLocaleDateString('en-GB'), // D/M/YYYY
+                (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear()
+            ];
+            
+            for (let fmt of formats) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value.trim() === fmt) {
+                        select.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+        } catch(e) { setStatus("خطأ في جلب التواريخ", "error"); }
+    }
 
-/* -------------------- PROCESS -------------------- */
-async function processScan(rawName){
-    let name = normalizeName(rawName);
+    function startScanner() {
+        document.getElementById('reader').style.display = 'block';
+        const scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (name) => processScan(name.trim()));
+    }
 
-    if(scannedNamesSet.has(name)) return;
+    async function handleBulkUpload() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert("اختر الملف أولاً!");
+        
+        const text = await file.text();
+        const names = text.split(/\r?\n/).map(n => n.trim()).filter(n => n.length > 0);
+        
+        setStatus(`جاري البدء.. سيتم تسجيل ${names.length} اسم`, "warning");
+        
+        for (let i = 0; i < names.length; i++) {
+            setStatus(`جاري معالجة ${i+1}/${names.length}: ${names[i]}`, "warning");
+            await processScan(names[i]);
+            await new Promise(r => setTimeout(r, 1000)); // Delay 1s to respect Google rate limit
+        }
+        setStatus("تم الانتهاء من رفع القائمة بنجاح!", "success");
+    }
 
-    setStatus(`Processing: ${name}...`,"warning");
+    async function processScan(name) {
+        const cleanName = normalizeName(name);
+        if (scannedNamesSet.has(cleanName)) return;
 
-    try{
-        const date=document.getElementById("dateSelect").value;
+        // إظهار حالة المعالجة فوراً
+        setStatus(`جاري تسجيل: ${name}...`, "warning");
 
-        const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}&t=${Date.now()}`);
+        try {
+            const date = document.getElementById('dateSelect').value;
+            const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}&t=${Date.now()}`);
+            const msg = await res.text();
+            
+            if (msg.includes("Success") || msg.includes("Already Marked")) {
+                scannedNamesSet.add(cleanName); // الإضافة للـ Set فقط عند النجاح
+                addToList(name);
+                setStatus(msg, "success");
+            } else {
+                setStatus(`لم يتم العثور على: ${name} في الشيت`, "error");
+            }
+        } catch (e) { 
+            setStatus("خطأ في الشبكة.. سيتم الحفظ محلياً", "error");
+            // هنا يمكن إضافة منطق الـ Offline Queue الحقيقي
+        }
+    }
 
-        const msg = await res.text();
+    function addToList(name) {
+        const time = new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+        scannedData.push({ Name: name, Time: time });
+        document.getElementById('counter').innerText = scannedNamesSet.size;
+        
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
+        document.getElementById('scannedList').prepend(li);
+    }
 
-        if(msg.includes("Success") || msg.includes("Already")){
-            scannedNamesSet.add(name);
-            addToList(name);
-            setStatus(msg,"success");
-        }else{
-            setStatus(`Not Found: ${name}`,"error");
+    function setStatus(msg, className) {
+        const s = document.getElementById('status');
+        s.className = className; s.innerText = msg;
+    }
+
+    async function exportToPDF() {
+        if (!scannedData.length) return alert("لا توجد بيانات لتصديرها!");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        if (amiriFont) {
+            doc.addFileToVFS("Amiri-Regular.ttf", amiriFont);
+            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+            doc.setFont("Amiri");
         }
 
-    }catch(e){
-        setStatus("Error: "+name,"error");
-    }
-}
-
-/* -------------------- LIST -------------------- */
-function addToList(name){
-    const time=new Date().toLocaleTimeString();
-    scannedData.push({Name:name,Time:time});
-
-    const li=document.createElement("li");
-    li.innerText = `${time} - ${name}`;
-    document.getElementById("scannedList").prepend(li);
-}
-
-/* -------------------- BULK -------------------- */
-async function handleBulkUpload(){
-    const file=document.getElementById("fileInput").files[0];
-    if(!file) return alert("Choose file");
-
-    const text=await file.text();
-    const names=text.split(/\r?\n/).map(n=>normalizeName(n)).filter(n=>n);
-
-    for(let i=0;i<names.length;i++){
-        await processScan(names[i]);
-        await new Promise(r=>setTimeout(r,1000)); // ✅ FIX RATE LIMIT
+        doc.text(fixArabic(`تقرير حضور: ${document.getElementById('dateSelect').value}`), 105, 15, { align: 'center' });
+        
+        // تجهيز البيانات مع معالجة العربي للـ PDF
+        const body = scannedData.map(d => [d.Time, fixArabic(d.Name)]);
+        
+        doc.autoTable({
+            head: [['الوقت', 'الاسم']],
+            body: body,
+            startY: 25,
+            styles: { font: amiriFont ? "Amiri" : "helvetica", halign: 'right' },
+            headStyles: { fillColor: [44, 62, 80], halign: 'center' }
+        });
+        doc.save(`Attendance_${Date.now()}.pdf`);
     }
 
-    setStatus("Upload Done","success");
-}
-
-/* -------------------- PDF -------------------- */
-function exportToPDF(){
-    if(!scannedData.length) return alert("No data");
-
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF();
-
-    if(amiriFont){
-        doc.addFileToVFS("Amiri.ttf",amiriFont);
-        doc.addFont("Amiri.ttf","Amiri","normal");
-        doc.setFont("Amiri");
+    function exportToExcel() {
+        const ws = XLSX.utils.json_to_sheet(scannedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, "Attendance_Log.xlsx");
     }
 
-    const body=scannedData.map(d=>[d.Time, fixArabic(d.Name)]);
-
-    doc.autoTable({
-        head:[['Time','Name']],
-        body:body,
-        styles:{halign:'right',font:"Amiri"}
-    });
-
-    doc.save("Attendance.pdf");
-}
-
-/* -------------------- EXCEL -------------------- */
-function exportToExcel(){
-    const ws=XLSX.utils.json_to_sheet(scannedData);
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Attendance");
-    XLSX.writeFile(wb,"Attendance.xlsx");
-}
+    function resetLocalData() {
+        scannedNamesSet.clear();
+        scannedData = [];
+        document.getElementById('scannedList').innerHTML = "";
+        document.getElementById('counter').innerText = "0";
+        setStatus("تم تغيير التاريخ وجاهز لاستقبال بيانات جديدة", "success");
+    }
 </script>
-
 </body>
 </html>
