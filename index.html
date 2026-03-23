@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Simple Attendance System</title>
+    <title>Attendance Pro - Smart Attendance System</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -16,53 +16,119 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="85" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="70" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-repeat: repeat;
+            opacity: 0.3;
+            pointer-events: none;
         }
 
         /* Main Container */
         .container {
             max-width: 550px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         /* Card */
         .card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        /* Welcome View - Attractive Homepage */
+        #welcomeView .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
 
-        .card-header {
-            background: white;
-            padding: 25px 20px;
-            text-align: center;
+        #welcomeView .card-header::before {
+            content: '⛪';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.1;
+            bottom: -20px;
+            right: -20px;
+            transform: rotate(-15deg);
+        }
+
+        #welcomeView .card-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        #welcomeView .card-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        .welcome-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8fafc;
             border-bottom: 1px solid #eef2f6;
         }
 
-        .card-header h2 {
-            font-size: 26px;
-            font-weight: 600;
-            color: #1a2c3e;
-            margin-bottom: 5px;
+        .welcome-stat-item {
+            text-align: center;
         }
 
-        .card-header p {
-            font-size: 13px;
-            color: #7f8c8d;
+        .welcome-stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c7da0;
+        }
+
+        .welcome-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .card-body {
-            padding: 20px;
+            padding: 30px 25px;
         }
 
-        /* Welcome Buttons - Aligned nicely */
+        /* Welcome Buttons */
         .welcome-buttons {
             display: flex;
             gap: 15px;
-            margin-top: 10px;
+            margin-bottom: 25px;
         }
 
         .welcome-btn {
@@ -71,34 +137,106 @@
             font-size: 16px;
             font-weight: 600;
             border: none;
-            border-radius: 14px;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .welcome-btn .btn-icon {
+            font-size: 32px;
+        }
+
+        .welcome-btn .btn-text {
+            font-size: 14px;
         }
 
         .welcome-btn.scanner {
-            background: #2c7da0;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(44, 125, 160, 0.3);
         }
 
         .welcome-btn.scanner:hover {
-            background: #1f5e7a;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(44, 125, 160, 0.4);
         }
 
         .welcome-btn.upload {
-            background: #27ae60;
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
 
         .welcome-btn.upload:hover {
-            background: #1e8e50;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
         }
 
         .welcome-btn:active {
             transform: scale(0.98);
+        }
+
+        /* Info Cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #eef2f6;
+            transition: all 0.2s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            border-color: #2c7da0;
+        }
+
+        .info-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .info-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .info-desc {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* Main App Header */
+        #mainApp .card-header {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        #mainApp .card-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #mainApp .card-header p {
+            font-size: 12px;
+            opacity: 0.9;
         }
 
         /* Stats Cards */
@@ -110,16 +248,16 @@
         }
 
         .stat-card {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            padding: 18px;
+            border-radius: 20px;
             text-align: center;
             border: 1px solid #eef2f6;
         }
 
         .stat-label {
             font-size: 12px;
-            color: #7f8c8d;
+            color: #64748b;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -127,16 +265,19 @@
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2c7da0;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2c7da0 0%, #27ae60 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Date Selector */
         .date-section {
             background: #f8fafc;
             padding: 15px;
-            border-radius: 16px;
+            border-radius: 20px;
             margin-bottom: 20px;
             border: 1px solid #eef2f6;
         }
@@ -148,7 +289,7 @@
             margin-bottom: 12px;
             font-size: 14px;
             font-weight: 500;
-            color: #2c3e50;
+            color: #1e293b;
         }
 
         .toggle-switch {
@@ -200,7 +341,7 @@
             width: 100%;
             padding: 12px;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 14px;
             background: white;
             cursor: pointer;
@@ -210,12 +351,13 @@
         select:focus {
             outline: none;
             border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
         }
 
-        /* Logs - Simple Name and Status */
+        /* Logs */
         .logs-container {
             background: #f8fafc;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 15px;
             margin: 20px 0;
             max-height: 320px;
@@ -236,8 +378,6 @@
             font-size: 13px;
             font-weight: 600;
             color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .clear-logs {
@@ -246,8 +386,8 @@
             color: #94a3b8;
             font-size: 12px;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 8px;
             transition: all 0.2s;
         }
 
@@ -259,12 +399,13 @@
         .log-entry {
             padding: 10px;
             margin-bottom: 8px;
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 13px;
             display: flex;
             align-items: center;
             gap: 10px;
             animation: fadeIn 0.2s ease;
+            background: white;
         }
 
         @keyframes fadeIn {
@@ -280,18 +421,19 @@
 
         .log-icon {
             font-size: 14px;
-            min-width: 24px;
+            min-width: 28px;
         }
 
         .log-name {
             font-weight: 500;
             flex: 1;
+            color: #1e293b;
         }
 
         .log-status {
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 12px;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
             font-weight: 500;
         }
 
@@ -323,7 +465,7 @@
         /* QR Reader */
         #reader {
             width: 100%;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             margin: 15px 0;
             display: none;
@@ -333,7 +475,7 @@
         .scanner-status {
             background: #f1f5f9;
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 16px;
             text-align: center;
             font-size: 13px;
             margin: 10px 0;
@@ -341,10 +483,10 @@
             color: #475569;
         }
 
-        /* File Upload Section */
+        /* File Upload */
         .upload-section {
             border: 2px dashed #e2e8f0;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 25px 20px;
             text-align: center;
             margin: 15px 0;
@@ -361,10 +503,10 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 24px;
-            background: #2c7da0;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            border-radius: 12px;
+            border-radius: 40px;
             cursor: pointer;
             font-weight: 500;
             font-size: 14px;
@@ -372,7 +514,8 @@
         }
 
         .file-input-label:hover {
-            background: #1f5e7a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.3);
         }
 
         input[type="file"] {
@@ -398,7 +541,7 @@
         .progress-bar {
             width: 0%;
             height: 100%;
-            background: #27ae60;
+            background: linear-gradient(90deg, #27ae60 0%, #2c7da0 100%);
             transition: width 0.3s ease;
             border-radius: 20px;
         }
@@ -407,7 +550,7 @@
         .btn {
             padding: 12px;
             border: none;
-            border-radius: 12px;
+            border-radius: 40px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -416,21 +559,23 @@
         }
 
         .btn-primary {
-            background: #2c7da0;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #1f5e7a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.3);
         }
 
         .btn-success {
-            background: #27ae60;
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
             color: white;
         }
 
         .btn-success:hover {
-            background: #1e8e50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
         }
 
         .btn-secondary {
@@ -444,7 +589,7 @@
         }
 
         .btn-warning {
-            background: #f59e0b;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white;
         }
 
@@ -463,14 +608,13 @@
             display: none;
         }
 
-        /* Processing Pulse Animation */
+        .processing-pulse {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
-        }
-
-        .processing-pulse {
-            animation: pulse 1s ease-in-out infinite;
         }
 
         /* Scrollbar */
@@ -491,20 +635,60 @@
 </head>
 <body>
     <div class="container">
-        <!-- Welcome View -->
+        <!-- Welcome View - Attractive Homepage -->
         <div class="card" id="welcomeView">
             <div class="card-header">
                 <h2>⛪ Attendance Pro</h2>
-                <p>Simple & Fast Attendance System</p>
+                <p>Smart & Simple Attendance Management</p>
+                <div class="feature-badge">⚡ Real-time | 📱 Offline Sync | 🔒 Secure</div>
+            </div>
+            <div class="welcome-stats">
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">⚡</div>
+                    <div class="welcome-stat-label">Real-time</div>
+                </div>
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">📱</div>
+                    <div class="welcome-stat-label">Offline Sync</div>
+                </div>
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">🔒</div>
+                    <div class="welcome-stat-label">Secure</div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="welcome-buttons">
                     <button class="welcome-btn scanner" onclick="showApp('scan')">
-                        📸 Start QR Scanner
+                        <div class="btn-icon">📸</div>
+                        <div class="btn-text">QR Scanner</div>
                     </button>
                     <button class="welcome-btn upload" onclick="showApp('upload')">
-                        📁 Bulk Upload
+                        <div class="btn-icon">📁</div>
+                        <div class="btn-text">Bulk Upload</div>
                     </button>
+                </div>
+                
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="info-icon">✅</div>
+                        <div class="info-title">Quick Marking</div>
+                        <div class="info-desc">Scan QR codes instantly</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">📊</div>
+                        <div class="info-title">Export Data</div>
+                        <div class="info-desc">Excel reports</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">📱</div>
+                        <div class="info-title">Works Offline</div>
+                        <div class="info-desc">Sync when back online</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">⚡</div>
+                        <div class="info-title">Fast Processing</div>
+                        <div class="info-desc">Batch upload support</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -564,7 +748,7 @@
                     </div>
                 </div>
 
-                <!-- Simple Logs - Name + Status -->
+                <!-- Simple Logs -->
                 <div class="logs-container">
                     <div class="logs-header">
                         <span class="logs-title">📋 Activity Log</span>
@@ -679,7 +863,7 @@
         function clearLogs() {
             const logsContainer = document.getElementById('logsList');
             if (logsContainer) {
-                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">📌</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div>';
+                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">⏳</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div>';
             }
         }
 
@@ -908,7 +1092,6 @@
                     return;
                 }
                 
-                // Reset counters for this upload
                 appState.bulkSuccessCount = 0;
                 document.getElementById('pendingCount').innerText = names.length;
                 document.getElementById('progressContainer').style.display = 'block';
@@ -945,7 +1128,6 @@
                             batch.forEach(name => addLog(name, 'error', '❌'));
                             notFound += batch.length;
                         } else {
-                            // Process results and add logs
                             (result.success || []).forEach(name => {
                                 addLog(name, 'success', '✅');
                                 addToScannedList(name);
@@ -976,12 +1158,11 @@
                     const speed = (processed / elapsed).toFixed(1);
                     document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${alreadyMarked} | 🔍 ${notFound} | ⚡ ${speed}/s`;
                     
-                    // Update counter in real-time
                     document.getElementById('counter').innerText = appState.scannedNamesSet.size;
                 }
                 
                 const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-                addLog('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found in ${totalTime}s`, '✅');
+                addLog('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found`, '✅');
                 
                 uploadBtn.disabled = false;
                 document.getElementById('pendingCount').innerText = '0';
@@ -1002,7 +1183,7 @@
         function addToScannedList(name) {
             if (appState.scannedNamesSet.has(name)) return;
             
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             appState.scannedNamesSet.add(name);
             appState.scannedData.unshift({ Name: name, Time: time });
             
@@ -1097,19 +1278,27 @@
             } catch (e) {}
         }
 
+        // Export Excel - Just Names in first column
         function exportToExcel() {
             if (appState.scannedData.length === 0) {
                 alert("No data to export!");
                 return;
             }
             
-            const wsData = [['Time', 'Name'], ...appState.scannedData.map(d => [d.Time, d.Name])];
+            // Create array with just names (no time column)
+            const namesList = appState.scannedData.map(item => [item.Name]);
+            
+            const wsData = [['Name'], ...namesList];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Adjust column width
+            ws['!cols'] = [{wch: 30}];
+            
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Attendance");
             const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
             XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
-            addLog('System', `Exported ${appState.scannedData.length} records`, '📊');
+            addLog('System', `Exported ${appState.scannedData.length} names to Excel`, '📊');
         }
 
         function resetAppState() {
