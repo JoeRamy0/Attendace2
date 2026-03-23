@@ -3,662 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro v12 - Ultimate</title>
+    <title>Attendance Pro v12</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <!-- Add Arabic font support -->
-    <script src="https://cdn.jsdelivr.net/npm/@progress/kendo-fonts@1.0.0/dist/index.js"></script>
     
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; --pdf: #e74c3c; }
-        body { font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         
-        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 30px; }
-        .welcome-btn { padding: 25px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; transition: transform 0.2s; }
-        .welcome-btn:active { transform: scale(0.98); }
+        #welcomeView { display: flex; flex-direction: column; gap: 12px; padding: 20px 0; }
+        .w-btn { padding: 22px; font-size: 18px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        
         #mainApp { display: none; }
-
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
+        .stat-box { background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
+        .stat-val { font-size: 24px; font-weight: bold; color: var(--primary); }
 
-        .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
-        .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
-        
-        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 15px; font-weight: bold; box-sizing: border-box; }
-        select { color: #333; border: 1px solid #ddd; background: white; }
-        button { cursor: pointer; transition: opacity 0.2s; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .date-box { background: #edf2f7; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
+        select, button, input[type="file"] { width: 100%; padding: 14px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; font-weight: bold; box-sizing: border-box; }
 
-        .btn-excel { background: var(--excel); color: white; }
-        .btn-pdf { background: var(--pdf); color: white; }
-        .btn-sync { background: var(--warning); color: white; display: none; }
-
-        #progressContainer { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
-        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
-
-        #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; background: #000; min-height: 250px; }
-        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; font-size: 14px; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; background: #000; min-height: 280px; margin-bottom: 10px; }
+        #status { padding: 12px; border-radius: 10px; font-weight: bold; min-height: 20px; font-size: 14px; margin-bottom: 10px; }
         
         .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
         .warning { background: #fff3cd; color: #856404; }
+        .error { background: #f8d7da; color: #721c24; }
 
-        #scannedList { list-style: none; padding: 0; margin: 15px 0; max-height: 180px; overflow-y: auto; text-align: left; border-top: 1px solid #eee; }
-        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; animation: fadeIn 0.3s; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Speed optimization */
-        .batch-processing { pointer-events: none; opacity: 0.8; }
+        #progressWrap { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; overflow: hidden; }
+        #progressBar { width: 0%; height: 100%; background: var(--success); transition: width 0.2s; }
+
+        #scannedList { list-style: none; padding: 0; margin-top: 15px; max-height: 200px; overflow-y: auto; border-top: 1px solid #eee; }
+        #scannedList li { padding: 10px; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="welcomeView">
-        <h2>Attendance Pro ⛪</h2>
-        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
-        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
+        <h2 style="margin:0 0 10px 0;">Attendance Pro ⛪</h2>
+        <button class="w-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 QR Scanner</button>
+        <button class="w-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload</button>
     </div>
 
     <div id="mainApp">
-        <h2 id="modeTitle" style="margin-top:0">Mode</h2>
         <div class="stats-grid">
             <div class="stat-box">Marked<br><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box">Queue/List<br><span id="listTotal" class="stat-val">0</span></div>
+            <div class="stat-box">Queue<br><span id="listTotal" class="stat-val">0</span></div>
         </div>
 
-        <div class="date-container">
-            <div class="auto-toggle">
-                <span>Auto-Select Today</span>
-                <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
-            </div>
-            <select id="dateSelect"></select>
+        <div class="date-box">
+            <label style="font-size:11px; font-weight:bold; color:#666;">SERVICE DATE</label>
+            <select id="dateSelect" onchange="resetLocal()"></select>
         </div>
 
-        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:10px; margin-bottom:10px;">
-            <input type="file" id="fileInput" accept=".txt,.csv">
-            <div id="progressContainer"><div id="progressBar"></div></div>
-            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync Full List</button>
-            <div id="speedStats" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
+        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:15px; margin-bottom:15px;">
+            <input type="file" id="fileInput" accept=".csv,.txt">
+            <div id="progressWrap"><div id="progressBar"></div></div>
+            <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulk()">🚀 Start Fast Sync</button>
         </div>
 
         <div id="reader"></div>
         <div id="status">Ready</div>
-        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">📤 Sync Queue (<span id="queueCount">0</span>)</button>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
-            <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
+            <button style="background:var(--excel); color:white;" onclick="exportExcel()">📊 Excel</button>
+            <button style="background:var(--danger); color:white;" onclick="exportPDF()">📕 PDF</button>
         </div>
-        <button onclick="resetApp()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
+        <button onclick="location.reload()" style="background:none; border:none; color:#999; margin-top:15px; text-decoration:underline;">⬅ Back to Menu</button>
         
         <ul id="scannedList"></ul>
     </div>
 </div>
 
 <script>
-    const CONFIG = {
-        SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec",
-        SHEET_ID: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA",
-        MAX_RETRIES: 2,
-        RETRY_DELAY: 500,
-        SYNC_INTERVAL: 5000,
-        BATCH_SIZE: 10, // Increased batch size for faster upload
-        CONCURRENT_REQUESTS: 5 // Process multiple requests in parallel
-    };
+    const API_URL = "YOUR_DEPLOYED_WEB_APP_URL"; 
+    const SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
-    let appState = {
-        scanner: null,
-        scannedNamesSet: new Set(),
-        scannedData: [],
-        offlineQueue: [],
-        isSyncing: false,
-        currentMode: null,
-        syncInterval: null,
-        processingQueue: []
-    };
+    let scannedData = [];
+    let scannedSet = new Set(); 
+    let queue = [];
+    let isProcessing = false;
 
     async function showApp(mode) {
-        resetAppState();
-        
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        
-        appState.currentMode = mode;
-        
         await loadDates();
-        
         if (mode === 'scan') {
-            document.getElementById('modeTitle').innerText = "Scanner Mode";
-            await startScanner();
-            startBackgroundSync();
+            startScanner();
+            setInterval(syncQueue, 3000); // Check queue every 3 seconds
         } else {
-            document.getElementById('modeTitle').innerText = "Bulk Mode";
             document.getElementById('fileSection').style.display = 'block';
         }
-        
-        await loadExistingAttendance();
     }
 
     async function loadDates() {
         try {
-            const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getDates&sheetId=${CONFIG.SHEET_ID}`);
-            const dates = await response.json();
+            const resp = await fetch(`${API_URL}?action=getDates&sheetId=${SHEET_ID}`);
+            const dates = await resp.json();
             const select = document.getElementById('dateSelect');
-            select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
-            toggleAutoDate();
-        } catch(e) {
-            console.error("Error loading dates:", e);
-            setStatus("Failed to load dates. Check your connection.", "error");
-        }
+            const today = new Date().toLocaleDateString('en-US'); // M/D/YYYY
+            
+            select.innerHTML = dates.map(d => `<option value="${d}" ${d === today ? 'selected' : ''}>${d}</option>`).join('');
+        } catch(e) { setStatus("Sync Error", "error"); }
     }
 
-    function toggleAutoDate() {
-        const isAuto = document.getElementById('autoDateToggle').checked;
-        const select = document.getElementById('dateSelect');
-        if (isAuto && select.options.length > 0) {
-            select.disabled = true;
-            const todayStr = getTodayDateString();
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === todayStr) {
-                    select.selectedIndex = i;
-                    break;
-                }
-            }
-        } else {
-            select.disabled = false;
-        }
-    }
-
-    async function startScanner() {
-        if (!document.getElementById('reader')) return;
-        
+    function startScanner() {
         document.getElementById('reader').style.display = 'block';
-        
-        try {
-            appState.scanner = new Html5Qrcode("reader");
-            await appState.scanner.start(
-                { facingMode: "environment" },
-                { 
-                    fps: 15, 
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
-                },
-                (decodedText) => processScan(decodedText.trim()),
-                (errorMessage) => {
-                    if (!errorMessage.includes("No MultiFormat")) {
-                        console.debug("Scan error:", errorMessage);
-                    }
-                }
-            );
-            setStatus("Scanner ready. Point at QR code.", "success");
-        } catch (err) {
-            console.error("Scanner start error:", err);
-            setStatus("Failed to start camera. Please check permissions.", "error");
-        }
+        const scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (name) => processInput(name.trim()));
     }
 
-    async function stopScanner() {
-        if (appState.scanner && appState.scanner.isScanning) {
-            try {
-                await appState.scanner.stop();
-                appState.scanner.clear();
-            } catch (err) {
-                console.error("Error stopping scanner:", err);
-            }
-        }
-        appState.scanner = null;
-        const readerDiv = document.getElementById('reader');
-        if (readerDiv) readerDiv.style.display = 'none';
-    }
-
-    async function loadExistingAttendance() {
-        try {
-            const response = await fetchWithRetry(`${CONFIG.SCRIPT_URL}?action=getStats&sheetId=${CONFIG.SHEET_ID}`);
-            const stats = await response.json();
-            document.getElementById('counter').innerText = stats.marked || 0;
-        } catch (e) {
-            console.error("Error loading stats:", e);
-        }
-    }
-
-    // Optimized bulk upload with parallel processing
-    async function handleBulkUpload() {
+    async function handleBulk() {
         const file = document.getElementById('fileInput').files[0];
-        if (!file) {
-            alert("Please select a file first!");
-            return;
-        }
+        if (!file) return alert("Pick a file!");
+        const text = await file.text();
+        const names = text.split(/\r?\n/).filter(l => l.trim()).map(l => l.split(',')[0].replace(/"/g,'').trim());
         
-        try {
-            const text = await file.text();
-            let names = text.split(/\r?\n/)
-                .filter(line => line.trim().length > 0)
-                .map(n => n.split(',')[0].replace(/["']/g, '').trim())
-                .filter(n => n.length > 0);
-            
-            // Remove duplicates for efficiency
-            names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
-            
-            if (names.length === 0) {
-                alert("No valid names found in file!");
-                return;
-            }
-            
-            document.getElementById('listTotal').innerText = names.length;
-            document.getElementById('progressContainer').style.display = 'block';
-            const uploadBtn = document.getElementById('uploadBtn');
-            uploadBtn.disabled = true;
-            
-            let processed = 0;
-            let successful = 0;
-            let failed = 0;
-            const startTime = Date.now();
-            
-            // Process in parallel batches for speed
-            for (let i = 0; i < names.length; i += CONFIG.BATCH_SIZE) {
-                const batch = names.slice(i, Math.min(i + CONFIG.BATCH_SIZE, names.length));
-                setStatus(`Processing batch ${Math.floor(i/CONFIG.BATCH_SIZE) + 1}/${Math.ceil(names.length/CONFIG.BATCH_SIZE)}...`, "warning");
-                
-                // Process batch in parallel with concurrency limit
-                const results = await processBatchParallel(batch, CONFIG.CONCURRENT_REQUESTS);
-                
-                successful += results.success;
-                failed += results.failed;
-                processed += batch.length;
-                
-                const progress = (processed / names.length) * 100;
-                document.getElementById('progressBar').style.width = `${progress}%`;
-                
-                // Update speed stats
-                const elapsed = (Date.now() - startTime) / 1000;
-                const speed = (processed / elapsed).toFixed(1);
-                document.getElementById('speedStats').innerHTML = `Speed: ${speed} names/sec | Success: ${successful} | Failed: ${failed}`;
-                
-                // Small delay to prevent rate limiting
-                if (i + CONFIG.BATCH_SIZE < names.length) {
-                    await delay(100);
-                }
-            }
-            
-            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-            setStatus(`✅ Completed! ${successful} marked, ${failed} failed in ${totalTime}s`, "success");
-            uploadBtn.disabled = false;
-            
-            setTimeout(() => {
-                document.getElementById('progressContainer').style.display = 'none';
-                document.getElementById('progressBar').style.width = '0%';
-                document.getElementById('speedStats').innerHTML = '';
-            }, 3000);
-            
-        } catch (err) {
-            console.error("Bulk upload error:", err);
-            setStatus("Error processing file: " + err.message, "error");
-            document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('progressWrap').style.display = 'block';
+        document.getElementById('uploadBtn').disabled = true;
+
+        const batchSize = 5;
+        for (let i = 0; i < names.length; i += batchSize) {
+            const batch = names.slice(i, i + batchSize);
+            await Promise.all(batch.map(n => processInput(n)));
+            document.getElementById('progressBar').style.width = ((i + batch.length) / names.length * 100) + "%";
         }
+        setStatus("Bulk Finish!", "success");
     }
 
-    // Process a batch with concurrency limit
-    async function processBatchParallel(names, concurrency) {
-        const results = { success: 0, failed: 0 };
-        const queue = [...names];
-        const workers = [];
+    // THIS IS THE SPEED SECRET: Optimistic UI
+    function processInput(name) {
+        if (scannedSet.has(name)) return;
         
-        for (let i = 0; i < concurrency; i++) {
-            workers.push(processWorker(queue, results));
-        }
+        // 1. Mark on UI instantly
+        scannedSet.add(name);
+        addToUIList(name);
         
-        await Promise.all(workers);
-        return results;
-    }
-
-    async function processWorker(queue, results) {
-        while (queue.length > 0) {
-            const name = queue.shift();
-            if (!name) break;
-            
-            try {
-                const success = await processScan(name, true);
-                if (success) {
-                    results.success++;
-                } else {
-                    results.failed++;
-                }
-            } catch (error) {
-                results.failed++;
-                console.error(`Failed to process ${name}:`, error);
-            }
-        }
-    }
-
-    async function processScan(name, isBatch = false) {
-        if (!name || appState.scannedNamesSet.has(name)) return false;
-        
-        const currentDate = document.getElementById('dateSelect').value;
-        if (!currentDate) return false;
-        
-        try {
-            const response = await fetchWithRetry(
-                `${CONFIG.SCRIPT_URL}?action=mark&sheetId=${CONFIG.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`,
-                1 // Fewer retries for speed
-            );
-            const text = await response.text();
-            
-            if (text.includes("Success") || text.includes("Already Marked")) {
-                addToScannedList(name);
-                return true;
-            } else {
-                return false;
-            }
-        } catch (error) {
-            if (!isBatch && !appState.offlineQueue.includes(name)) {
-                addToQueue(name);
-            }
-            return false;
-        }
-    }
-
-    function addToScannedList(name) {
-        if (appState.scannedNamesSet.has(name)) return;
-        
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        appState.scannedNamesSet.add(name);
-        appState.scannedData.unshift({ Name: name, Time: time });
-        
-        document.getElementById('counter').innerText = appState.scannedNamesSet.size;
-        
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${escapeHtml(time)}</span> <strong>${escapeHtml(name)}</strong>`;
-        const list = document.getElementById('scannedList');
-        list.insertBefore(li, list.firstChild);
-        
-        while (list.children.length > 100) {
-            list.removeChild(list.lastChild);
-        }
-    }
-
-    function addToQueue(name) {
-        if (appState.offlineQueue.includes(name) || appState.scannedNamesSet.has(name)) return;
-        
-        appState.offlineQueue.push(name);
-        updateQueueUI();
-        setStatus(`📱 Offline mode: "${name}" added to queue`, "warning");
+        // 2. Add to background queue
+        queue.push(name);
+        document.getElementById('listTotal').innerText = queue.length;
+        setStatus("Marked locally...", "warning");
     }
 
     async function syncQueue() {
-        if (appState.isSyncing || appState.offlineQueue.length === 0) return;
+        if (isProcessing || queue.length === 0) return;
+        isProcessing = true;
         
-        appState.isSyncing = true;
-        const syncBtn = document.getElementById('syncBtn');
-        syncBtn.disabled = true;
-        
-        try {
-            const currentDate = document.getElementById('dateSelect').value;
-            if (!currentDate) return;
-            
-            // Sync in parallel for speed
-            const toSync = [...appState.offlineQueue];
-            const results = await processBatchParallel(toSync, 3);
-            
-            // Update queue (remove successfully synced)
-            appState.offlineQueue = appState.offlineQueue.filter(name => {
-                const wasProcessed = toSync.includes(name);
-                if (wasProcessed) {
-                    // Check if it was successfully processed by looking at scanned names
-                    return !appState.scannedNamesSet.has(name);
-                }
-                return true;
-            });
-            
-            updateQueueUI();
-        } finally {
-            appState.isSyncing = false;
-            syncBtn.disabled = false;
-            updateQueueUI();
-        }
-    }
-
-    function updateQueueUI() {
-        const queueCount = appState.offlineQueue.length;
-        document.getElementById('listTotal').innerText = queueCount;
-        document.getElementById('queueCount').innerText = queueCount;
-        
-        const syncBtn = document.getElementById('syncBtn');
-        if (queueCount > 0) {
-            syncBtn.style.display = 'block';
-            syncBtn.disabled = false;
-        } else {
-            syncBtn.style.display = 'none';
-        }
-    }
-
-    function startBackgroundSync() {
-        if (appState.syncInterval) clearInterval(appState.syncInterval);
-        appState.syncInterval = setInterval(() => {
-            if (appState.offlineQueue.length > 0 && navigator.onLine) {
-                syncQueue();
-            }
-        }, CONFIG.SYNC_INTERVAL);
-    }
-
-    function resetAppState() {
-        if (appState.scanner) {
-            stopScanner();
-        }
-        
-        if (appState.syncInterval) {
-            clearInterval(appState.syncInterval);
-            appState.syncInterval = null;
-        }
-        
-        appState.scannedNamesSet.clear();
-        appState.scannedData = [];
-        appState.offlineQueue = [];
-        appState.isSyncing = false;
-        
-        document.getElementById('scannedList').innerHTML = '';
-        document.getElementById('counter').innerText = '0';
-        document.getElementById('listTotal').innerText = '0';
-        document.getElementById('queueCount').innerText = '0';
-        document.getElementById('fileSection').style.display = 'none';
-        document.getElementById('syncBtn').style.display = 'none';
-    }
-
-    function resetApp() {
-        resetAppState();
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('welcomeView').style.display = 'flex';
-        
-        const fileInput = document.getElementById('fileInput');
-        if (fileInput) fileInput.value = '';
-        
-        setStatus("Ready", "success");
-    }
-
-    async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                const response = await fetch(url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                if (response.ok) return response;
-                if (response.status === 429) {
-                    await delay(1000 * (i + 1));
-                    continue;
-                }
-            } catch (error) {
-                if (i === retries - 1) throw error;
-                await delay(CONFIG.RETRY_DELAY * (i + 1));
-            }
-        }
-        throw new Error(`Failed after ${retries} retries`);
-    }
-
-    function exportToExcel() {
-        if (appState.scannedData.length === 0) {
-            alert("No data to export!");
-            return;
-        }
-        
-        // Preserve Arabic text in Excel
-        const wsData = [['Time', 'Name'], ...appState.scannedData.map(d => [d.Time, d.Name])];
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
-        XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
-        setStatus("Excel export completed!", "success");
-    }
-
-    // Fixed PDF export with Arabic font support
-    async function exportToPDF() {
-        if (appState.scannedData.length === 0) {
-            alert("No data to export!");
-            return;
-        }
-        
-        setStatus("Generating PDF with Arabic support...", "warning");
-        
-        const { jsPDF } = window.jspdf;
-        
-        // Create PDF with better Arabic support
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-        
+        const name = queue[0];
         const date = document.getElementById('dateSelect').value;
         
-        // Add title in Arabic-friendly format
-        doc.setFont("helvetica");
-        doc.setFontSize(18);
-        doc.text(`Attendance Report`, 105, 20, { align: 'center' });
-        
-        doc.setFontSize(12);
-        doc.text(`Date: ${date}`, 105, 30, { align: 'center' });
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 37, { align: 'center' });
-        doc.text(`Total Present: ${appState.scannedData.length}`, 105, 44, { align: 'center' });
-        
-        // Prepare table data with proper RTL support for Arabic names
-        const tableData = appState.scannedData.map(item => [
-            item.Time,
-            item.Name
-        ]);
-        
-        // AutoTable with better text handling
-        doc.autoTable({
-            head: [['Time', 'Name']],
-            body: tableData,
-            startY: 52,
-            styles: {
-                fontSize: 10,
-                cellPadding: 3,
-                font: 'helvetica',
-                halign: 'left',
-                valign: 'middle'
-            },
-            headStyles: {
-                fillColor: [44, 62, 80],
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center'
-            },
-            columnStyles: {
-                0: { cellWidth: 40, halign: 'center' },
-                1: { cellWidth: 'auto', halign: 'left' }
-            },
-            margin: { left: 15, right: 15 },
-            didDrawCell: (data) => {
-                // Handle RTL text if needed (detect Arabic characters)
-                if (data.column.index === 1 && data.cell.raw) {
-                    const text = data.cell.raw.toString();
-                    if (/[\u0600-\u06FF]/.test(text)) {
-                        // Arabic text detected - keep as is (modern PDF viewers handle RTL)
-                        data.cell.styles.halign = 'right';
-                    }
-                }
+        try {
+            const res = await fetch(`${API_URL}?action=mark&sheetId=${SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
+            const txt = await res.text();
+            
+            if (txt.includes("Success") || txt.includes("Already")) {
+                queue.shift(); // Remove from queue only if successful
+                document.getElementById('listTotal').innerText = queue.length;
+                setStatus("Last Sync: " + name, "success");
             }
-        });
+        } catch (e) { setStatus("Waiting for internet...", "error"); }
         
-        // Add footer with Arabic text
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`Generated by Attendance Pro System`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
-        }
-        
-        doc.save(`Attendance_${date.replace(/\//g, '-')}.pdf`);
-        setStatus("PDF export completed with Arabic support!", "success");
+        isProcessing = false;
     }
 
-    function setStatus(msg, type) {
-        const statusDiv = document.getElementById('status');
-        statusDiv.className = type;
-        statusDiv.innerHTML = msg;
-        
-        if (type === 'success') {
-            setTimeout(() => {
-                if (statusDiv.innerHTML === msg) {
-                    statusDiv.className = '';
-                    statusDiv.innerHTML = 'Ready';
-                }
-            }, 3000);
-        }
+    function addToUIList(name) {
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        scannedData.push({ Name: name, Time: time });
+        document.getElementById('counter').innerText = scannedSet.size;
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
+        document.getElementById('scannedList').prepend(li);
     }
 
-    function getTodayDateString() {
-        const now = new Date();
-        return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+    function setStatus(m, c) { const s = document.getElementById('status'); s.className = c; s.innerText = m; }
+
+    function exportExcel() {
+        const ws = XLSX.utils.json_to_sheet(scannedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Today");
+        XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value}.xlsx`);
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(`Attendance: ${document.getElementById('dateSelect').value}`, 14, 15);
+        doc.autoTable({ head: [['Name', 'Time']], body: scannedData.map(d => [d.Name, d.Time]), startY: 20 });
+        doc.save("Attendance.pdf");
     }
 
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    function resetLocal() {
+        scannedSet.clear(); scannedData = []; queue = [];
+        document.getElementById('scannedList').innerHTML = "";
+        document.getElementById('counter').innerText = "0";
+        document.getElementById('listTotal').innerText = "0";
     }
-
-    // Network status monitoring
-    window.addEventListener('online', () => {
-        setStatus("Back online! Syncing...", "success");
-        if (appState.currentMode === 'scan') {
-            syncQueue();
-        }
-    });
-    
-    window.addEventListener('offline', () => {
-        setStatus("You're offline. Scans will be queued.", "warning");
-    });
-
-    // Clean up on page unload
-    window.addEventListener('beforeunload', () => {
-        if (appState.scanner) {
-            stopScanner();
-        }
-        if (appState.syncInterval) {
-            clearInterval(appState.syncInterval);
-        }
-    });
 </script>
 </body>
 </html>
