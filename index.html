@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الحضور - Attendance Pro</title>
+    <title>Attendance Pro - Smart Attendance System</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -15,107 +15,273 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
         }
 
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="85" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="70" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-repeat: repeat;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Main Container */
         .container {
-            max-width: 600px;
+            max-width: 550px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
+        /* Card */
         .card {
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
-            margin-bottom: 20px;
+            transition: transform 0.3s ease;
         }
 
-        .card-header {
-            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+        /* Welcome View - Beautiful Homepage */
+        #welcomeView .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .card-header h2 {
-            font-size: 24px;
-            margin-bottom: 5px;
+        #welcomeView .card-header::before {
+            content: '⛪';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.1;
+            bottom: -20px;
+            right: -20px;
+            transform: rotate(-15deg);
         }
 
-        .card-header p {
-            font-size: 12px;
+        #welcomeView .card-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        #welcomeView .card-header p {
+            font-size: 14px;
             opacity: 0.9;
         }
 
-        .card-body {
+        .feature-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        .welcome-stats {
+            display: flex;
+            justify-content: space-around;
             padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .welcome-stat-item {
+            text-align: center;
+        }
+
+        .welcome-stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c7da0;
+        }
+
+        .welcome-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-body {
+            padding: 30px 25px;
         }
 
         /* Welcome Buttons */
         .welcome-buttons {
             display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .welcome-btn {
             flex: 1;
-            padding: 15px;
-            font-size: 14px;
+            padding: 18px 12px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
-            border-radius: 16px;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .welcome-btn .btn-icon {
+            font-size: 32px;
+        }
+
+        .welcome-btn .btn-text {
+            font-size: 14px;
         }
 
         .welcome-btn.scanner {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(44, 125, 160, 0.3);
+        }
+
+        .welcome-btn.scanner:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(44, 125, 160, 0.4);
         }
 
         .welcome-btn.upload {
             background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .welcome-btn.upload:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
         }
 
         .welcome-btn.absence {
             background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
         }
 
-        /* Stats Grid */
+        .welcome-btn.absence:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.4);
+        }
+
+        .welcome-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Info Cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #eef2f6;
+            transition: all 0.2s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            border-color: #2c7da0;
+        }
+
+        .info-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .info-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .info-desc {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* Main App Header */
+        #mainApp .card-header {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        #mainApp .card-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #mainApp .card-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         .stat-card {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            padding: 18px;
+            border-radius: 20px;
             text-align: center;
             border: 1px solid #eef2f6;
         }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 12px;
             color: #64748b;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .stat-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2c7da0;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2c7da0 0%, #27ae60 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Group Stats */
@@ -191,7 +357,7 @@
         .date-section {
             background: #f8fafc;
             padding: 15px;
-            border-radius: 16px;
+            border-radius: 20px;
             margin-bottom: 20px;
             border: 1px solid #eef2f6;
         }
@@ -202,6 +368,8 @@
             align-items: center;
             margin-bottom: 12px;
             font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
         }
 
         .toggle-switch {
@@ -253,75 +421,233 @@
             width: 100%;
             padding: 12px;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 14px;
             background: white;
             cursor: pointer;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
         }
 
         /* Logs */
         .logs-container {
             background: #f8fafc;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 15px;
             margin: 20px 0;
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
+            border: 1px solid #eef2f6;
         }
 
         .logs-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 12px;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .log-entry {
-            padding: 8px;
-            margin-bottom: 6px;
-            border-radius: 10px;
+        .logs-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .clear-logs {
+            background: none;
+            border: none;
+            color: #94a3b8;
             font-size: 12px;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-logs:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .log-entry {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            font-size: 13px;
             display: flex;
+            align-items: center;
             gap: 10px;
+            animation: fadeIn 0.2s ease;
             background: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .log-icon {
             font-size: 14px;
+            min-width: 28px;
         }
 
         .log-name {
-            flex: 1;
             font-weight: 500;
+            flex: 1;
+            color: #1e293b;
         }
 
         .log-status {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
         }
 
         .log-status.processing { background: #fef3c7; color: #d97706; }
         .log-status.success { background: #d1fae5; color: #059669; }
         .log-status.error { background: #fee2e2; color: #dc2626; }
-        .log-status.notfound { background: #fee2e2; color: #dc2626; }
         .log-status.warning { background: #fef3c7; color: #d97706; }
+        .log-status.notfound { background: #fee2e2; color: #dc2626; }
+
+        /* QR Reader */
+        #reader {
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+            background: #000;
+        }
+
+        .scanner-status {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 13px;
+            margin: 10px 0;
+            display: none;
+            color: #475569;
+        }
+
+        /* File Upload */
+        .upload-section {
+            border: 2px dashed #e2e8f0;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            margin: 15px 0;
+            transition: all 0.2s;
+            background: #fafcff;
+        }
+
+        .upload-section.drag-over {
+            border-color: #27ae60;
+            background: #f0fdf4;
+        }
+
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.3);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 6px;
+            margin: 15px 0;
+            display: none;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60 0%, #2c7da0 100%);
+            transition: width 0.3s ease;
+            border-radius: 20px;
+        }
 
         /* Buttons */
         .btn {
             padding: 12px;
             border: none;
-            border-radius: 12px;
+            border-radius: 40px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s;
             width: 100%;
         }
 
-        .btn-primary { background: #2c7da0; color: white; }
-        .btn-success { background: #27ae60; color: white; }
-        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-primary {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
 
         .button-group {
             display: grid;
@@ -330,59 +656,7 @@
             margin-top: 15px;
         }
 
-        .hidden { display: none; }
-
-        /* File Upload */
-        .upload-section {
-            border: 2px dashed #e2e8f0;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .file-input-label {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #2c7da0;
-            color: white;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-
-        input[type="file"] { display: none; }
-
-        .progress-container {
-            width: 100%;
-            background: #e2e8f0;
-            border-radius: 10px;
-            height: 6px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #27ae60;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-
-        #reader {
-            width: 100%;
-            border-radius: 16px;
-            display: none;
-            background: #000;
-        }
-
-        .scanner-status {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 13px;
-            margin: 10px 0;
+        .hidden {
             display: none;
         }
 
@@ -392,23 +666,85 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Scrollbar */
+        .logs-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .logs-container::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Welcome View -->
+        <!-- Welcome View - Beautiful Homepage -->
         <div class="card" id="welcomeView">
             <div class="card-header">
-                <h2>⛪ نظام الحضور</h2>
-                <p>Attendance Pro - نظام ذكي لإدارة الحضور</p>
+                <h2>⛪ Attendance Pro</h2>
+                <p>Smart & Simple Attendance Management</p>
+                <div class="feature-badge">⚡ Real-time | 📱 Offline Sync | 🔒 Secure</div>
+            </div>
+            <div class="welcome-stats">
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">⚡</div>
+                    <div class="welcome-stat-label">Real-time</div>
+                </div>
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">📱</div>
+                    <div class="welcome-stat-label">Offline Sync</div>
+                </div>
+                <div class="welcome-stat-item">
+                    <div class="welcome-stat-number">🔒</div>
+                    <div class="welcome-stat-label">Secure</div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="welcome-buttons">
-                    <button class="welcome-btn scanner" onclick="showApp('scan')">📸 مسح QR</button>
-                    <button class="welcome-btn upload" onclick="showApp('upload')">📁 رفع قائمة</button>
-                    <button class="welcome-btn absence" onclick="showAbsenceExport()">📋 الغياب</button>
+                    <button class="welcome-btn scanner" onclick="showApp('scan')">
+                        <div class="btn-icon">📸</div>
+                        <div class="btn-text">QR Scanner</div>
+                    </button>
+                    <button class="welcome-btn upload" onclick="showApp('upload')">
+                        <div class="btn-icon">📁</div>
+                        <div class="btn-text">Bulk Upload</div>
+                    </button>
+                    <button class="welcome-btn absence" onclick="showAbsenceExport()">
+                        <div class="btn-icon">📋</div>
+                        <div class="btn-text">Export Absence</div>
+                    </button>
+                </div>
+                
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="info-icon">✅</div>
+                        <div class="info-title">Quick Marking</div>
+                        <div class="info-desc">Scan QR codes instantly</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">📊</div>
+                        <div class="info-title">Export Reports</div>
+                        <div class="info-desc">Attendance & Absence lists</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">📱</div>
+                        <div class="info-title">Works Offline</div>
+                        <div class="info-desc">Sync when back online</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">⚡</div>
+                        <div class="info-title">Fast Processing</div>
+                        <div class="info-desc">Batch upload support</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -416,17 +752,17 @@
         <!-- Main App View (Scanner & Upload) -->
         <div class="card hidden" id="mainApp">
             <div class="card-header">
-                <h2 id="modeTitle">الماسح الضوئي</h2>
-                <p id="modeDescription">امسح رمز QR لتسجيل الحضور</p>
+                <h2 id="modeTitle">Scanner Mode</h2>
+                <p id="modeDescription">Scan QR code to mark attendance</p>
             </div>
             <div class="card-body">
-                <!-- Group Stats Summary -->
+                <!-- Group Stats Container -->
                 <div id="groupStatsContainer"></div>
 
                 <!-- Date Selector -->
                 <div class="date-section">
                     <div class="auto-toggle">
-                        <span>📅 اختيار تاريخ اليوم تلقائياً</span>
+                        <span>📅 Auto-select today</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
                             <span class="toggle-slider"></span>
@@ -438,22 +774,22 @@
                 <!-- Scanner Container -->
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus">
-                    <span>📷 جاهز للمسح</span>
+                    <span>📷 Ready to scan</span>
                 </div>
 
                 <!-- File Upload Section -->
                 <div id="fileSection" class="hidden">
-                    <div class="upload-section">
+                    <div class="upload-section" id="uploadArea">
                         <label class="file-input-label">
-                            📁 اختر ملف (.txt أو .csv)
+                            📁 Choose File (.txt or .csv)
                             <input type="file" id="fileInput" accept=".txt,.csv">
                         </label>
-                        <div id="fileName" style="margin-top: 10px; font-size: 12px;">لم يتم اختيار ملف</div>
+                        <div class="file-name" id="fileName">No file selected</div>
                         <div class="progress-container" id="progressContainer">
                             <div class="progress-bar" id="progressBar"></div>
                         </div>
                         <button class="btn btn-success" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 12px;">
-                            🚀 بدء الرفع
+                            🚀 Start Upload
                         </button>
                         <div id="uploadStats" style="font-size: 12px; color: #64748b; margin-top: 10px;"></div>
                     </div>
@@ -462,13 +798,13 @@
                 <!-- Logs -->
                 <div class="logs-container">
                     <div class="logs-header">
-                        <span>📋 سجل النشاط</span>
-                        <button class="clear-logs" onclick="clearLogs()" style="background:none; border:none; color:#94a3b8; cursor:pointer;">مسح</button>
+                        <span class="logs-title">📋 Activity Log</span>
+                        <button class="clear-logs" onclick="clearLogs()">Clear</button>
                     </div>
                     <div id="logsList">
                         <div class="log-entry">
                             <div class="log-icon">⏳</div>
-                            <div class="log-name">جاهز للبدء</div>
+                            <div class="log-name">Ready to start</div>
                             <div class="log-status">waiting</div>
                         </div>
                     </div>
@@ -476,12 +812,12 @@
 
                 <!-- Buttons -->
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="exportToExcel()">📊 تصدير Excel</button>
-                    <button class="btn btn-secondary" onclick="resetApp()">🏠 القائمة الرئيسية</button>
+                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+                    <button class="btn btn-secondary" onclick="resetApp()">🏠 Main Menu</button>
                 </div>
                 
                 <button id="syncBtn" class="btn btn-success hidden" onclick="syncQueue()" style="margin-top: 12px;">
-                    📤 مزامنة (<span id="queueCount">0</span>)
+                    📤 Sync Queue (<span id="queueCount">0</span>)
                 </button>
             </div>
         </div>
@@ -489,27 +825,27 @@
         <!-- Absence Export View -->
         <div class="card hidden" id="absenceView">
             <div class="card-header">
-                <h2>📋 تقرير الغياب</h2>
-                <p>عرض وتصدير قائمة الغياب حسب المجموعة</p>
+                <h2>📋 Absence Report</h2>
+                <p>View and export absence list by group</p>
             </div>
             <div class="card-body">
                 <div class="date-section">
-                    <label style="font-weight: 600;">اختر التاريخ:</label>
+                    <label style="font-weight: 600;">Select Date:</label>
                     <select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top: 10px;"></select>
                 </div>
 
                 <div id="absenceLoading" style="display: none; text-align: center; padding: 20px;">
-                    <div class="processing-pulse">⏳ جاري التحميل...</div>
+                    <div class="processing-pulse">⏳ Loading...</div>
                 </div>
 
                 <div id="absenceGroupsContainer"></div>
 
                 <div class="button-group" style="margin-top: 15px;">
                     <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display: none;">
-                        📥 تصدير الغياب
+                        📥 Export Absence List
                     </button>
                     <button class="btn btn-secondary" onclick="backToHome()">
-                        🏠 العودة للرئيسية
+                        🏠 Back to Home
                     </button>
                 </div>
             </div>
@@ -523,6 +859,9 @@
             MAX_RETRIES: 2,
             SYNC_INTERVAL: 5000
         };
+
+        // Group definitions in order
+        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
 
         let appState = {
             scanner: null,
@@ -546,11 +885,11 @@
             
             switch(status) {
                 case 'processing': statusClass = 'processing'; statusText = 'processing'; statusIcon = '⏳'; break;
-                case 'success': statusClass = 'success'; statusText = '✓ تم التسجيل'; statusIcon = '✅'; break;
-                case 'error': statusClass = 'error'; statusText = 'خطأ'; statusIcon = '❌'; break;
-                case 'notfound': statusClass = 'notfound'; statusText = 'غير موجود'; statusIcon = '🔍'; break;
-                case 'already': statusClass = 'warning'; statusText = 'مسجل مسبقاً'; statusIcon = '⚠️'; break;
-                case 'queued': statusClass = 'warning'; statusText = 'في قائمة الانتظار'; statusIcon = '📱'; break;
+                case 'success': statusClass = 'success'; statusText = '✓ marked'; statusIcon = '✅'; break;
+                case 'error': statusClass = 'error'; statusText = 'error'; statusIcon = '❌'; break;
+                case 'notfound': statusClass = 'notfound'; statusText = 'not found'; statusIcon = '🔍'; break;
+                case 'already': statusClass = 'warning'; statusText = 'already marked'; statusIcon = '⚠️'; break;
+                case 'queued': statusClass = 'warning'; statusText = 'queued'; statusIcon = '📱'; break;
                 default: statusClass = 'processing'; statusText = status;
             }
             
@@ -569,7 +908,7 @@
         function clearLogs() {
             const logsContainer = document.getElementById('logsList');
             if (logsContainer) {
-                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">⏳</div><div class="log-name">جاهز للبدء</div><div class="log-status">waiting</div></div>';
+                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">⏳</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div>';
             }
         }
 
@@ -597,9 +936,7 @@
             const container = document.getElementById('groupStatsContainer');
             if (!container) return;
             
-            const groupNames = ['رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
-            
-            container.innerHTML = groupNames.map(groupName => {
+            container.innerHTML = GROUP_ORDER.map(groupName => {
                 const group = stats[groupName];
                 if (!group) return '';
                 
@@ -614,15 +951,15 @@
                         <div class="group-stats-row">
                             <div class="group-stat-item">
                                 <div class="group-stat-number">${group.total}</div>
-                                <div class="group-stat-label">العدد الكلي</div>
+                                <div class="group-stat-label">Total</div>
                             </div>
                             <div class="group-stat-item">
                                 <div class="group-stat-number present">${group.present}</div>
-                                <div class="group-stat-label">حاضر</div>
+                                <div class="group-stat-label">Present</div>
                             </div>
                             <div class="group-stat-item">
                                 <div class="group-stat-number absent">${group.absent}</div>
-                                <div class="group-stat-label">غائب</div>
+                                <div class="group-stat-label">Absent</div>
                             </div>
                         </div>
                         <div class="progress-bar-container">
@@ -644,22 +981,22 @@
             appState.currentMode = mode;
             
             if (mode === 'scan') {
-                document.getElementById('modeTitle').innerText = '📸 الماسح الضوئي';
-                document.getElementById('modeDescription').innerText = 'امسح رمز QR لتسجيل الحضور';
+                document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
+                document.getElementById('modeDescription').innerText = 'Scan QR code to mark attendance';
                 document.getElementById('fileSection').classList.add('hidden');
                 await loadDates();
                 await loadGroupStats();
                 await startScanner();
                 startBackgroundSync();
-                addLog('النظام', 'الماسح الضوئي جاهز', '📸');
+                addLog('System', 'Scanner ready', '📸');
             } else {
-                document.getElementById('modeTitle').innerText = '📁 رفع قائمة';
-                document.getElementById('modeDescription').innerText = 'رفع ملف لتسجيل الحضور لعدة أشخاص';
+                document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
+                document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
                 document.getElementById('fileSection').classList.remove('hidden');
                 await loadDates();
                 await loadGroupStats();
                 setupDragAndDrop();
-                addLog('النظام', 'وضع الرفع جاهز', '📁');
+                addLog('System', 'Upload mode ready', '📁');
             }
         }
 
@@ -672,7 +1009,7 @@
                 toggleAutoDate();
             } catch(e) {
                 console.error("Error loading dates:", e);
-                addLog('النظام', 'فشل في تحميل التواريخ', '❌');
+                addLog('System', 'Failed to load dates', '❌');
             }
         }
 
@@ -712,10 +1049,10 @@
                     },
                     () => {}
                 );
-                document.getElementById('scannerStatus').innerHTML = '<span>📷 جاهز - وجه الكاميرا نحو رمز QR</span>';
+                document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
             } catch (err) {
-                addLog('النظام', 'فشل في تشغيل الكاميرا', '❌');
-                document.getElementById('scannerStatus').innerHTML = '<span>❌ تعذر الوصول للكاميرا</span>';
+                addLog('System', 'Camera access failed', '❌');
+                document.getElementById('scannerStatus').innerHTML = '<span>❌ Camera access denied</span>';
             }
         }
 
@@ -739,7 +1076,7 @@
             
             if (!isBatch) {
                 addLog(name, 'processing', '⏳');
-                document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ جاري التسجيل: ${escapeHtml(name)}...</span>`;
+                document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ Processing: ${escapeHtml(name)}...</span>`;
             }
             
             const currentDate = document.getElementById('dateSelect').value;
@@ -759,9 +1096,9 @@
                     addLog(name, 'success', '✅');
                     addToScannedList(name);
                     if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>✅ تم تسجيل: ${escapeHtml(name)}</span>`;
+                        document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 جاهز - وجه الكاميرا نحو رمز QR</span>';
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
                         }, 1500);
                     }
                     await loadGroupStats();
@@ -770,9 +1107,9 @@
                 } else if (text.includes("Already Marked")) {
                     addLog(name, 'already', '⚠️');
                     if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>⚠️ مسجل مسبقاً: ${escapeHtml(name)}</span>`;
+                        document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 جاهز - وجه الكاميرا نحو رمز QR</span>';
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
                         }, 1500);
                     }
                     appState.isProcessing = false;
@@ -780,9 +1117,9 @@
                 } else if (text.includes("not found")) {
                     addLog(name, 'notfound', '🔍');
                     if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 غير موجود: ${escapeHtml(name)}</span>`;
+                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 جاهز - وجه الكاميرا نحو رمز QR</span>';
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
                         }, 1500);
                     }
                     appState.isProcessing = false;
@@ -799,9 +1136,9 @@
                 }
                 appState.isProcessing = false;
                 if (!isBatch) {
-                    document.getElementById('scannerStatus').innerHTML = '<span>📱 غير متصل - تم الحفظ في قائمة الانتظار</span>';
+                    document.getElementById('scannerStatus').innerHTML = '<span>📱 Offline - Saved to queue</span>';
                     setTimeout(() => {
-                        document.getElementById('scannerStatus').innerHTML = '<span>📷 جاهز - وجه الكاميرا نحو رمز QR</span>';
+                        document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
                     }, 1500);
                 }
                 return false;
@@ -810,10 +1147,8 @@
 
         function addToScannedList(name) {
             if (appState.scannedNamesSet.has(name)) return;
-            
             appState.scannedNamesSet.add(name);
             appState.scannedData.unshift({ Name: name });
-            document.getElementById('counter') && (document.getElementById('counter').innerText = appState.scannedNamesSet.size);
         }
 
         function addToQueue(name) {
@@ -836,7 +1171,7 @@
             if (appState.isSyncing || appState.offlineQueue.length === 0) return;
             
             appState.isSyncing = true;
-            addLog('النظام', `جاري مزامنة ${appState.offlineQueue.length} عنصر...`, '🔄');
+            addLog('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
             
             try {
                 const currentDate = document.getElementById('dateSelect').value;
@@ -874,7 +1209,7 @@
                 
                 appState.offlineQueue = [];
                 updateQueueUI();
-                addLog('النظام', 'تمت المزامنة بنجاح', '✅');
+                addLog('System', 'Sync completed', '✅');
                 await loadGroupStats();
                 
             } finally {
@@ -893,21 +1228,21 @@
         }
 
         function setupDragAndDrop() {
-            const uploadArea = document.querySelector('.upload-section');
+            const uploadArea = document.getElementById('uploadArea');
             if (!uploadArea) return;
             
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                uploadArea.style.borderColor = '#27ae60';
+                uploadArea.classList.add('drag-over');
             });
             
             uploadArea.addEventListener('dragleave', () => {
-                uploadArea.style.borderColor = '#e2e8f0';
+                uploadArea.classList.remove('drag-over');
             });
             
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
-                uploadArea.style.borderColor = '#e2e8f0';
+                uploadArea.classList.remove('drag-over');
                 const file = e.dataTransfer.files[0];
                 if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv'))) {
                     document.getElementById('fileInput').files = e.dataTransfer.files;
@@ -926,7 +1261,7 @@
         async function handleBulkUpload() {
             const file = document.getElementById('fileInput').files[0];
             if (!file) {
-                alert("الرجاء اختيار ملف!");
+                alert("Please select a file!");
                 return;
             }
             
@@ -940,7 +1275,7 @@
                 names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
                 
                 if (names.length === 0) {
-                    alert("لا توجد أسماء صالحة في الملف!");
+                    alert("No valid names found!");
                     return;
                 }
                 
@@ -954,7 +1289,7 @@
                 let notFound = 0;
                 const startTime = Date.now();
                 
-                addLog('النظام', `بدء رفع ${names.length} اسم`, '📁');
+                addLog('System', `Starting upload: ${names.length} names`, '📁');
                 
                 const batchSize = 50;
                 const currentDate = document.getElementById('dateSelect').value;
@@ -1009,7 +1344,7 @@
                 await loadGroupStats();
                 
                 const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-                addLog('النظام', `اكتمل الرفع: +${successful} جديد, ${alreadyMarked} مسجل مسبقاً, ${notFound} غير موجود`, '✅');
+                addLog('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found`, '✅');
                 
                 uploadBtn.disabled = false;
                 
@@ -1021,27 +1356,27 @@
                 
             } catch (err) {
                 console.error("Bulk upload error:", err);
-                addLog('النظام', 'فشل الرفع: ' + err.message, '❌');
+                addLog('System', 'Upload failed: ' + err.message, '❌');
                 document.getElementById('uploadBtn').disabled = false;
             }
         }
 
         function exportToExcel() {
             if (appState.scannedData.length === 0) {
-                alert("لا توجد بيانات للتصدير!");
+                alert("No data to export!");
                 return;
             }
             
             const namesList = appState.scannedData.map(item => [item.Name]);
-            const wsData = [['الأسماء'], ...namesList];
+            const wsData = [['Name'], ...namesList];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             ws['!cols'] = [{wch: 30}];
             
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "الحضور");
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance");
             const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
             XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
-            addLog('النظام', `تم تصدير ${appState.scannedData.length} اسم`, '📊');
+            addLog('System', `Exported ${appState.scannedData.length} names`, '📊');
         }
 
         // Absence Functions
@@ -1097,7 +1432,7 @@
                 
             } catch (error) {
                 console.error("Error loading absence data:", error);
-                document.getElementById('absenceGroupsContainer').innerHTML = '<div style="text-align:center;color:red;">فشل في تحميل البيانات</div>';
+                document.getElementById('absenceGroupsContainer').innerHTML = '<div style="text-align:center;color:red;">Failed to load data</div>';
             } finally {
                 document.getElementById('absenceLoading').style.display = 'none';
             }
@@ -1107,13 +1442,11 @@
             const container = document.getElementById('absenceGroupsContainer');
             if (!container) return;
             
-            const groupNames = ['رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
-            
-            container.innerHTML = groupNames.map(groupName => {
+            container.innerHTML = GROUP_ORDER.map(groupName => {
                 const group = data.groups[groupName];
                 if (!group) return '';
                 
-                const absentList = group.absentNames.map(name => `<div style="padding: 6px 10px; background: #fee2e2; margin: 4px 0; border-radius: 8px;">❌ ${escapeHtml(name)}</div>`).join('');
+                const absentList = group.absentNames.map(name => `<div style="padding: 8px 12px; background: #fee2e2; margin: 4px 0; border-radius: 8px;">❌ ${escapeHtml(name)}</div>`).join('');
                 
                 return `
                     <div class="group-card" style="margin-bottom: 15px;">
@@ -1122,14 +1455,14 @@
                             <span>${group.percentage}%</span>
                         </div>
                         <div class="group-stats-row">
-                            <div class="group-stat-item"><div class="group-stat-number">${group.total}</div><div class="group-stat-label">العدد الكلي</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number present">${group.present}</div><div class="group-stat-label">حاضر</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number absent">${group.absent}</div><div class="group-stat-label">غائب</div></div>
+                            <div class="group-stat-item"><div class="group-stat-number">${group.total}</div><div class="group-stat-label">Total</div></div>
+                            <div class="group-stat-item"><div class="group-stat-number present">${group.present}</div><div class="group-stat-label">Present</div></div>
+                            <div class="group-stat-item"><div class="group-stat-number absent">${group.absent}</div><div class="group-stat-label">Absent</div></div>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill" style="width: ${group.percentage}%"></div>
                         </div>
-                        ${group.absent > 0 ? `<div style="margin-top: 12px;"><strong>📋 قائمة الغياب (${group.absent}):</strong><div style="margin-top: 8px;">${absentList}</div></div>` : '<div style="margin-top: 12px; color: #27ae60;">✅ جميع الطلاب حاضرون</div>'}
+                        ${group.absent > 0 ? `<div style="margin-top: 12px;"><strong>📋 Absent List (${group.absent}):</strong><div style="margin-top: 8px;">${absentList}</div></div>` : '<div style="margin-top: 12px; color: #27ae60;">✅ All students are present</div>'}
                     </div>
                 `;
             }).join('');
@@ -1138,32 +1471,42 @@
         function exportAbsenceToExcel() {
             if (!absenceData) return;
             
-            const wsData = [['تقرير الغياب'], ['التاريخ: ' + absenceData.date], [''], ['المجموعة', 'العدد الكلي', 'الحاضر', 'الغائب', 'نسبة الحضور', 'قائمة الغياب']];
+            // Create Excel with each name in separate cell (column format)
+            const wsData = [['Absence Report']];
+            wsData.push(['Date: ' + absenceData.date]);
+            wsData.push([]);
             
-            const groupNames = ['رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
+            for (const groupName of GROUP_ORDER) {
+                const group = absenceData.groups[groupName];
+                if (group && group.absentNames.length > 0) {
+                    wsData.push([groupName + ' - Absent Students (' + group.absentNames.length + ')']);
+                    group.absentNames.forEach(name => {
+                        wsData.push([name]);
+                    });
+                    wsData.push([]);
+                } else if (group) {
+                    wsData.push([groupName + ' - All students present ✅']);
+                    wsData.push([]);
+                }
+            }
             
-            groupNames.forEach(groupName => {
+            // Add summary
+            wsData.push([]);
+            wsData.push(['Summary']);
+            for (const groupName of GROUP_ORDER) {
                 const group = absenceData.groups[groupName];
                 if (group) {
-                    wsData.push([groupName, group.total, group.present, group.absent, group.percentage + '%', group.absentNames.join(', ')]);
+                    wsData.push([groupName, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
                 }
-            });
-            
-            wsData.push([''], ['إجمالي الحضور الكلي']);
-            
-            const totalAll = groupNames.reduce((sum, gn) => sum + (absenceData.groups[gn]?.total || 0), 0);
-            const presentAll = groupNames.reduce((sum, gn) => sum + (absenceData.groups[gn]?.present || 0), 0);
-            const absentAll = groupNames.reduce((sum, gn) => sum + (absenceData.groups[gn]?.absent || 0), 0);
-            
-            wsData.push(['الإجمالي', totalAll, presentAll, absentAll, ((presentAll/totalAll)*100).toFixed(1) + '%', '']);
+            }
             
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            ws['!cols'] = [{wch: 20}, {wch: 10}, {wch: 10}, {wch: 10}, {wch: 12}, {wch: 40}];
+            ws['!cols'] = [{wch: 25}];
             
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "تقرير الغياب");
+            XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
             XLSX.writeFile(wb, `Absence_Report_${absenceData.date.replace(/\//g, '-')}.xlsx`);
-            addLog('النظام', 'تم تصدير تقرير الغياب', '📊');
+            addLog('System', 'Absence report exported', '📊');
         }
 
         function resetAppState() {
@@ -1182,7 +1525,7 @@
             document.getElementById('welcomeView').classList.remove('hidden');
             const fileInput = document.getElementById('fileInput');
             if (fileInput) fileInput.value = '';
-            document.getElementById('fileName') && (document.getElementById('fileName').innerText = 'لم يتم اختيار ملف');
+            document.getElementById('fileName') && (document.getElementById('fileName').innerText = 'No file selected');
             clearLogs();
         }
 
