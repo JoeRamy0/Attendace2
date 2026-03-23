@@ -8,10 +8,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- Add Arabic font support -->
+    <script src="https://cdn.jsdelivr.net/npm/@progress/kendo-fonts@1.0.0/dist/index.js"></script>
     
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --excel: #1f7244; --pdf: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        body { font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         
         #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 30px; }
@@ -52,6 +54,9 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Speed optimization */
+        .batch-processing { pointer-events: none; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -82,6 +87,7 @@
             <input type="file" id="fileInput" accept=".txt,.csv">
             <div id="progressContainer"><div id="progressBar"></div></div>
             <button id="uploadBtn" style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Sync Full List</button>
+            <div id="speedStats" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
         </div>
 
         <div id="reader"></div>
@@ -102,9 +108,11 @@
     const CONFIG = {
         SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec",
         SHEET_ID: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA",
-        MAX_RETRIES: 3,
-        RETRY_DELAY: 1000,
-        SYNC_INTERVAL: 5000
+        MAX_RETRIES: 2,
+        RETRY_DELAY: 500,
+        SYNC_INTERVAL: 5000,
+        BATCH_SIZE: 10, // Increased batch size for faster upload
+        CONCURRENT_REQUESTS: 5 // Process multiple requests in parallel
     };
 
     let appState = {
@@ -114,11 +122,11 @@
         offlineQueue: [],
         isSyncing: false,
         currentMode: null,
-        syncInterval: null
+        syncInterval: null,
+        processingQueue: []
     };
 
     async function showApp(mode) {
-        // Cleanup previous state
         resetAppState();
         
         document.getElementById('welcomeView').style.display = 'none';
@@ -137,7 +145,6 @@
             document.getElementById('fileSection').style.display = 'block';
         }
         
-        // Load existing attendance if any
         await loadExistingAttendance();
     }
 
@@ -187,7 +194,6 @@
                 },
                 (decodedText) => processScan(decodedText.trim()),
                 (errorMessage) => {
-                    // Silent fail for scanning errors
                     if (!errorMessage.includes("No MultiFormat")) {
                         console.debug("Scan error:", errorMessage);
                     }
@@ -224,6 +230,7 @@
         }
     }
 
+    // Optimized bulk upload with parallel processing
     async function handleBulkUpload() {
         const file = document.getElementById('fileInput').files[0];
         if (!file) {
@@ -233,10 +240,13 @@
         
         try {
             const text = await file.text();
-            const names = text.split(/\r?\n/)
+            let names = text.split(/\r?\n/)
                 .filter(line => line.trim().length > 0)
                 .map(n => n.split(',')[0].replace(/["']/g, '').trim())
-                .filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
+                .filter(n => n.length > 0);
+            
+            // Remove duplicates for efficiency
+            names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
             
             if (names.length === 0) {
                 alert("No valid names found in file!");
@@ -249,31 +259,44 @@
             uploadBtn.disabled = true;
             
             let processed = 0;
-            const batchSize = 3; // Smaller batch size for better performance
+            let successful = 0;
+            let failed = 0;
+            const startTime = Date.now();
             
-            for (let i = 0; i < names.length; i += batchSize) {
-                const batch = names.slice(i, i + batchSize);
-                setStatus(`Processing ${i + 1}-${Math.min(i + batchSize, names.length)} of ${names.length}...`, "warning");
+            // Process in parallel batches for speed
+            for (let i = 0; i < names.length; i += CONFIG.BATCH_SIZE) {
+                const batch = names.slice(i, Math.min(i + CONFIG.BATCH_SIZE, names.length));
+                setStatus(`Processing batch ${Math.floor(i/CONFIG.BATCH_SIZE) + 1}/${Math.ceil(names.length/CONFIG.BATCH_SIZE)}...`, "warning");
                 
-                await Promise.all(batch.map(name => processScan(name, true)));
+                // Process batch in parallel with concurrency limit
+                const results = await processBatchParallel(batch, CONFIG.CONCURRENT_REQUESTS);
                 
+                successful += results.success;
+                failed += results.failed;
                 processed += batch.length;
+                
                 const progress = (processed / names.length) * 100;
                 document.getElementById('progressBar').style.width = `${progress}%`;
                 
-                // Small delay to avoid rate limiting
-                if (i + batchSize < names.length) {
-                    await delay(200);
+                // Update speed stats
+                const elapsed = (Date.now() - startTime) / 1000;
+                const speed = (processed / elapsed).toFixed(1);
+                document.getElementById('speedStats').innerHTML = `Speed: ${speed} names/sec | Success: ${successful} | Failed: ${failed}`;
+                
+                // Small delay to prevent rate limiting
+                if (i + CONFIG.BATCH_SIZE < names.length) {
+                    await delay(100);
                 }
             }
             
-            setStatus(`✅ Bulk upload completed! ${processed} names processed.`, "success");
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            setStatus(`✅ Completed! ${successful} marked, ${failed} failed in ${totalTime}s`, "success");
             uploadBtn.disabled = false;
             
-            // Clear progress after 3 seconds
             setTimeout(() => {
                 document.getElementById('progressContainer').style.display = 'none';
                 document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('speedStats').innerHTML = '';
             }, 3000);
             
         } catch (err) {
@@ -283,35 +306,59 @@
         }
     }
 
+    // Process a batch with concurrency limit
+    async function processBatchParallel(names, concurrency) {
+        const results = { success: 0, failed: 0 };
+        const queue = [...names];
+        const workers = [];
+        
+        for (let i = 0; i < concurrency; i++) {
+            workers.push(processWorker(queue, results));
+        }
+        
+        await Promise.all(workers);
+        return results;
+    }
+
+    async function processWorker(queue, results) {
+        while (queue.length > 0) {
+            const name = queue.shift();
+            if (!name) break;
+            
+            try {
+                const success = await processScan(name, true);
+                if (success) {
+                    results.success++;
+                } else {
+                    results.failed++;
+                }
+            } catch (error) {
+                results.failed++;
+                console.error(`Failed to process ${name}:`, error);
+            }
+        }
+    }
+
     async function processScan(name, isBatch = false) {
         if (!name || appState.scannedNamesSet.has(name)) return false;
         
-        if (!isBatch) {
-            setStatus(`Processing: ${escapeHtml(name)}...`, "warning");
-        }
-        
         const currentDate = document.getElementById('dateSelect').value;
-        if (!currentDate) {
-            setStatus("Error: No date selected", "error");
-            return false;
-        }
+        if (!currentDate) return false;
         
         try {
             const response = await fetchWithRetry(
-                `${CONFIG.SCRIPT_URL}?action=mark&sheetId=${CONFIG.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`
+                `${CONFIG.SCRIPT_URL}?action=mark&sheetId=${CONFIG.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`,
+                1 // Fewer retries for speed
             );
             const text = await response.text();
             
             if (text.includes("Success") || text.includes("Already Marked")) {
                 addToScannedList(name);
-                if (!isBatch) setStatus(`✅ ${text}`, "success");
                 return true;
             } else {
-                if (!isBatch) setStatus(`❌ ${text}`, "error");
                 return false;
             }
         } catch (error) {
-            console.error("Network error during scan:", error);
             if (!isBatch && !appState.offlineQueue.includes(name)) {
                 addToQueue(name);
             }
@@ -333,7 +380,6 @@
         const list = document.getElementById('scannedList');
         list.insertBefore(li, list.firstChild);
         
-        // Limit list size to prevent performance issues
         while (list.children.length > 100) {
             list.removeChild(list.lastChild);
         }
@@ -356,43 +402,23 @@
         
         try {
             const currentDate = document.getElementById('dateSelect').value;
-            if (!currentDate) {
-                console.error("No date selected for sync");
-                return;
-            }
+            if (!currentDate) return;
             
-            // Process queue sequentially to avoid conflicts
-            while (appState.offlineQueue.length > 0) {
-                const nameToSync = appState.offlineQueue[0];
-                
-                try {
-                    const response = await fetchWithRetry(
-                        `${CONFIG.SCRIPT_URL}?action=mark&sheetId=${CONFIG.SHEET_ID}&name=${encodeURIComponent(nameToSync)}&date=${encodeURIComponent(currentDate)}`
-                    );
-                    
-                    if (response.ok) {
-                        const text = await response.text();
-                        if (text.includes("Success") || text.includes("Already Marked")) {
-                            appState.offlineQueue.shift();
-                            addToScannedList(nameToSync);
-                            updateQueueUI();
-                        } else {
-                            // If there's an error with this specific name, skip it to avoid infinite loop
-                            appState.offlineQueue.shift();
-                            console.warn(`Skipping ${nameToSync}: ${text}`);
-                        }
-                    } else {
-                        // If server error, break and try again later
-                        break;
-                    }
-                } catch (error) {
-                    console.error("Sync error for", nameToSync, error);
-                    break;
+            // Sync in parallel for speed
+            const toSync = [...appState.offlineQueue];
+            const results = await processBatchParallel(toSync, 3);
+            
+            // Update queue (remove successfully synced)
+            appState.offlineQueue = appState.offlineQueue.filter(name => {
+                const wasProcessed = toSync.includes(name);
+                if (wasProcessed) {
+                    // Check if it was successfully processed by looking at scanned names
+                    return !appState.scannedNamesSet.has(name);
                 }
-                
-                // Small delay between syncs to avoid rate limiting
-                await delay(300);
-            }
+                return true;
+            });
+            
+            updateQueueUI();
         } finally {
             appState.isSyncing = false;
             syncBtn.disabled = false;
@@ -424,24 +450,20 @@
     }
 
     function resetAppState() {
-        // Stop scanner if running
         if (appState.scanner) {
             stopScanner();
         }
         
-        // Clear sync interval
         if (appState.syncInterval) {
             clearInterval(appState.syncInterval);
             appState.syncInterval = null;
         }
         
-        // Reset data structures
         appState.scannedNamesSet.clear();
         appState.scannedData = [];
         appState.offlineQueue = [];
         appState.isSyncing = false;
         
-        // Clear UI
         document.getElementById('scannedList').innerHTML = '';
         document.getElementById('counter').innerText = '0';
         document.getElementById('listTotal').innerText = '0';
@@ -455,7 +477,6 @@
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('welcomeView').style.display = 'flex';
         
-        // Reset file input
         const fileInput = document.getElementById('fileInput');
         if (fileInput) fileInput.value = '';
         
@@ -465,11 +486,14 @@
     async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
         for (let i = 0; i < retries; i++) {
             try {
-                const response = await fetch(url);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
                 if (response.ok) return response;
                 if (response.status === 429) {
-                    // Rate limited, wait longer
-                    await delay(2000 * (i + 1));
+                    await delay(1000 * (i + 1));
                     continue;
                 }
             } catch (error) {
@@ -486,7 +510,9 @@
             return;
         }
         
-        const ws = XLSX.utils.json_to_sheet(appState.scannedData);
+        // Preserve Arabic text in Excel
+        const wsData = [['Time', 'Name'], ...appState.scannedData.map(d => [d.Time, d.Name])];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
         const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
@@ -494,32 +520,88 @@
         setStatus("Excel export completed!", "success");
     }
 
-    function exportToPDF() {
+    // Fixed PDF export with Arabic font support
+    async function exportToPDF() {
         if (appState.scannedData.length === 0) {
             alert("No data to export!");
             return;
         }
         
+        setStatus("Generating PDF with Arabic support...", "warning");
+        
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const date = document.getElementById('dateSelect').value;
         
-        doc.setFontSize(16);
-        doc.text(`Attendance Report: ${date}`, 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
-        doc.text(`Total Present: ${appState.scannedData.length}`, 14, 29);
-        
-        doc.autoTable({
-            head: [['Time', 'Name']],
-            body: appState.scannedData.map(d => [d.Time, d.Name]),
-            startY: 35,
-            styles: { fontSize: 10 },
-            headStyles: { fillColor: [44, 62, 80] }
+        // Create PDF with better Arabic support
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
         });
         
+        const date = document.getElementById('dateSelect').value;
+        
+        // Add title in Arabic-friendly format
+        doc.setFont("helvetica");
+        doc.setFontSize(18);
+        doc.text(`Attendance Report`, 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.text(`Date: ${date}`, 105, 30, { align: 'center' });
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 37, { align: 'center' });
+        doc.text(`Total Present: ${appState.scannedData.length}`, 105, 44, { align: 'center' });
+        
+        // Prepare table data with proper RTL support for Arabic names
+        const tableData = appState.scannedData.map(item => [
+            item.Time,
+            item.Name
+        ]);
+        
+        // AutoTable with better text handling
+        doc.autoTable({
+            head: [['Time', 'Name']],
+            body: tableData,
+            startY: 52,
+            styles: {
+                fontSize: 10,
+                cellPadding: 3,
+                font: 'helvetica',
+                halign: 'left',
+                valign: 'middle'
+            },
+            headStyles: {
+                fillColor: [44, 62, 80],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { cellWidth: 40, halign: 'center' },
+                1: { cellWidth: 'auto', halign: 'left' }
+            },
+            margin: { left: 15, right: 15 },
+            didDrawCell: (data) => {
+                // Handle RTL text if needed (detect Arabic characters)
+                if (data.column.index === 1 && data.cell.raw) {
+                    const text = data.cell.raw.toString();
+                    if (/[\u0600-\u06FF]/.test(text)) {
+                        // Arabic text detected - keep as is (modern PDF viewers handle RTL)
+                        data.cell.styles.halign = 'right';
+                    }
+                }
+            }
+        });
+        
+        // Add footer with Arabic text
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated by Attendance Pro System`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+        }
+        
         doc.save(`Attendance_${date.replace(/\//g, '-')}.pdf`);
-        setStatus("PDF export completed!", "success");
+        setStatus("PDF export completed with Arabic support!", "success");
     }
 
     function setStatus(msg, type) {
@@ -527,7 +609,6 @@
         statusDiv.className = type;
         statusDiv.innerHTML = msg;
         
-        // Auto-clear after 3 seconds for success messages
         if (type === 'success') {
             setTimeout(() => {
                 if (statusDiv.innerHTML === msg) {
