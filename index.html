@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro,Youssef Ramy</title>
+    <title>Attendance Pro v3</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -14,6 +14,14 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         
+        /* Welcome View */
+        #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 50px; }
+        .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; }
+        .bg-scan { background: var(--primary); }
+        .bg-upload { background: var(--success); }
+
+        /* Main View */
+        #mainApp { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
         .stat-val { font-size: 20px; font-weight: bold; color: var(--primary); }
@@ -21,16 +29,17 @@
         .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
         .auto-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
         
-        select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: white; }
-        select { color: #333; border: 1px solid #ddd; cursor: default; }
+        select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
+        button { border: none; cursor: pointer; color: white; }
 
-        .btn-scan { background: var(--primary); }
-        .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-action { background: var(--primary); }
         .btn-excel { background: var(--excel); }
         .btn-pdf { background: var(--pdf); }
-        .btn-sync { background: var(--warning); display: none; }
+        .btn-sync { background: var(--warning); display: none; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         #reader { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid var(--primary); }
+        #fileSection { display: none; background: #fff; padding: 10px; border: 2px dashed #ccc; border-radius: 10px; margin-top: 10px; }
         #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 20px; }
         
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
@@ -45,49 +54,79 @@
 <body>
 
 <div class="card">
-    <h2>St Joseph Attendance Pro ⛪</h2>
-    <h4>Created by:Youssef Ramy</h4> 
-
-    <div class="stats-grid">
-        <div class="stat-box"><div>Present</div><span id="counter" class="stat-val">0</span></div>
-        <div class="stat-box"><div>In Queue</div><span id="queueCounter" class="stat-val">0</span></div>
+    <div id="welcomeView">
+        <h2>Attendance System ⛪</h2>
+        <button class="welcome-btn bg-scan" onclick="showApp('scan')">📸 Start QR Scanning</button>
+        <button class="welcome-btn bg-upload" onclick="showApp('upload')">📁 Upload Name List</button>
     </div>
 
-    <div class="date-container">
-        <div class="auto-toggle">
-            <span>Auto-Select Today</span>
-            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+    <div id="mainApp">
+        <h2 id="modeTitle">Scanner Mode</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-box"><div>Present</div><span id="counter" class="stat-val">0</span></div>
+            <div class="stat-box"><div>In Queue</div><span id="queueCounter" class="stat-val">0</span></div>
         </div>
-        <select id="dateSelect"></select>
-    </div>
-    
-    <button class="btn-scan" onclick="startScanner()">Open Scanner</button>
-    <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Queue...</button>
 
-    <div class="export-grid">
-        <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
-        <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
-    </div>
+        <div class="date-container">
+            <div class="auto-toggle">
+                <span>Auto-Select Today</span>
+                <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+            </div>
+            <select id="dateSelect"></select>
+        </div>
+        
+        <div id="fileSection">
+            <p style="font-size: 13px; color: #666;">Upload .TXT or .CSV (one name per line)</p>
+            <input type="file" id="fileInput" accept=".txt,.csv">
+            <button class="btn-action" style="background:var(--success)" onclick="processUploadedFile()">Process File</button>
+        </div>
 
-    <div id="reader"></div>
-    <div id="status">Ready</div>
+        <button id="syncBtn" class="btn-sync" onclick="syncQueue()">Syncing Offline Queue...</button>
 
-    <div class="list-container">
-        <strong>Scanned Names Today:</strong>
-        <ul id="scannedList"></ul>
+        <div id="reader"></div>
+        <div id="status">Ready</div>
+
+        <div class="export-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn-excel" onclick="exportToExcel()">📊 Excel</button>
+            <button class="btn-pdf" onclick="exportToPDF()">📕 PDF</button>
+        </div>
+
+        <button onclick="location.reload()" style="background:#666; font-size: 12px; margin-top: 15px;">⬅ Back to Start</button>
+
+        <div class="list-container">
+            <strong>Activity History:</strong>
+            <ul id="scannedList"></ul>
+        </div>
     </div>
 </div>
 
 <script>
-    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; //----------------------------------------------------------
-    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";//-----------------------------------------------------------------------------------------------------------------------------------
+    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
 
-    let scannedData = []; // Store objects for better export: {name, time}
+    let scannedData = [];
     let scannedNamesSet = new Set(); 
     let offlineQueue = [];
     let isSyncing = false;
 
-    window.onload = async () => {
+    // VIEW LOGIC
+    async function showApp(mode) {
+        document.getElementById('welcomeView').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        
+        await loadDates();
+
+        if (mode === 'scan') {
+            document.getElementById('modeTitle').innerText = "📸 QR Scanner";
+            startScanner();
+        } else {
+            document.getElementById('modeTitle').innerText = "📁 File Upload";
+            document.getElementById('fileSection').style.display = 'block';
+        }
+    }
+
+    async function loadDates() {
         try {
             const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
             const dates = await resp.json();
@@ -96,7 +135,7 @@
             toggleAutoDate();
         } catch(e) { setStatus("Offline Mode Active", "offline"); }
         setInterval(syncQueue, 5000);
-    };
+    }
 
     function toggleAutoDate() {
         const isAuto = document.getElementById('autoDateToggle').checked;
@@ -113,11 +152,31 @@
                     if (todayKey === optKey) { select.selectedIndex = i; found = true; break; }
                 }
             }
-            if(found) setStatus("Auto-selected: " + select.value, "success");
-            else setStatus("Today's date not found.", "error");
+            if(!found) setStatus("Today's date not in list.", "error");
         } else { select.disabled = false; select.style.opacity = "1"; }
     }
 
+    // FILE UPLOAD LOGIC
+    function processUploadedFile() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files.length) return alert("Please select a file first!");
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            // Split by lines and remove empty ones
+            const names = text.split(/\r?\n/).map(n => n.trim()).filter(n => n.length > 0);
+            setStatus(`Processing ${names.length} names...`, "warning");
+            
+            names.forEach((name, index) => {
+                setTimeout(() => processScan(name), index * 500); // Stagger requests
+            });
+        };
+        reader.readAsText(file);
+    }
+
+    // SCAN/MARK LOGIC
     function startScanner() {
         document.getElementById('reader').style.display = 'block';
         const scanner = new Html5Qrcode("reader");
@@ -125,8 +184,8 @@
     }
 
     async function processScan(name) {
-        if (scannedNamesSet.has(name)) { setStatus("Already Scanned: " + name, "error"); return; }
-        setStatus("Processing: " + name, "");
+        if (scannedNamesSet.has(name)) return;
+        
         try {
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(document.getElementById('dateSelect').value)}`);
             const text = await res.text();
@@ -142,7 +201,6 @@
         const time = new Date().toLocaleTimeString();
         scannedNamesSet.add(name);
         scannedData.push({ Name: name, Time: time });
-        
         document.getElementById('counter').innerText = scannedNamesSet.size;
         const li = document.createElement('li');
         li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
@@ -154,40 +212,50 @@
         s.className = className; s.innerText = msg;
     }
 
-    // --- EXPORT FUNCTIONS ---
-
-    function exportToExcel() {
-        if (scannedData.length === 0) return alert("No data to export!");
-        const ws = XLSX.utils.json_to_sheet(scannedData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-        XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value}.xlsx`);
-    }
-
-    function exportToPDF() {
-        if (scannedData.length === 0) return alert("No data to export!");
+    // PDF EXPORT (ARABIC SUPPORT)
+    async function exportToPDF() {
+        if (scannedData.length === 0) return alert("No data!");
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        doc.text(`Attendance Report: ${document.getElementById('dateSelect').value}`, 14, 15);
-        
-        const rows = scannedData.map(item => [item.Name, item.Time]);
-        doc.autoTable({
-            head: [['Name', 'Time']],
-            body: rows,
-            startY: 20,
-            theme: 'striped'
+        // Load Amiri Font for Arabic Support
+        const fontUrl = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
+        const fontBase64 = await fetch(fontUrl).then(r => r.arrayBuffer()).then(buffer => {
+            let binary = '';
+            let bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            return window.btoa(binary);
         });
+
+        doc.addFileToVFS("Amiri.ttf", fontBase64);
+        doc.addFont("Amiri.ttf", "Amiri", "normal");
+        doc.setFont("Amiri");
+
+        doc.text(`Attendance: ${document.getElementById('dateSelect').value}`, 105, 15, { align: "center" });
         
-        doc.save(`Attendance_${document.getElementById('dateSelect').value}.pdf`);
+        const rows = scannedData.map(item => [item.Time, item.Name]);
+        doc.autoTable({
+            head: [['Time', 'Name']],
+            body: rows,
+            startY: 25,
+            styles: { font: "Amiri", halign: 'right' },
+            headStyles: { fillColor: [44, 62, 80] }
+        });
+        doc.save("Report.pdf");
     }
 
-    // --- QUEUE LOGIC ---
+    function exportToExcel() {
+        const ws = XLSX.utils.json_to_sheet(scannedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, "Report.xlsx");
+    }
+
     function addToQueue(name) {
         if(offlineQueue.includes(name) || scannedNamesSet.has(name)) return;
         offlineQueue.push(name);
         updateQueueUI();
-        setStatus("Offline! Saved to Queue", "offline");
+        setStatus("Saved to Offline Queue", "offline");
     }
 
     function updateQueueUI() {
