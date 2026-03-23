@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Church Attendance QR</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root { --primary: #2c3e50; --success: #27ae60; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { color: var(--primary); margin-top: 0; }
+        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
+        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 15px; border: 2px solid var(--primary); }
+        #status { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; min-height: 20px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Attendance System ⛪</h2>
+    
+<script>
+    // 1. This is your Apps Script Web App URL
+    const MY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec"; 
+
+    // 2. This is your extracted Sheet ID
+    const MY_SHEET_ID = "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA";
+</script>
+    <p>1. Select Date</p>
+    <select id="dateSelect"><option>Loading dates...</option></select>
+    
+    <button id="startBtn" onclick="startScanner()">2. Open Scanner</button>
+    
+    <div id="reader" style="display:none;"></div>
+    <div id="status">Ready</div>
+</div>
+
+<script>
+    const statusDiv = document.getElementById('status');
+    const dateSelect = document.getElementById('dateSelect');
+
+    // Load dates automatically when page opens
+    window.onload = async () => {
+        try {
+            const resp = await fetch(`${MY_SCRIPT_URL}?action=getDates&sheetId=${MY_SHEET_ID}`);
+            const dates = await resp.json();
+            dateSelect.innerHTML = "";
+            dates.forEach(d => {
+                let opt = document.createElement('option');
+                opt.value = d; opt.innerText = d;
+                dateSelect.appendChild(opt);
+            });
+            statusDiv.innerText = "Dates loaded. Ready to scan.";
+        } catch (e) {
+            statusDiv.className = "error";
+            statusDiv.innerText = "Connection Error. Check Script URL/Permissions.";
+        }
+    };
+
+    function startScanner() {
+        document.getElementById('reader').style.display = 'block';
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: 250 },
+            async (decodedText) => {
+                // Flash status to show it read something
+                statusDiv.className = "";
+                statusDiv.innerText = "Verifying: " + decodedText;
+                
+                try {
+                    const markUrl = `${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(decodedText)}&date=${encodeURIComponent(dateSelect.value)}`;
+                    const response = await fetch(markUrl);
+                    const result = await response.text();
+                    
+                    if(result.includes("Success")) {
+                        statusDiv.className = "success";
+                        window.navigator.vibrate(100); // Vibrate on success
+                    } else {
+                        statusDiv.className = "error";
+                    }
+                    statusDiv.innerText = result;
+                } catch (err) {
+                    statusDiv.innerText = "Network Error";
+                }
+            }
+        ).catch(err => {
+            statusDiv.innerText = "Camera access denied.";
+        });
+    }
+</script>
+
+</body>
+</html>
