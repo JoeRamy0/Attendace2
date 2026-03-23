@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Pro v5</title>
+    <title>Attendance Pro v6</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,24 +11,28 @@
     
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --excel: #1f7244; --pdf: #e74c3c; --warning: #f39c12; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; direction: ltr; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        
         #welcomeView { display: flex; flex-direction: column; gap: 15px; padding-top: 50px; }
-        .welcome-btn { padding: 30px; font-size: 20px; border-radius: 15px; border: none; color: white; cursor: pointer; font-weight: bold; }
+        .welcome-btn { padding: 30px; font-size: 18px; border-radius: 12px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        
         #mainApp { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
         .stat-val { font-size: 22px; font-weight: bold; color: var(--primary); }
+
         .date-container { background: #edf2f7; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
         select, button, input[type="file"] { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; font-weight: bold; box-sizing: border-box; }
-        button { border: none; cursor: pointer; color: white; }
-        #status { margin-top: 10px; padding: 15px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .warning { background: #fff3cd; color: #856404; }
+        
+        #status { margin-top: 10px; padding: 12px; border-radius: 8px; font-weight: bold; min-height: 24px; font-size: 14px; border: 1px solid transparent; }
+        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border-color: #ffeeba; }
+
         .list-container { margin-top: 20px; text-align: right; background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
-        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-        #scannedList li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
+        #scannedList { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; direction: rtl; }
+        #scannedList li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -36,35 +40,40 @@
 <div class="card">
     <div id="welcomeView">
         <h2>Attendance Pro ⛪</h2>
-        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanning</button>
-        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Upload Name List</button>
+        <button class="welcome-btn" style="background:var(--primary)" onclick="showApp('scan')">📸 Start QR Scanner</button>
+        <button class="welcome-btn" style="background:var(--success)" onclick="showApp('upload')">📁 Bulk Upload List</button>
     </div>
 
     <div id="mainApp">
-        <h2 id="modeTitle">Scanner Mode</h2>
+        <h2 id="modeTitle">Scanner</h2>
         <div class="stats-grid">
             <div class="stat-box"><div>Present</div><span id="counter" class="stat-val">0</span></div>
-            <div class="stat-box"><div>In Queue</div><span id="queueCounter" class="stat-val">0</span></div>
+            <div class="stat-box"><div>Waiting</div><span id="queueCounter" class="stat-val">0</span></div>
         </div>
 
         <div class="date-container">
+            <label style="font-size:12px; font-weight:bold; color:#666;">Attendance Date:</label>
             <select id="dateSelect"></select>
         </div>
         
-        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:10px;">
+        <div id="fileSection" style="display:none; padding:10px; border:2px dashed #ccc; border-radius:10px; margin-bottom:15px;">
             <input type="file" id="fileInput" accept=".txt,.csv">
-            <button style="background:var(--success)" onclick="handleBulkUpload()">🚀 Process Bulk Upload</button>
+            <button style="background:var(--success); color:white;" onclick="handleBulkUpload()">🚀 Mark All Names</button>
         </div>
 
         <div id="reader"></div>
-        <div id="status">System Ready</div>
+        <div id="status">Ready</div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-            <button style="background:var(--excel)" onclick="exportToExcel()">📊 Excel</button>
-            <button style="background:var(--pdf)" onclick="exportToPDF()">📕 PDF</button>
+            <button style="background:var(--excel); color:white;" onclick="exportToExcel()">📊 Excel</button>
+            <button style="background:var(--pdf); color:white;" onclick="exportToPDF()">📕 PDF</button>
         </div>
-        <button onclick="location.reload()" style="background:#666; font-size: 12px; margin-top: 10px;">⬅ Back</button>
-        <div class="list-container"><strong>Activity History:</strong><ul id="scannedList"></ul></div>
+        <button onclick="location.reload()" style="background:#666; color:white; font-size: 12px; margin-top: 10px;">⬅ Main Menu</button>
+        
+        <div class="list-container">
+            <strong>Activity Log (History):</strong>
+            <ul id="scannedList"></ul>
+        </div>
     </div>
 </div>
 
@@ -74,16 +83,29 @@
 
     let scannedData = [];
     let scannedNamesSet = new Set(); 
+    let amiriFont = "";
+
+    // Load Arabic Font Base64 directly
+    async function loadArabicFont() {
+        const url = "https://cdn.jsdelivr.net/gh/alif-type/amiri@main/fonts/ttf/Amiri-Regular.ttf";
+        try {
+            const response = await fetch(url);
+            const buffer = await response.arrayBuffer();
+            const base64 = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            amiriFont = base64;
+        } catch (e) { console.error("Font failed to load"); }
+    }
+    loadArabicFont();
 
     async function showApp(mode) {
         document.getElementById('welcomeView').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         await loadDates();
         if (mode === 'scan') {
-            document.getElementById('modeTitle').innerText = "📸 QR Scanner";
+            document.getElementById('modeTitle').innerText = "📸 QR Mode";
             startScanner();
         } else {
-            document.getElementById('modeTitle').innerText = "📁 Bulk Upload";
+            document.getElementById('modeTitle').innerText = "📁 Upload Mode";
             document.getElementById('fileSection').style.display = 'block';
         }
     }
@@ -94,7 +116,17 @@
             const dates = await resp.json();
             const select = document.getElementById('dateSelect');
             select.innerHTML = dates.map(d => `<option value="${d.trim()}">${d.trim()}</option>`).join('');
-        } catch(e) { setStatus("Error loading dates", "error"); }
+            
+            // Auto-Select Today
+            const now = new Date();
+            const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value.trim() === todayStr) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        } catch(e) { setStatus("Error connecting to sheet", "error"); }
     }
 
     function startScanner() {
@@ -105,18 +137,20 @@
 
     async function handleBulkUpload() {
         const file = document.getElementById('fileInput').files[0];
-        if (!file) return alert("Select a file!");
+        if (!file) return alert("Select a file first!");
         
         const text = await file.text();
         const names = text.split(/\r?\n/).map(n => n.trim()).filter(n => n.length > 0);
         
-        setStatus(`Processing 0 / ${names.length}`, "warning");
+        setStatus(`Starting upload for ${names.length} names...`, "warning");
         
         for (let i = 0; i < names.length; i++) {
-            setStatus(`Processing ${i + 1} / ${names.length}: ${names[i]}`, "warning");
-            await processScan(names[i]); // We "await" so it doesn't flood Google
+            setStatus(`Marking ${i+1}/${names.length}: ${names[i]}`, "warning");
+            await processScan(names[i]);
+            // Small delay to prevent Google from blocking requests
+            await new Promise(r => setTimeout(r, 600)); 
         }
-        setStatus("Bulk Upload Finished!", "success");
+        setStatus("Bulk marking finished!", "success");
     }
 
     async function processScan(name) {
@@ -125,21 +159,23 @@
             const date = document.getElementById('dateSelect').value;
             const res = await fetch(`${MY_SCRIPT_URL}?action=mark&sheetId=${MY_SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`);
             const msg = await res.text();
+            
             if (msg.includes("Success") || msg.includes("Already Marked")) {
                 addToList(name);
                 setStatus(msg, "success");
             } else {
-                setStatus(msg, "error");
+                setStatus(`Skipped: ${name} (Not in sheet)`, "warning");
             }
-        } catch (e) { setStatus("Network Error: " + name, "error"); }
+        } catch (e) { setStatus("Sync Error for " + name, "error"); }
     }
 
     function addToList(name) {
         if(scannedNamesSet.has(name)) return;
-        const time = new Date().toLocaleTimeString();
+        const time = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
         scannedNamesSet.add(name);
         scannedData.push({ Name: name, Time: time });
         document.getElementById('counter').innerText = scannedNamesSet.size;
+        
         const li = document.createElement('li');
         li.innerHTML = `<span>${time}</span> <strong>${name}</strong>`;
         document.getElementById('scannedList').prepend(li);
@@ -150,31 +186,35 @@
         s.className = className; s.innerText = msg;
     }
 
+    async function exportToPDF() {
+        if (!scannedData.length) return alert("No names!");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        if (amiriFont) {
+            doc.addFileToVFS("Amiri-Regular.ttf", amiriFont);
+            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+            doc.setFont("Amiri");
+        }
+
+        doc.text(`Report: ${document.getElementById('dateSelect').value}`, 105, 10, { align: 'center' });
+        
+        const body = scannedData.map(d => [d.Time, d.Name]);
+        doc.autoTable({
+            head: [['Time', 'Name']],
+            body: body,
+            startY: 20,
+            styles: { font: amiriFont ? "Amiri" : "helvetica", halign: 'right' }
+        });
+        doc.save("Attendance.pdf");
+    }
+
     function exportToExcel() {
         const ws = XLSX.utils.json_to_sheet(scannedData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Attendance");
         XLSX.writeFile(wb, "Attendance.xlsx");
     }
-
-    function exportToPDF() {
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text(`Attendance Report - ${document.getElementById('dateSelect').value}`, 10, 10);
-            
-            const rows = scannedData.map(item => [item.Time, item.Name]);
-            doc.autoTable({
-                head: [['Time', 'Name']],
-                body: rows,
-                startY: 20,
-                // If Arabic is needed, it will appear as blocks unless you embed a font locally.
-                // For now, this fixes the "Generation Error".
-            });
-            doc.save("Attendance.pdf");
-        } catch(e) { alert("PDF Error: Try Excel export instead."); }
-    }
 </script>
-
 </body>
 </html>
