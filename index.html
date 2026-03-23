@@ -94,20 +94,16 @@
         select.disabled = true;
         select.style.opacity = "0.6";
         
-        const today = new Date();
-        const m = today.getMonth() + 1;
-        const d = today.getDate();
-        const y = today.getFullYear();
-
-        // We create a few variations to be safe
-        const format1 = `${m}/${d}/${y}`;          // 3/23/2026
-        const format2 = `${m < 10 ? '0'+m : m}/${d < 10 ? '0'+d : d}/${y}`; // 03/23/2026
-        const format3 = `${y}-${m < 10 ? '0'+m : m}-${d < 10 ? '0'+d : d}`; // 2026-03-23
+        // Build M/d/yyyy string manually to avoid timezone/zero issues
+        const now = new Date();
+        const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+        
+        console.log("Looking for today:", todayStr); // You can see this in browser inspect
 
         let found = false;
         for (let i = 0; i < select.options.length; i++) {
-            let val = select.options[i].value.trim();
-            if (val === format1 || val === format2 || val === format3) {
+            // Trim and remove any hidden characters
+            if (select.options[i].value.trim() === todayStr) {
                 select.selectedIndex = i;
                 found = true;
                 break;
@@ -115,7 +111,7 @@
         }
         
         if(!found) {
-            setStatus("Today (" + format1 + ") not found in list.", "error");
+            setStatus("Today (" + todayStr + ") not found in sheet list.", "error");
         } else {
             setStatus("Auto-selected: " + select.value, "success");
         }
