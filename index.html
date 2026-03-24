@@ -412,6 +412,16 @@
             font-size: 14px;
         }
 
+        .auto-toggle-info {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 8px;
+            text-align: center;
+            padding: 6px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
         .toggle-switch {
             position: relative;
             display: inline-block;
@@ -456,6 +466,12 @@
             font-size: 14px;
             background: white;
             cursor: pointer;
+        }
+
+        select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         /* Logs */
@@ -507,7 +523,6 @@
         .btn-primary { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%); color: white; }
         .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
 
         .button-group {
             display: grid;
@@ -660,7 +675,10 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                    <select id="dateSelect" onchange="loadGroupStats()"></select>
+                    <div class="auto-toggle-info" id="dateToggleInfo">
+                        💡 Auto mode: Today's date is automatically selected
+                    </div>
+                    <select id="dateSelect" onchange="onDateManuallySelected()"></select>
                 </div>
 
                 <div id="reader"></div>
@@ -718,22 +736,19 @@
         
         // Default sheets
         const DEFAULT_SHEETS = [
-            { name: 'Sunday School', url: 'https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec', 
-             sheetId: '1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA', active: true },
-            { name: 'second', url: 'https://script.google.com/macros/s/AKfycbxYotAOxC314l0PAQ67j9Q0SGUrFwbyVQiKLIVC6R-AKZ5glHa0ba4PonkbeDvHpxCx/exec', 
-             sheetId: '1665W6Z9bNbcJ6l5rLbi41c_xC1FGzRySyMtdAaO5g9A', active: true}
+            { name: 'Sunday School', url: 'https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec', sheetId: '1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA', active: true }
         ];
 
         // Load sheets from localStorage or use defaults
         let sheets = [];
         let currentSheet = null;
+        let isManuallySelecting = false;
 
         // Initialize sheets
         function initSheets() {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 sheets = JSON.parse(stored);
-                // Ensure each sheet has an active flag
                 if (!sheets.some(s => s.active)) {
                     sheets[0].active = true;
                 }
@@ -795,12 +810,10 @@
             if (!document.getElementById('welcomeView').classList.contains('hidden')) {
                 // On home page, just update display
             } else if (!document.getElementById('mainApp').classList.contains('hidden')) {
-                // In main app, reload dates and stats
                 loadDates();
                 loadGroupStats();
                 addLog('System', `Reloading data for ${currentSheet.name}`, '📊');
             } else if (!document.getElementById('absenceView').classList.contains('hidden')) {
-                // In absence view, reload absence data
                 loadAbsenceDates();
                 loadAbsenceData();
             }
@@ -827,7 +840,6 @@
             saveSheets();
             renderSheetList();
             
-            // Clear inputs
             document.getElementById('newSheetName').value = '';
             document.getElementById('newSheetUrl').value = '';
             document.getElementById('newSheetId').value = '';
@@ -873,6 +885,59 @@
                 SCRIPT_URL: currentSheet.url,
                 SHEET_ID: currentSheet.sheetId
             };
+        }
+
+        // Handle manual date selection
+        function onDateManuallySelected() {
+            const autoToggle = document.getElementById('autoDateToggle');
+            const infoDiv = document.getElementById('dateToggleInfo');
+            
+            if (autoToggle.checked) {
+                // User manually selected a date while auto mode is on
+                // Disable auto mode to allow manual selection
+                autoToggle.checked = false;
+                const select = document.getElementById('dateSelect');
+                select.disabled = false;
+                infoDiv.innerHTML = '🔓 Manual mode: You can select any date';
+                addLog('System', 'Manual date selection enabled', '📅');
+            }
+            
+            // Reload stats for the selected date
+            loadGroupStats();
+        }
+
+        function toggleAutoDate() {
+            const isAuto = document.getElementById('autoDateToggle').checked;
+            const select = document.getElementById('dateSelect');
+            const infoDiv = document.getElementById('dateToggleInfo');
+            
+            if (isAuto) {
+                select.disabled = true;
+                const todayStr = getTodayDateString();
+                let found = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found && select.options.length > 0) {
+                    select.selectedIndex = 0;
+                    infoDiv.innerHTML = '⚠️ Today\'s date not available. Auto mode disabled.';
+                    select.disabled = false;
+                    document.getElementById('autoDateToggle').checked = false;
+                    return;
+                }
+                infoDiv.innerHTML = '✅ Auto mode: Today\'s date is automatically selected (click date to switch to manual)';
+                addLog('System', `Auto mode: Selected ${todayStr}`, '📅');
+            } else {
+                select.disabled = false;
+                infoDiv.innerHTML = '🔓 Manual mode: You can select any date from the list';
+                addLog('System', 'Manual mode enabled', '📅');
+            }
+            
+            loadGroupStats();
         }
 
         // Group definitions
@@ -1005,28 +1070,36 @@
                 const dates = await response.json();
                 const select = document.getElementById('dateSelect');
                 select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                toggleAutoDate();
+                
+                // Set up auto toggle after dates are loaded
+                const autoToggle = document.getElementById('autoDateToggle');
+                if (autoToggle.checked) {
+                    const todayStr = getTodayDateString();
+                    let found = false;
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value === todayStr) {
+                            select.selectedIndex = i;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        select.disabled = true;
+                        document.getElementById('dateToggleInfo').innerHTML = '✅ Auto mode: Today\'s date is automatically selected (click date to switch to manual)';
+                    } else {
+                        autoToggle.checked = false;
+                        select.disabled = false;
+                        document.getElementById('dateToggleInfo').innerHTML = '🔓 Manual mode: You can select any date from the list';
+                        addLog('System', 'Today\'s date not available, switched to manual mode', '⚠️');
+                    }
+                } else {
+                    select.disabled = false;
+                }
+                
+                loadGroupStats();
             } catch(e) {
                 console.error("Error loading dates:", e);
                 addLog('System', 'Failed to load dates', '❌');
-            }
-        }
-
-        function toggleAutoDate() {
-            const isAuto = document.getElementById('autoDateToggle').checked;
-            const select = document.getElementById('dateSelect');
-            if (isAuto && select.options.length > 0) {
-                select.disabled = true;
-                const todayStr = getTodayDateString();
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === todayStr) {
-                        select.selectedIndex = i;
-                        loadGroupStats();
-                        break;
-                    }
-                }
-            } else {
-                select.disabled = false;
             }
         }
 
