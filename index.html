@@ -854,14 +854,20 @@
         // ============ USERS ============
         const USERS = [
             {
-                username: "admin",
-                email: "admin@church.com",
+                username: "joe",
+                email: "joe@123",
                 role: "Admin",
                 sheets: null // null means access to all sheets
             },
             {
-                username: "teacher",
-                email: "teacher@church.com",
+                username: "m3",
+                email: "m3@123",
+                role: "Teacher",
+                sheets: ["M3"] // null means access to all sheets
+            },
+            {
+                username: "m2",
+                email: "m2@123",
                 role: "Teacher",
                 sheets: ["M2"] // only access to specific sheets by name
             }
