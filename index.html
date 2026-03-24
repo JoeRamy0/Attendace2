@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Secure Login</title>
+    <title>Attendance Pro - Secure Login System</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -22,7 +22,6 @@
             position: relative;
         }
 
-        /* Animated Background */
         body::before {
             content: '';
             position: fixed;
@@ -37,18 +36,18 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 550px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
         }
 
-        /* Card */
         .card {
             background: white;
             border-radius: 32px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
+            margin-bottom: 20px;
         }
 
         /* Login View */
@@ -71,17 +70,6 @@
             transform: rotate(-15deg);
         }
 
-        #loginView .card-header h2 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        #loginView .card-header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
         .login-form {
             padding: 30px;
         }
@@ -95,7 +83,6 @@
             margin-bottom: 8px;
             font-weight: 500;
             color: #1e293b;
-            font-size: 14px;
         }
 
         .form-group input {
@@ -104,13 +91,11 @@
             border: 1px solid #e2e8f0;
             border-radius: 16px;
             font-size: 14px;
-            transition: all 0.2s;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .login-btn {
@@ -123,12 +108,6 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .error-message {
@@ -137,11 +116,10 @@
             padding: 12px;
             border-radius: 12px;
             margin-bottom: 20px;
-            font-size: 13px;
             text-align: center;
         }
 
-        /* Welcome View (After Login) */
+        /* Welcome View */
         #welcomeView .card-header {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
@@ -155,7 +133,6 @@
             border-radius: 16px;
             margin-bottom: 20px;
             text-align: center;
-            border: 1px solid #eef2f6;
         }
 
         .user-name {
@@ -214,11 +191,12 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
+            text-align: center;
         }
 
         .sheet-list {
             margin-top: 10px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -245,16 +223,6 @@
             border-color: #667eea;
         }
 
-        .sheet-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f1f5f9;
-        }
-
-        .sheet-item.disabled:hover {
-            transform: none;
-        }
-
         .sheet-info {
             flex: 1;
         }
@@ -279,33 +247,37 @@
 
         .access-badge.full { background: #d1fae5; color: #059669; }
         .access-badge.readonly { background: #fef3c7; color: #d97706; }
-        .access-badge.none { background: #fee2e2; color: #dc2626; }
 
-        /* Rest of the styles (same as before) */
+        .no-access {
+            text-align: center;
+            padding: 20px;
+            color: #dc2626;
+        }
+
+        /* Welcome Buttons */
         .welcome-buttons {
             display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .welcome-btn {
             flex: 1;
-            padding: 18px 12px;
-            font-size: 16px;
+            padding: 15px 8px;
+            font-size: 14px;
             font-weight: 600;
             border: none;
-            border-radius: 20px;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .welcome-btn .btn-icon { font-size: 32px; }
-        .welcome-btn .btn-text { font-size: 14px; }
+        .welcome-btn .btn-icon { font-size: 24px; }
+        .welcome-btn .btn-text { font-size: 12px; }
 
         .welcome-btn.scanner {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
@@ -330,54 +302,171 @@
         .info-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .info-card {
             background: #f8fafc;
-            padding: 15px;
-            border-radius: 20px;
+            padding: 12px;
+            border-radius: 16px;
             text-align: center;
             border: 1px solid #eef2f6;
         }
 
-        .info-icon { font-size: 28px; margin-bottom: 8px; }
-        .info-title { font-size: 13px; font-weight: 600; }
-        .info-desc { font-size: 11px; color: #64748b; }
-
-        .hidden { display: none; }
+        .info-icon { font-size: 24px; }
+        .info-title { font-size: 12px; font-weight: 600; margin-top: 5px; }
+        .info-desc { font-size: 10px; color: #64748b; }
 
         /* Main App Styles */
         #mainApp .card-header, #absenceView .card-header {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
+        }
+
+        .card-body {
+            padding: 20px;
         }
 
         .group-card {
             background: #f8fafc;
             border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
             border: 1px solid #eef2f6;
+        }
+
+        .group-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .group-stats {
+            display: flex;
+            gap: 15px;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-number.present { color: #27ae60; }
+        .stat-number.absent { color: #e74c3c; }
+        .stat-label { font-size: 10px; color: #64748b; }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #27ae60;
+            height: 100%;
+            transition: width 0.3s;
         }
 
         .date-section {
             background: #f8fafc;
             padding: 15px;
-            border-radius: 20px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+        }
+
+        .auto-toggle {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .toggle-slider { background-color: #27ae60; }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+        }
+
+        select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
         }
 
         .logs-container {
             background: #f8fafc;
-            border-radius: 20px;
-            padding: 15px;
-            margin: 20px 0;
-            max-height: 300px;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 15px 0;
+            max-height: 250px;
             overflow-y: auto;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            gap: 8px;
+            background: white;
         }
 
         .btn {
@@ -400,13 +489,64 @@
             margin-top: 15px;
         }
 
-        #reader { width: 100%; border-radius: 20px; display: none; background: #000; }
-        .scanner-status { background: #f1f5f9; padding: 12px; border-radius: 16px; text-align: center; margin: 10px 0; display: none; }
-        .upload-section { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 25px 20px; text-align: center; margin: 15px 0; }
-        .file-input-label { display: inline-flex; padding: 12px 28px; background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; border-radius: 40px; cursor: pointer; }
+        .hidden { display: none; }
+
+        #reader {
+            width: 100%;
+            border-radius: 16px;
+            display: none;
+            background: #000;
+            margin: 10px 0;
+        }
+
+        .scanner-status {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 13px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .upload-section {
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
         input[type="file"] { display: none; }
-        .progress-container { background: #e2e8f0; border-radius: 20px; height: 6px; margin: 15px 0; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60 0%, #2c7da0 100%); border-radius: 20px; transition: width 0.3s; }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #27ae60;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .processing-pulse { animation: pulse 1s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -421,23 +561,23 @@
                 <div id="loginError" class="error-message hidden"></div>
                 <div class="form-group">
                     <label>👤 Username</label>
-                    <input type="text" id="username" placeholder="Enter your username" autocomplete="off">
+                    <input type="text" id="username" placeholder="Enter your username">
                 </div>
                 <div class="form-group">
                     <label>📧 Email</label>
-                    <input type="email" id="email" placeholder="Enter your email" autocomplete="off">
+                    <input type="email" id="email" placeholder="Enter your email">
                 </div>
                 <button class="login-btn" onclick="login()">🔐 Login</button>
             </div>
         </div>
 
-        <!-- Welcome View (After Login) -->
+        <!-- Welcome View -->
         <div class="card hidden" id="welcomeView">
             <div class="card-header">
                 <h2>⛪ Attendance Pro</h2>
                 <p>Welcome to Attendance Management System</p>
             </div>
-            <div class="card-body" style="padding: 25px;">
+            <div class="card-body">
                 <div class="user-info">
                     <div class="user-name" id="displayName"></div>
                     <div class="user-email" id="displayEmail"></div>
@@ -445,15 +585,12 @@
                     <button class="logout-btn" onclick="logout()">🚪 Logout</button>
                 </div>
 
-                <!-- Sheet Selector Section -->
                 <div class="sheet-selector">
                     <div class="sheet-selector-header">
-                        <span class="sheet-selector-title">📊 Available Sheets</span>
+                        <span class="sheet-selector-title">📊 Select Sheet</span>
                     </div>
-                    <div id="availableSheetsList"></div>
-                    <div id="noAccessMessage" class="hidden" style="text-align: center; padding: 20px; color: #dc2626;">
-                        ⚠️ You don't have access to any sheets. Please contact administrator.
-                    </div>
+                    <div id="sheetListContainer"></div>
+                    <div id="noAccessMsg" class="hidden no-access">⚠️ You don't have access to any sheets. Please contact administrator.</div>
                 </div>
 
                 <div class="welcome-buttons">
@@ -474,56 +611,70 @@
                 <div class="info-cards">
                     <div class="info-card"><div class="info-icon">✅</div><div class="info-title">Quick Marking</div><div class="info-desc">Scan QR codes instantly</div></div>
                     <div class="info-card"><div class="info-icon">📊</div><div class="info-title">Export Reports</div><div class="info-desc">Attendance & Absence lists</div></div>
-                    <div class="info-card"><div class="info-icon">📱</div><div class="info-title">Works Offline</div><div class="info-desc">Sync when back online</div></div>
-                    <div class="info-card"><div class="info-icon">🔒</div><div class="info-title">Role-Based Access</div><div class="info-desc">Secure sheet permissions</div></div>
+                    <div class="info-card"><div class="info-icon">📱</div><div class="info-title">Offline Sync</div><div class="info-desc">Sync when back online</div></div>
+                    <div class="info-card"><div class="info-icon">🔒</div><div class="info-title">Role-Based Access</div><div class="info-desc">Secure permissions</div></div>
                 </div>
             </div>
         </div>
 
-        <!-- Main App View (Scanner & Upload) -->
+        <!-- Main App View -->
         <div class="card hidden" id="mainApp">
             <div class="card-header">
                 <h2 id="modeTitle">Scanner Mode</h2>
                 <p id="modeDescription">Scan QR code to mark attendance</p>
-                <div id="activeSheetBadge" style="font-size: 11px; margin-top: 8px;"></div>
+                <div id="activeSheetInfo" style="font-size: 11px; margin-top: 5px;"></div>
             </div>
-            <div class="card-body" style="padding: 20px;">
+            <div class="card-body">
                 <div id="groupStatsContainer"></div>
+                
                 <div class="date-section">
-                    <div class="auto-toggle" style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <div class="auto-toggle">
                         <span>📅 Auto-select today</span>
-                        <label class="toggle-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
-                            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()" style="opacity:0; width:0; height:0;">
-                            <span class="toggle-slider" style="position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background-color:#cbd5e1; border-radius:24px;"></span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+                            <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <select id="dateSelect" onchange="onDateManuallySelected()"></select>
                 </div>
+
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus"><span>📷 Ready to scan</span></div>
+
                 <div id="fileSection" class="hidden">
-                    <div class="upload-section"><label class="file-input-label">📁 Choose File<input type="file" id="fileInput" accept=".txt,.csv"></label>
-                    <div id="fileName" style="margin-top:10px;">No file selected</div>
-                    <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-                    <button class="btn btn-primary" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top:12px;">🚀 Start Upload</button>
-                    <div id="uploadStats" style="font-size:12px; margin-top:10px;"></div></div>
+                    <div class="upload-section">
+                        <label class="file-input-label">📁 Choose File (.txt or .csv)<input type="file" id="fileInput" accept=".txt,.csv"></label>
+                        <div id="fileName" style="margin-top: 10px; font-size: 12px;">No file selected</div>
+                        <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
+                        <button class="btn btn-primary" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 10px;">🚀 Start Upload</button>
+                        <div id="uploadStats" style="font-size: 11px; margin-top: 8px;"></div>
+                    </div>
                 </div>
-                <div class="logs-container"><div class="logs-header"><span>📋 Activity Log</span><button onclick="clearLogs()" style="background:none; border:none;">Clear</button></div>
-                <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div></div>
-                <div class="button-group"><button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
-                <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button></div>
-                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top:12px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
+
+                <div class="logs-container">
+                    <div class="logs-header"><span>📋 Activity Log</span><button onclick="clearLogs()" style="background:none; border:none; cursor:pointer;">Clear</button></div>
+                    <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+                    <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
+                </div>
+                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top: 10px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
             </div>
         </div>
 
-        <!-- Absence Export View -->
+        <!-- Absence View -->
         <div class="card hidden" id="absenceView">
-            <div class="card-header"><h2>📋 Absence Report</h2><p>View and export absence list</p></div>
-            <div class="card-body" style="padding:20px;">
-                <div class="date-section"><label>Select Date:</label><select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top:10px; width:100%; padding:12px;"></select></div>
+            <div class="card-header"><h2>📋 Absence Report</h2><p>View absence list by group</p><div id="absenceSheetInfo" style="font-size: 11px; margin-top: 5px;"></div></div>
+            <div class="card-body">
+                <div class="date-section">
+                    <label>Select Date:</label>
+                    <select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top: 10px;"></select>
+                </div>
                 <div id="absenceLoading" style="display:none; text-align:center; padding:20px;">⏳ Loading...</div>
                 <div id="absenceGroupsContainer"></div>
-                <div class="button-group" style="margin-top:15px;">
+                <div class="button-group" style="margin-top: 15px;">
                     <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export Absence</button>
                     <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
                 </div>
@@ -533,8 +684,7 @@
 
     <script>
         // ============ USER CONFIGURATION ============
-        // Define users with their roles and sheet permissions
-        const USERS = [
+const USERS = [
             {
                 username: "youssef",
                 email: "joramy0000@gmail.com",
@@ -570,12 +720,15 @@
             }
         ];
 
-        // ============ GLOBAL STATE ============
-        let currentUser = null;
-        let userSheets = [];
-        let currentSheet = null;
-        let currentAccessLevel = null;
 
+        // Group order
+        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
+
+        // App State
+        let currentUser = null;
+        let currentSheet = null;
+        let currentAccess = null;
+        
         let appState = {
             scanner: null,
             scannedNamesSet: new Set(),
@@ -586,9 +739,8 @@
             syncInterval: null,
             isProcessing: false
         };
-
+        
         let absenceData = null;
-        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
 
         // ============ LOGIN FUNCTIONS ============
         function login() {
@@ -602,7 +754,6 @@
                 return;
             }
             
-            // Find user
             const user = USERS.find(u => u.username.toLowerCase() === username.toLowerCase() && u.email.toLowerCase() === email.toLowerCase());
             
             if (!user) {
@@ -612,40 +763,36 @@
             }
             
             currentUser = user;
-            userSheets = [...user.sheets];
             
-            // Save to localStorage for session persistence
+            // Save session
             localStorage.setItem('attendance_user', JSON.stringify({
                 username: user.username,
                 email: user.email,
                 role: user.role
             }));
             
-            // Load user's sheets
+            // Load sheets
             loadUserSheets();
             
             // Show welcome view
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
             
-            // Update user info display
+            // Update user info
             document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
             document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
             document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
             
-            addLogToWelcome('System', `Welcome ${user.username}! You have ${userSheets.length} sheet(s) available.`, '✅');
+            addLogToUI('System', `Welcome ${user.username}!`, '✅');
         }
         
         function loadUserSheets() {
-            const container = document.getElementById('availableSheetsList');
-            const noAccessMsg = document.getElementById('noAccessMessage');
+            const container = document.getElementById('sheetListContainer');
+            const noAccessMsg = document.getElementById('noAccessMsg');
             
-            if (!container) return;
-            
-            if (userSheets.length === 0) {
+            if (!currentUser || currentUser.sheets.length === 0) {
                 container.innerHTML = '';
                 noAccessMsg.classList.remove('hidden');
-                // Disable all action buttons
                 document.getElementById('scannerBtn').classList.add('disabled');
                 document.getElementById('uploadBtn').classList.add('disabled');
                 document.getElementById('absenceBtn').classList.add('disabled');
@@ -653,22 +800,21 @@
             }
             
             noAccessMsg.classList.add('hidden');
-            // Enable buttons if user has at least one sheet
             document.getElementById('scannerBtn').classList.remove('disabled');
             document.getElementById('uploadBtn').classList.remove('disabled');
             document.getElementById('absenceBtn').classList.remove('disabled');
             
-            // Set first sheet as active by default
-            if (!currentSheet && userSheets.length > 0) {
-                currentSheet = userSheets[0];
-                currentAccessLevel = currentSheet.access;
+            // Set first sheet as active if none selected
+            if (!currentSheet) {
+                currentSheet = currentUser.sheets[0];
+                currentAccess = currentSheet.access;
             }
             
-            container.innerHTML = userSheets.map((sheet, index) => `
+            container.innerHTML = currentUser.sheets.map((sheet, index) => `
                 <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
                     <div class="sheet-info">
                         <div class="sheet-name">${escapeHtml(sheet.name)}</div>
-                        <div class="sheet-access">Access: ${sheet.access === 'full' ? '✏️ Read/Write' : '👁️ Read Only'}</div>
+                        <div class="sheet-access">${sheet.access === 'full' ? '✏️ Read/Write' : '👁️ Read Only'}</div>
                     </div>
                     <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full Access' : 'View Only'}</div>
                 </div>
@@ -676,11 +822,10 @@
         }
         
         function selectSheet(index) {
-            currentSheet = userSheets[index];
-            currentAccessLevel = currentSheet.access;
-            loadUserSheets(); // Refresh to show active
-            
-            addLogToWelcome('System', `Switched to: ${currentSheet.name} (${currentAccessLevel} access)`, '🔄');
+            currentSheet = currentUser.sheets[index];
+            currentAccess = currentSheet.access;
+            loadUserSheets();
+            addLogToUI('System', `Switched to: ${currentSheet.name} (${currentAccess} access)`, '🔄');
             
             // If in main app, reload data
             if (!document.getElementById('mainApp').classList.contains('hidden')) {
@@ -703,104 +848,58 @@
         }
         
         function canWrite() {
-            return currentAccessLevel === 'full';
+            return currentAccess === 'full';
         }
         
         function logout() {
             currentUser = null;
             currentSheet = null;
-            userSheets = [];
+            currentAccess = null;
             localStorage.removeItem('attendance_user');
             
-            // Reset UI
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('loginView').classList.remove('hidden');
             document.getElementById('username').value = '';
             document.getElementById('email').value = '';
-            document.getElementById('loginError').classList.add('hidden');
-            
-            // Reset app state
-            if (appState.scanner) {
-                try { appState.scanner.stop(); } catch(e) {}
-                appState.scanner = null;
-            }
-            if (appState.syncInterval) clearInterval(appState.syncInterval);
         }
         
-        function addLogToWelcome(name, status, icon = '📌') {
-            // For welcome view logs if needed
-            console.log(`${icon} ${name}: ${status}`);
+        // ============ UI HELPER FUNCTIONS ============
+        function addLogToUI(name, status, icon = '📌') {
+            const container = document.getElementById('logsList');
+            if (!container) return;
+            
+            let statusText = status;
+            if (status === 'processing') statusText = 'processing';
+            if (status === 'success') statusText = '✓ marked';
+            if (status === 'already') statusText = 'already marked';
+            if (status === 'error') statusText = 'error';
+            if (status === 'notfound') statusText = 'not found';
+            if (status === 'queued') statusText = 'queued';
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${statusText}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            while (container.children.length > 30) container.removeChild(container.lastChild);
         }
         
-        // ============ APP FUNCTIONS (Same as before but with access control) ============
-        
-        function checkAccess(action) {
-            if (!canWrite() && action !== 'view') {
-                alert(`⚠️ You have read-only access to ${currentSheet.name}. You cannot ${action}.`);
-                return false;
-            }
-            return true;
+        function clearLogs() {
+            const container = document.getElementById('logsList');
+            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
         }
         
-        async function showApp(mode) {
-            const config = getCurrentConfig();
-            if (!config) {
-                alert('Please select a sheet first!');
-                return;
-            }
-            
-            resetAppState();
-            
-            document.getElementById('welcomeView').classList.add('hidden');
-            document.getElementById('absenceView').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            
-            document.getElementById('activeSheetBadge').innerHTML = `📄 ${currentSheet.name} (${currentAccessLevel} access)`;
-            
-            appState.currentMode = mode;
-            
-            if (mode === 'scan') {
-                document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
-                document.getElementById('modeDescription').innerText = canWrite() ? 'Scan QR code to mark attendance' : 'Read-only mode - cannot mark attendance';
-                document.getElementById('fileSection').classList.add('hidden');
-                await loadDates();
-                await loadGroupStats();
-                if (canWrite()) {
-                    await startScanner();
-                    startBackgroundSync();
-                } else {
-                    document.getElementById('scannerStatus').style.display = 'block';
-                    document.getElementById('scannerStatus').innerHTML = '<span>🔒 Read-only mode. You cannot mark attendance.</span>';
-                }
-                addLogToWelcome('System', `${currentSheet.name} - ${currentAccessLevel} mode`, '📸');
-            } else {
-                if (!canWrite()) {
-                    alert('⚠️ You have read-only access. Bulk upload is disabled.');
-                    backToWelcome();
-                    return;
-                }
-                document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
-                document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
-                document.getElementById('fileSection').classList.remove('hidden');
-                await loadDates();
-                await loadGroupStats();
-                setupDragAndDrop();
-                addLogToWelcome('System', `Upload mode ready - ${currentSheet.name}`, '📁');
-            }
-        }
-        
-        async function loadDates() {
-            const config = getCurrentConfig();
-            if (!config) return;
-            try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
-                const dates = await response.json();
-                const select = document.getElementById('dateSelect');
-                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                toggleAutoDate();
-            } catch(e) { console.error(e); }
+        // ============ DATE FUNCTIONS ============
+        function getTodayDateString() {
+            const now = new Date();
+            return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
         }
         
         function toggleAutoDate() {
@@ -826,9 +925,40 @@
             if (autoToggle.checked) {
                 autoToggle.checked = false;
                 document.getElementById('dateSelect').disabled = false;
-                addLogToWelcome('System', 'Manual date selection enabled', '📅');
             }
             loadGroupStats();
+        }
+        
+        // ============ API FUNCTIONS ============
+        async function fetchWithRetry(url, retries = 2) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const response = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (response.ok) return response;
+                    if (response.status === 429) await new Promise(r => setTimeout(r, 1000));
+                } catch(e) {
+                    if (i === retries - 1) throw e;
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            throw new Error('Fetch failed');
+        }
+        
+        async function loadDates() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
+                const dates = await response.json();
+                const select = document.getElementById('dateSelect');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                toggleAutoDate();
+            } catch(e) {
+                addLogToUI('System', 'Failed to load dates', '❌');
+            }
         }
         
         async function loadGroupStats() {
@@ -840,35 +970,62 @@
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
                 const stats = await response.json();
                 if (!stats.error) renderGroupStats(stats);
-            } catch(e) { console.error(e); }
+            } catch(e) {
+                console.error(e);
+            }
         }
         
         function renderGroupStats(stats) {
             const container = document.getElementById('groupStatsContainer');
             if (!container) return;
+            
             container.innerHTML = GROUP_ORDER.map(groupName => {
                 const group = stats[groupName];
                 if (!group) return '';
-                return `<div class="group-card"><div class="group-title"><span>${groupName}</span><span>${group.percentage}%</span></div>
-                        <div>Total: ${group.total} | Present: ${group.present} | Absent: ${group.absent}</div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${group.percentage}%; height:6px; background:#27ae60;"></div></div></div>`;
+                const percentage = group.percentage || 0;
+                return `
+                    <div class="group-card">
+                        <div class="group-title">
+                            <span>${groupName}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="group-stats">
+                            <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
+                            <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
+                            <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                    </div>
+                `;
             }).join('');
         }
         
+        // ============ SCANNER FUNCTIONS ============
         async function startScanner() {
-            if (!canWrite()) return;
+            if (!canWrite()) {
+                document.getElementById('scannerStatus').style.display = 'block';
+                document.getElementById('scannerStatus').innerHTML = '<span>🔒 Read-only mode. Cannot mark attendance.</span>';
+                return;
+            }
+            
             const readerDiv = document.getElementById('reader');
-            if (!readerDiv) return;
             readerDiv.style.display = 'block';
             document.getElementById('scannerStatus').style.display = 'block';
+            
             try {
                 appState.scanner = new Html5Qrcode("reader");
-                await appState.scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
-                    (decodedText) => { if (!appState.isProcessing) processScan(decodedText.trim()); },
-                    () => {});
+                await appState.scanner.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        if (!appState.isProcessing) processScan(decodedText.trim());
+                    },
+                    () => {}
+                );
                 document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
             } catch(err) {
-                addLogToWelcome('System', 'Camera access failed', '❌');
+                addLogToUI('System', 'Camera access failed', '❌');
+                document.getElementById('scannerStatus').innerHTML = '<span>❌ Camera access denied</span>';
             }
         }
         
@@ -877,228 +1034,465 @@
             const config = getCurrentConfig();
             if (!config) return false;
             if (!name || appState.scannedNamesSet.has(name) || appState.isProcessing) return false;
+            
             appState.isProcessing = true;
-            if (!isBatch) addLogToWelcome(name, 'processing', '⏳');
+            if (!isBatch) {
+                addLogToUI(name, 'processing', '⏳');
+                document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ Processing: ${escapeHtml(name)}...</span>`;
+            }
+            
             const currentDate = document.getElementById('dateSelect').value;
-            if (!currentDate) { appState.isProcessing = false; return false; }
+            if (!currentDate) {
+                appState.isProcessing = false;
+                return false;
+            }
+            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=mark&sheetId=${config.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`, 1);
                 const text = await response.text();
+                
                 if (text.includes("Success")) {
-                    addLogToWelcome(name, 'success', '✅');
+                    addLogToUI(name, 'success', '✅');
                     appState.scannedNamesSet.add(name);
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
                     await loadGroupStats();
                     appState.isProcessing = false;
                     return true;
                 } else if (text.includes("Already Marked")) {
-                    addLogToWelcome(name, 'already', '⚠️');
+                    addLogToUI(name, 'already', '⚠️');
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
+                    appState.isProcessing = false;
+                    return false;
+                } else if (text.includes("not found")) {
+                    addLogToUI(name, 'notfound', '🔍');
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
                     appState.isProcessing = false;
                     return false;
                 } else {
-                    addLogToWelcome(name, 'error', '❌');
+                    addLogToUI(name, 'error', '❌');
                     appState.isProcessing = false;
                     return false;
                 }
             } catch (error) {
-                addLogToWelcome(name, 'queued', '📱');
+                addLogToUI(name, 'queued', '📱');
                 if (!isBatch && !appState.offlineQueue.includes(name)) appState.offlineQueue.push(name);
                 updateQueueUI();
                 appState.isProcessing = false;
+                if (!isBatch) {
+                    document.getElementById('scannerStatus').innerHTML = '<span>📱 Offline - Saved to queue</span>';
+                    setTimeout(() => {
+                        document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                    }, 1500);
+                }
                 return false;
             }
         }
         
         function updateQueueUI() {
-            document.getElementById('queueCount') && (document.getElementById('queueCount').innerText = appState.offlineQueue.length);
+            document.getElementById('queueCount').innerText = appState.offlineQueue.length;
             const syncBtn = document.getElementById('syncBtn');
-            if (syncBtn) appState.offlineQueue.length > 0 ? syncBtn.classList.remove('hidden') : syncBtn.classList.add('hidden');
+            if (appState.offlineQueue.length > 0) {
+                syncBtn.classList.remove('hidden');
+            } else {
+                syncBtn.classList.add('hidden');
+            }
         }
         
         async function syncQueue() {
             if (!canWrite()) return;
             const config = getCurrentConfig();
             if (!config || appState.isSyncing || appState.offlineQueue.length === 0) return;
+            
             appState.isSyncing = true;
+            addLogToUI('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
+            
             try {
                 const currentDate = document.getElementById('dateSelect').value;
                 if (!currentDate) return;
+                
                 const toSync = [...appState.offlineQueue];
                 for (let i = 0; i < toSync.length; i += 20) {
                     const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
                     try {
                         const response = await fetch(`${config.SCRIPT_URL}`, {
                             method: 'POST',
-                            body: JSON.stringify({ action: 'batchMark', sheetId: config.SHEET_ID, names: batch, date: currentDate })
+                            body: JSON.stringify({
+                                action: 'batchMark',
+                                sheetId: config.SHEET_ID,
+                                names: batch,
+                                date: currentDate
+                            })
                         });
                         const result = await response.json();
                         if (!result.error && result.success) {
-                            result.success.forEach(name => appState.scannedNamesSet.add(name));
+                            result.success.forEach(name => {
+                                if (!appState.scannedNamesSet.has(name)) {
+                                    appState.scannedNamesSet.add(name);
+                                    addLogToUI(name, 'success', '✅');
+                                }
+                            });
                         }
                     } catch(e) {}
                 }
                 appState.offlineQueue = [];
                 updateQueueUI();
+                addLogToUI('System', 'Sync completed', '✅');
                 await loadGroupStats();
-            } finally { appState.isSyncing = false; updateQueueUI(); }
+            } finally {
+                appState.isSyncing = false;
+                updateQueueUI();
+            }
         }
         
         function startBackgroundSync() {
             if (appState.syncInterval) clearInterval(appState.syncInterval);
             appState.syncInterval = setInterval(() => {
-                if (appState.offlineQueue.length > 0 && navigator.onLine && appState.currentMode === 'scan') syncQueue();
+                if (appState.offlineQueue.length > 0 && navigator.onLine && appState.currentMode === 'scan') {
+                    syncQueue();
+                }
             }, 5000);
         }
         
+        // ============ BULK UPLOAD FUNCTIONS ============
         function setupDragAndDrop() {
-            const area = document.getElementById('uploadArea') || document.querySelector('.upload-section');
-            if (!area) return;
-            area.addEventListener('dragover', (e) => { e.preventDefault(); area.style.borderColor = '#27ae60'; });
-            area.addEventListener('dragleave', () => { area.style.borderColor = '#e2e8f0'; });
-            area.addEventListener('drop', (e) => {
-                e.preventDefault(); area.style.borderColor = '#e2e8f0';
+            const uploadSection = document.querySelector('.upload-section');
+            if (!uploadSection) return;
+            
+            uploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadSection.style.borderColor = '#27ae60';
+            });
+            uploadSection.addEventListener('dragleave', () => {
+                uploadSection.style.borderColor = '#e2e8f0';
+            });
+            uploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadSection.style.borderColor = '#e2e8f0';
                 const file = e.dataTransfer.files[0];
                 if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv'))) {
                     document.getElementById('fileInput').files = e.dataTransfer.files;
                     document.getElementById('fileName').innerText = file.name;
                 }
             });
+            
             document.getElementById('fileInput').addEventListener('change', (e) => {
-                if (e.target.files[0]) document.getElementById('fileName').innerText = e.target.files[0].name;
+                if (e.target.files[0]) {
+                    document.getElementById('fileName').innerText = e.target.files[0].name;
+                }
             });
         }
         
         async function handleBulkUpload() {
-            if (!canWrite()) { alert('Read-only mode. Cannot upload.'); return; }
+            if (!canWrite()) {
+                alert('Read-only mode. Cannot upload.');
+                return;
+            }
+            
             const config = getCurrentConfig();
-            if (!config) return;
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
             const file = document.getElementById('fileInput').files[0];
-            if (!file) { alert("Please select a file!"); return; }
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
+            
             try {
                 const text = await file.text();
-                let names = text.split(/\r?\n/).filter(l => l.trim().length > 0).map(n => n.split(',')[0].replace(/["']/g, '').trim()).filter(n => n.length > 0);
+                let names = text.split(/\r?\n/)
+                    .filter(line => line.trim().length > 0)
+                    .map(n => n.split(',')[0].replace(/["']/g, '').trim())
+                    .filter(n => n.length > 0);
+                
                 names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
-                if (names.length === 0) { alert("No valid names found!"); return; }
+                
+                if (names.length === 0) {
+                    alert("No valid names found!");
+                    return;
+                }
+                
                 document.getElementById('progressContainer').style.display = 'block';
                 const uploadBtn = document.getElementById('uploadBtn');
                 uploadBtn.disabled = true;
+                
                 let processed = 0, successful = 0, alreadyMarked = 0, notFound = 0;
                 const startTime = Date.now();
+                addLogToUI('System', `Starting upload: ${names.length} names`, '📁');
+                
                 const currentDate = document.getElementById('dateSelect').value;
+                
                 for (let i = 0; i < names.length; i += 50) {
                     const batch = names.slice(i, Math.min(i + 50, names.length));
                     try {
                         const response = await fetch(`${config.SCRIPT_URL}`, {
                             method: 'POST',
-                            body: JSON.stringify({ action: 'batchMark', sheetId: config.SHEET_ID, names: batch, date: currentDate })
+                            body: JSON.stringify({
+                                action: 'batchMark',
+                                sheetId: config.SHEET_ID,
+                                names: batch,
+                                date: currentDate
+                            })
                         });
                         const result = await response.json();
-                        if (result.error) { notFound += batch.length; }
-                        else {
-                            successful += result.success?.length || 0;
-                            alreadyMarked += result.alreadyMarked?.length || 0;
-                            notFound += result.notFound?.length || 0;
+                        
+                        if (result.error) {
+                            batch.forEach(name => addLogToUI(name, 'error', '❌'));
+                            notFound += batch.length;
+                        } else {
+                            (result.success || []).forEach(name => {
+                                addLogToUI(name, 'success', '✅');
+                                successful++;
+                            });
+                            (result.alreadyMarked || []).forEach(name => {
+                                addLogToUI(name, 'already', '⚠️');
+                                alreadyMarked++;
+                            });
+                            (result.notFound || []).forEach(name => {
+                                addLogToUI(name, 'notfound', '🔍');
+                                notFound++;
+                            });
                         }
-                    } catch(e) { notFound += batch.length; }
+                    } catch(err) {
+                        batch.forEach(name => addLogToUI(name, 'error', '❌'));
+                        notFound += batch.length;
+                    }
+                    
                     processed += batch.length;
-                    document.getElementById('progressBar').style.width = `${(processed / names.length) * 100}%`;
-                    const speed = (processed / ((Date.now() - startTime) / 1000)).toFixed(1);
+                    const progress = (processed / names.length) * 100;
+                    document.getElementById('progressBar').style.width = `${progress}%`;
+                    
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const speed = (processed / elapsed).toFixed(1);
                     document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${alreadyMarked} | 🔍 ${notFound} | ⚡ ${speed}/s`;
                 }
+                
                 await loadGroupStats();
+                addLogToUI('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found`, '✅');
                 uploadBtn.disabled = false;
+                
                 setTimeout(() => {
                     document.getElementById('progressContainer').style.display = 'none';
                     document.getElementById('progressBar').style.width = '0%';
                     document.getElementById('uploadStats').innerHTML = '';
                 }, 3000);
-            } catch(e) { alert('Upload failed'); document.getElementById('uploadBtn').disabled = false; }
+                
+            } catch(err) {
+                addLogToUI('System', 'Upload failed: ' + err.message, '❌');
+                document.getElementById('uploadBtn').disabled = false;
+            }
         }
         
+        // ============ EXPORT FUNCTIONS ============
         function exportToExcel() {
-            if (appState.scannedData.length === 0) { alert("No data to export!"); return; }
+            if (appState.scannedData.length === 0) {
+                alert("No data to export! Please mark some attendance first.");
+                return;
+            }
+            
             const wsData = [['Name'], ...appState.scannedData.map(item => [item.Name])];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{wch: 30}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-            XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value.replace(/\//g, '-')}.xlsx`);
+            const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
+            XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
+            addLogToUI('System', `Exported ${appState.scannedData.length} names`, '📊');
         }
         
+        // ============ ABSENCE FUNCTIONS ============
         async function showAbsenceExport() {
             const config = getCurrentConfig();
-            if (!config) { alert('Please select a sheet first!'); return; }
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.remove('hidden');
+            document.getElementById('absenceSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access)`;
             await loadAbsenceDates();
         }
         
         async function loadAbsenceDates() {
             const config = getCurrentConfig();
             if (!config) return;
+            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
                 const dates = await response.json();
                 const select = document.getElementById('absenceDateSelect');
                 select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                
                 const todayStr = getTodayDateString();
                 for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === todayStr) { select.selectedIndex = i; break; }
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        break;
+                    }
                 }
                 await loadAbsenceData();
-            } catch(e) { console.error(e); }
+            } catch(e) {
+                addLogToUI('System', 'Failed to load absence dates', '❌');
+            }
         }
         
         async function loadAbsenceData() {
             const config = getCurrentConfig();
             if (!config) return;
+            
             const date = document.getElementById('absenceDateSelect').value;
             if (!date) return;
+            
             document.getElementById('absenceLoading').style.display = 'block';
             document.getElementById('absenceGroupsContainer').innerHTML = '';
             document.getElementById('exportAbsenceBtn').style.display = 'none';
+            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
                 const data = await response.json();
+                
                 if (data.error) throw new Error(data.error);
+                
                 absenceData = data;
                 renderAbsenceGroups(data);
                 document.getElementById('exportAbsenceBtn').style.display = 'block';
             } catch(e) {
-                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="color:red;">Error: ${e.message}</div>`;
-            } finally { document.getElementById('absenceLoading').style.display = 'none'; }
+                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
+            } finally {
+                document.getElementById('absenceLoading').style.display = 'none';
+            }
         }
         
         function renderAbsenceGroups(data) {
             const container = document.getElementById('absenceGroupsContainer');
             if (!container) return;
+            
             container.innerHTML = GROUP_ORDER.map(groupName => {
                 const group = data.groups[groupName];
                 if (!group) return '';
-                return `<div class="group-card"><div class="group-title">${groupName} - ${group.percentage}%</div>
-                        <div>Total: ${group.total} | Present: ${group.present} | Absent: ${group.absent}</div>
-                        ${group.absent > 0 ? `<div><strong>Absent (${group.absent}):</strong> ${group.absentNames.join(', ')}</div>` : '<div>✅ All present</div>'}</div>`;
+                
+                const percentage = group.percentage || 0;
+                const absentList = group.absentNames.map(name => 
+                    `<div style="padding: 8px 12px; background: #fee2e2; margin: 4px 0; border-radius: 8px;">❌ ${escapeHtml(name)}</div>`
+                ).join('');
+                
+                return `
+                    <div class="group-card" style="margin-bottom: 15px;">
+                        <div class="group-title">
+                            <span>${groupName}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="group-stats">
+                            <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
+                            <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
+                            <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                        ${group.absent > 0 ? `<div style="margin-top: 12px;"><strong>📋 Absent List (${group.absent}):</strong><div style="margin-top: 8px;">${absentList}</div></div>` : '<div style="margin-top: 12px; color: #27ae60;">✅ All students are present</div>'}
+                    </div>
+                `;
             }).join('');
         }
         
         function exportAbsenceToExcel() {
             if (!absenceData) return;
+            
             const wsData = [['Absence Report'], ['Date: ' + absenceData.date], []];
+            
             for (const groupName of GROUP_ORDER) {
                 const group = absenceData.groups[groupName];
                 if (group && group.absentNames.length > 0) {
-                    wsData.push([groupName + ' - Absent (' + group.absentNames.length + ')']);
+                    wsData.push([groupName + ' - Absent Students (' + group.absentNames.length + ')']);
                     group.absentNames.forEach(name => wsData.push([name]));
                     wsData.push([]);
+                } else if (group) {
+                    wsData.push([groupName + ' - All students present ✅'], []);
                 }
             }
+            
+            wsData.push([], ['Summary']);
+            for (const groupName of GROUP_ORDER) {
+                const group = absenceData.groups[groupName];
+                if (group) {
+                    wsData.push([groupName, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
+                }
+            }
+            
             const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{wch: 25}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
             XLSX.writeFile(wb, `Absence_Report_${absenceData.date.replace(/\//g, '-')}.xlsx`);
+            addLogToUI('System', 'Absence report exported', '📊');
+        }
+        
+        // ============ NAVIGATION FUNCTIONS ============
+        async function showApp(mode) {
+            const config = getCurrentConfig();
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
+            resetAppState();
+            
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access)`;
+            
+            appState.currentMode = mode;
+            
+            if (mode === 'scan') {
+                document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
+                document.getElementById('modeDescription').innerText = canWrite() ? 'Scan QR code to mark attendance' : 'Read-only mode - cannot mark attendance';
+                document.getElementById('fileSection').classList.add('hidden');
+                await loadDates();
+                await loadGroupStats();
+                await startScanner();
+                startBackgroundSync();
+                addLogToUI('System', `Scanner ready - ${currentSheet.name}`, '📸');
+            } else {
+                if (!canWrite()) {
+                    alert('⚠️ You have read-only access. Bulk upload is disabled.');
+                    backToWelcome();
+                    return;
+                }
+                document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
+                document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
+                document.getElementById('fileSection').classList.remove('hidden');
+                await loadDates();
+                await loadGroupStats();
+                setupDragAndDrop();
+                addLogToUI('System', `Upload mode ready - ${currentSheet.name}`, '📁');
+            }
         }
         
         function resetAppState() {
-            if (appState.scanner) { try { appState.scanner.stop(); } catch(e) {} appState.scanner = null; }
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
             if (appState.syncInterval) clearInterval(appState.syncInterval);
             appState.scannedNamesSet.clear();
             appState.scannedData = [];
@@ -1108,52 +1502,20 @@
         }
         
         function backToWelcome() {
-            resetAppState();
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
-        }
-        
-        function addLog(name, status, icon = '📌') {
-            const container = document.getElementById('logsList');
-            if (!container) return;
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `<span>${icon}</span><span>${escapeHtml(name)}</span><span>${status}</span>`;
-            container.insertBefore(entry, container.firstChild);
-            while (container.children.length > 30) container.removeChild(container.lastChild);
-        }
-        
-        function clearLogs() {
-            const container = document.getElementById('logsList');
-            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
-        }
-        
-        async function fetchWithRetry(url, retries = 2) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
-                    const response = await fetch(url, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (response.ok) return response;
-                    if (response.status === 429) await delay(1000);
-                } catch(e) { if (i === retries - 1) throw e; await delay(1000); }
-            }
-            throw new Error('Fetch failed');
-        }
-        
-        function getTodayDateString() {
-            const now = new Date();
-            return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
         }
         
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
-        
-        function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         
         // Check for saved session
         function checkSavedSession() {
@@ -1163,7 +1525,6 @@
                 const user = USERS.find(u => u.username === userData.username && u.email === userData.email);
                 if (user) {
                     currentUser = user;
-                    userSheets = [...user.sheets];
                     loadUserSheets();
                     document.getElementById('loginView').classList.add('hidden');
                     document.getElementById('welcomeView').classList.remove('hidden');
