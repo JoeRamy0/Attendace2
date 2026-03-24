@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Universal Multi-Sheet System</title>
+    <title>St. Joseph Attendance Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -70,6 +70,25 @@
             transform: rotate(-15deg);
         }
 
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .app-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .creator-credit {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+
         .login-form {
             padding: 30px;
         }
@@ -123,16 +142,51 @@
         #welcomeView .card-header {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            padding: 30px;
+            padding: 25px 20px;
             text-align: center;
         }
 
-        .user-info {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 16px;
+        .welcome-app-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .welcome-creator {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* User Profile Sidebar Style */
+        .user-profile {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 20px;
             margin-bottom: 20px;
-            text-align: center;
+            border: 1px solid #eef2f6;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 12px rgba(44,125,160,0.3);
+        }
+
+        .user-details {
+            flex: 1;
         }
 
         .user-name {
@@ -142,30 +196,37 @@
         }
 
         .user-email {
-            font-size: 12px;
+            font-size: 11px;
             color: #64748b;
             margin-top: 4px;
         }
 
-        .user-role {
+        .user-role-badge {
             display: inline-block;
             background: #2c7da0;
             color: white;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 11px;
-            margin-top: 8px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-top: 6px;
         }
 
-        .logout-btn {
+        .logout-btn-side {
             background: #e74c3c;
             color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 40px;
             font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn-side:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
         }
 
         /* Sheet Selector */
@@ -610,8 +671,9 @@
         <!-- Login View -->
         <div class="card" id="loginView">
             <div class="card-header">
-                <h2>⛪ Attendance Pro</h2>
-                <p>Universal Multi-Sheet Attendance System</p>
+                <div class="app-title">⛪ St. Joseph Attendance Pro</div>
+                <div class="app-subtitle">Smart Attendance Management System</div>
+                <div class="creator-credit">Created by: Youssef Ramy</div>
             </div>
             <div class="login-form">
                 <div id="loginError" class="error-message hidden"></div>
@@ -630,15 +692,19 @@
         <!-- Welcome View -->
         <div class="card hidden" id="welcomeView">
             <div class="card-header">
-                <h2>⛪ Attendance Pro</h2>
-                <p>Welcome to Attendance Management System</p>
+                <div class="welcome-app-title">⛪ St. Joseph Attendance Pro</div>
+                <div class="welcome-creator">Created by: Youssef Ramy</div>
             </div>
             <div class="card-body">
-                <div class="user-info">
-                    <div class="user-name" id="displayName"></div>
-                    <div class="user-email" id="displayEmail"></div>
-                    <div class="user-role" id="displayRole"></div>
-                    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                <!-- User Profile - Side Style -->
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="displayName"></div>
+                        <div class="user-email" id="displayEmail"></div>
+                        <div class="user-role-badge" id="displayRole"></div>
+                    </div>
+                    <button class="logout-btn-side" onclick="logout()">🚪 Logout</button>
                 </div>
 
                 <div class="sheet-selector">
@@ -797,7 +863,7 @@
                 username: "teacher",
                 email: "teacher@church.com",
                 role: "Teacher",
-                sheets: ["M2 - Full Groups"] // only access to specific sheets by name
+                sheets: ["M2"] // only access to specific sheets by name
             }
         ];
         
@@ -845,7 +911,6 @@
         function loadUserSheets() {
             const container = document.getElementById('sheetListContainer');
             const currentDisplay = document.getElementById('currentSheetDisplay');
-            const noAccessMsg = document.getElementById('noAccessMsg');
             const userSheets = getUserSheets();
             
             if (!currentUser || userSheets.length === 0) {
@@ -1022,9 +1087,15 @@
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
             
-            document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
-            document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
-            document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
+            // Get avatar initial
+            const avatar = document.getElementById('userAvatar');
+            if (avatar) {
+                avatar.innerHTML = user.username.charAt(0).toUpperCase();
+            }
+            
+            document.getElementById('displayName').innerHTML = `${user.username}`;
+            document.getElementById('displayEmail').innerHTML = `${user.email}`;
+            document.getElementById('displayRole').innerHTML = `${user.role}`;
             
             addLogToUI('System', `Welcome ${user.username}! You have access to ${getUserSheets().length} sheet(s)`, '✅');
         }
@@ -1061,9 +1132,14 @@
                     loadUserSheets();
                     document.getElementById('loginView').classList.add('hidden');
                     document.getElementById('welcomeView').classList.remove('hidden');
-                    document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
-                    document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
-                    document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
+                    
+                    const avatar = document.getElementById('userAvatar');
+                    if (avatar) {
+                        avatar.innerHTML = user.username.charAt(0).toUpperCase();
+                    }
+                    document.getElementById('displayName').innerHTML = `${user.username}`;
+                    document.getElementById('displayEmail').innerHTML = `${user.email}`;
+                    document.getElementById('displayRole').innerHTML = `${user.role}`;
                 }
             }
         }
