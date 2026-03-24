@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Secure Login System</title>
+    <title>Attendance Pro - Universal Multi-Sheet System</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -36,7 +36,7 @@
         }
 
         .container {
-            max-width: 550px;
+            max-width: 600px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -184,6 +184,16 @@
             margin-bottom: 12px;
         }
 
+        .add-sheet-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
         .current-sheet {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
@@ -192,11 +202,12 @@
             font-size: 12px;
             font-weight: 500;
             text-align: center;
+            margin-bottom: 10px;
         }
 
         .sheet-list {
             margin-top: 10px;
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
@@ -232,7 +243,7 @@
             color: #1e293b;
         }
 
-        .sheet-access {
+        .sheet-details {
             font-size: 10px;
             color: #64748b;
             margin-top: 2px;
@@ -248,10 +259,55 @@
         .access-badge.full { background: #d1fae5; color: #059669; }
         .access-badge.readonly { background: #fef3c7; color: #d97706; }
 
-        .no-access {
-            text-align: center;
-            padding: 20px;
-            color: #dc2626;
+        .sheet-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .add-sheet-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .form-group-small {
+            margin-bottom: 10px;
+        }
+
+        .form-group-small input, .form-group-small select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 20px;
+            background: #2c7da0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-small:hover {
+            background: #1f5e7a;
         }
 
         /* Welcome Buttons */
@@ -555,7 +611,7 @@
         <div class="card" id="loginView">
             <div class="card-header">
                 <h2>⛪ Attendance Pro</h2>
-                <p>Secure Access Control System</p>
+                <p>Universal Multi-Sheet Attendance System</p>
             </div>
             <div class="login-form">
                 <div id="loginError" class="error-message hidden"></div>
@@ -587,10 +643,34 @@
 
                 <div class="sheet-selector">
                     <div class="sheet-selector-header">
-                        <span class="sheet-selector-title">📊 Select Sheet</span>
+                        <span class="sheet-selector-title">📊 Available Sheets</span>
+                        <button class="add-sheet-btn" onclick="toggleAddSheetForm()">+ Add Sheet</button>
                     </div>
+                    <div id="currentSheetDisplay" class="current-sheet"></div>
                     <div id="sheetListContainer"></div>
-                    <div id="noAccessMsg" class="hidden no-access">⚠️ You don't have access to any sheets. Please contact administrator.</div>
+                    
+                    <!-- Add Sheet Form (Hidden by default) -->
+                    <div id="addSheetForm" class="add-sheet-form hidden">
+                        <div class="form-group-small">
+                            <input type="text" id="newSheetName" placeholder="Sheet Name (e.g., Sunday School)">
+                        </div>
+                        <div class="form-group-small">
+                            <input type="text" id="newSheetUrl" placeholder="Google Apps Script URL">
+                        </div>
+                        <div class="form-group-small">
+                            <input type="text" id="newSheetId" placeholder="Google Sheet ID">
+                        </div>
+                        <div class="form-group-small">
+                            <input type="text" id="newSheetGroups" placeholder="Group Names (comma separated, e.g., خدم,اولى بنين,تانيه بنين)">
+                        </div>
+                        <div class="form-group-small">
+                            <select id="newSheetAccess">
+                                <option value="full">Full Access (Read/Write)</option>
+                                <option value="readonly">Read Only</option>
+                            </select>
+                        </div>
+                        <button class="btn-small" onclick="addNewSheet()">➕ Add Sheet</button>
+                    </div>
                 </div>
 
                 <div class="welcome-buttons">
@@ -612,7 +692,7 @@
                     <div class="info-card"><div class="info-icon">✅</div><div class="info-title">Quick Marking</div><div class="info-desc">Scan QR codes instantly</div></div>
                     <div class="info-card"><div class="info-icon">📊</div><div class="info-title">Export Reports</div><div class="info-desc">Attendance & Absence lists</div></div>
                     <div class="info-card"><div class="info-icon">📱</div><div class="info-title">Offline Sync</div><div class="info-desc">Sync when back online</div></div>
-                    <div class="info-card"><div class="info-icon">🔒</div><div class="info-title">Role-Based Access</div><div class="info-desc">Secure permissions</div></div>
+                    <div class="info-card"><div class="info-icon">🔌</div><div class="info-title">Multi-Sheet</div><div class="info-desc">Add unlimited sheets</div></div>
                 </div>
             </div>
         </div>
@@ -683,51 +763,50 @@
     </div>
 
     <script>
-        // ============ USER CONFIGURATION ============
-const USERS = [
+        // ============ STORAGE KEYS ============
+        const STORAGE_SHEETS_KEY = 'attendance_universal_sheets';
+        const STORAGE_USER_KEY = 'attendance_user';
+        
+        // ============ DEFAULT SHEETS ============
+        const DEFAULT_SHEETS = [
             {
-                username: "youssef",
-                email: "joramy0000@gmail.com",
-                role: "Admin",
-                sheets: [
-                    { name: "Sunday School", url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec", sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA", access: "full" },
-                    { name: "Youth Group", url: "https://script.google.com/macros/s/AKfycbxYotAOxC314l0PAQ67j9Q0SGUrFwbyVQiKLIVC6R-AKZ5glHa0ba4PonkbeDvHpxCx/exec", sheetId: "1665W6Z9bNbcJ6l5rLbi41c_xC1FGzRySyMtdAaO5g9A", access: "full" },
-                    { name: "Bible Study", url: "YOUR_SCRIPT_URL_3", sheetId: "SHEET_ID_3", access: "full" }
-                ]
+                name: "M2",
+                url: "https://script.google.com/macros/s/AKfycbxYotAOxC314l0PAQ67j9Q0SGUrFwbyVQiKLIVC6R-AKZ5glHa0ba4PonkbeDvHpxCx/exec",
+                sheetId: "1665W6Z9bNbcJ6l5rLbi41c_xC1FGzRySyMtdAaO5g9A",
+                groups: ["خدام", "اولى بنين", "تانيه بنين", "اولى بنات", "تانيه بنات"],
+                access: "full"
             },
             {
-                username: "soso",
-                email: "soso@gmail.com",
-                role: "Teacher",
-                sheets: [
-                    { name: "Sunday School", url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec", sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx", access: "readonly" },
-                    { name: "Youth Group", url: "YOUR_SCRIPT_URL_2", sheetId: "SHEET_ID_2", access: "readonly" }
-                ]
-            },
-            {
-                username: "viewer",
-                email: "viewer@church.com",
-                role: "Viewer",
-                sheets: [
-                    { name: "Sunday School", url: "YOUR_SCRIPT_URL_1", sheetId: "SHEET_ID_1", access: "readonly" }
-                ]
-            },
-            {
-                username: "guest",
-                email: "guest@church.com",
-                role: "Guest",
-                sheets: []  // No access to any sheets
+                name: "M3",
+                url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec",
+                sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA",
+                groups: ["خدام", "رابعة بنين", "تالتة بنين", "رابعة بنات", "تالتة بنات"],
+                access: "full"
             }
         ];
-
-
-        // Group order
-        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
-
-        // App State
+        
+        // ============ USERS ============
+        const USERS = [
+            {
+                username: "admin",
+                email: "admin@church.com",
+                role: "Admin",
+                sheets: null // null means access to all sheets
+            },
+            {
+                username: "teacher",
+                email: "teacher@church.com",
+                role: "Teacher",
+                sheets: ["M2 - Full Groups"] // only access to specific sheets by name
+            }
+        ];
+        
+        // ============ GLOBAL STATE ============
+        let allSheets = [];
         let currentUser = null;
         let currentSheet = null;
         let currentAccess = null;
+        let currentGroups = [];
         
         let appState = {
             scanner: null,
@@ -741,7 +820,174 @@ const USERS = [
         };
         
         let absenceData = null;
-
+        
+        // ============ INITIALIZATION ============
+        function loadSheets() {
+            const stored = localStorage.getItem(STORAGE_SHEETS_KEY);
+            if (stored) {
+                allSheets = JSON.parse(stored);
+            } else {
+                allSheets = JSON.parse(JSON.stringify(DEFAULT_SHEETS));
+                saveSheets();
+            }
+        }
+        
+        function saveSheets() {
+            localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(allSheets));
+        }
+        
+        function getUserSheets() {
+            if (!currentUser) return [];
+            if (currentUser.sheets === null) return allSheets;
+            return allSheets.filter(sheet => currentUser.sheets.includes(sheet.name));
+        }
+        
+        function loadUserSheets() {
+            const container = document.getElementById('sheetListContainer');
+            const currentDisplay = document.getElementById('currentSheetDisplay');
+            const noAccessMsg = document.getElementById('noAccessMsg');
+            const userSheets = getUserSheets();
+            
+            if (!currentUser || userSheets.length === 0) {
+                container.innerHTML = '';
+                if (currentDisplay) currentDisplay.innerHTML = 'No sheets available';
+                document.getElementById('scannerBtn').classList.add('disabled');
+                document.getElementById('uploadBtn').classList.add('disabled');
+                document.getElementById('absenceBtn').classList.add('disabled');
+                return;
+            }
+            
+            document.getElementById('scannerBtn').classList.remove('disabled');
+            document.getElementById('uploadBtn').classList.remove('disabled');
+            document.getElementById('absenceBtn').classList.remove('disabled');
+            
+            // Set first sheet as active if none selected
+            if (!currentSheet) {
+                currentSheet = userSheets[0];
+                currentAccess = currentSheet.access;
+                currentGroups = currentSheet.groups;
+            }
+            
+            if (currentDisplay) {
+                currentDisplay.innerHTML = `📄 Active: ${currentSheet.name} (${currentGroups.length} groups)`;
+            }
+            
+            container.innerHTML = userSheets.map((sheet, index) => `
+                <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
+                    <div class="sheet-info">
+                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
+                        <div class="sheet-details">${sheet.groups.length} groups | ${sheet.sheetId.substring(0, 15)}...</div>
+                    </div>
+                    <div class="sheet-actions">
+                        <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full' : 'View'}</div>
+                        <button class="icon-btn" onclick="event.stopPropagation(); deleteSheet(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectSheet(index) {
+            const userSheets = getUserSheets();
+            currentSheet = userSheets[index];
+            currentAccess = currentSheet.access;
+            currentGroups = currentSheet.groups;
+            loadUserSheets();
+            addLogToUI('System', `Switched to: ${currentSheet.name}`, '🔄');
+            
+            if (!document.getElementById('mainApp').classList.contains('hidden')) {
+                loadDates();
+                loadGroupStats();
+            }
+            if (!document.getElementById('absenceView').classList.contains('hidden')) {
+                loadAbsenceDates();
+                loadAbsenceData();
+            }
+        }
+        
+        function addNewSheet() {
+            const name = document.getElementById('newSheetName').value.trim();
+            const url = document.getElementById('newSheetUrl').value.trim();
+            const sheetId = document.getElementById('newSheetId').value.trim();
+            const groupsStr = document.getElementById('newSheetGroups').value.trim();
+            const access = document.getElementById('newSheetAccess').value;
+            
+            if (!name || !url || !sheetId || !groupsStr) {
+                alert('Please fill all fields!');
+                return;
+            }
+            
+            const groups = groupsStr.split(',').map(g => g.trim()).filter(g => g);
+            
+            allSheets.push({
+                name: name,
+                url: url,
+                sheetId: sheetId,
+                groups: groups,
+                access: access
+            });
+            
+            saveSheets();
+            loadUserSheets();
+            
+            // Clear form
+            document.getElementById('newSheetName').value = '';
+            document.getElementById('newSheetUrl').value = '';
+            document.getElementById('newSheetId').value = '';
+            document.getElementById('newSheetGroups').value = '';
+            document.getElementById('addSheetForm').classList.add('hidden');
+            
+            addLogToUI('System', `Added new sheet: ${name} with ${groups.length} groups`, '✅');
+        }
+        
+        function deleteSheet(index) {
+            const userSheets = getUserSheets();
+            if (userSheets.length === 1) {
+                alert('Cannot delete the only sheet you have access to!');
+                return;
+            }
+            
+            const sheetName = userSheets[index].name;
+            const globalIndex = allSheets.findIndex(s => s.name === sheetName);
+            
+            if (globalIndex !== -1) {
+                allSheets.splice(globalIndex, 1);
+                saveSheets();
+            }
+            
+            if (currentSheet && currentSheet.name === sheetName) {
+                const remaining = getUserSheets();
+                if (remaining.length > 0) {
+                    currentSheet = remaining[0];
+                    currentAccess = currentSheet.access;
+                    currentGroups = currentSheet.groups;
+                } else {
+                    currentSheet = null;
+                }
+            }
+            
+            loadUserSheets();
+            addLogToUI('System', `Deleted sheet: ${sheetName}`, '🗑️');
+        }
+        
+        function toggleAddSheetForm() {
+            const form = document.getElementById('addSheetForm');
+            form.classList.toggle('hidden');
+        }
+        
+        function getCurrentConfig() {
+            if (!currentSheet) return null;
+            return {
+                SCRIPT_URL: currentSheet.url,
+                SHEET_ID: currentSheet.sheetId,
+                ACCESS: currentSheet.access,
+                GROUPS: currentSheet.groups
+            };
+        }
+        
+        function canWrite() {
+            return currentAccess === 'full';
+        }
+        
         // ============ LOGIN FUNCTIONS ============
         function login() {
             const username = document.getElementById('username').value.trim();
@@ -764,98 +1010,31 @@ const USERS = [
             
             currentUser = user;
             
-            // Save session
-            localStorage.setItem('attendance_user', JSON.stringify({
+            localStorage.setItem(STORAGE_USER_KEY, JSON.stringify({
                 username: user.username,
                 email: user.email,
                 role: user.role
             }));
             
-            // Load sheets
+            loadSheets();
             loadUserSheets();
             
-            // Show welcome view
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
             
-            // Update user info
             document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
             document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
             document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
             
-            addLogToUI('System', `Welcome ${user.username}!`, '✅');
-        }
-        
-        function loadUserSheets() {
-            const container = document.getElementById('sheetListContainer');
-            const noAccessMsg = document.getElementById('noAccessMsg');
-            
-            if (!currentUser || currentUser.sheets.length === 0) {
-                container.innerHTML = '';
-                noAccessMsg.classList.remove('hidden');
-                document.getElementById('scannerBtn').classList.add('disabled');
-                document.getElementById('uploadBtn').classList.add('disabled');
-                document.getElementById('absenceBtn').classList.add('disabled');
-                return;
-            }
-            
-            noAccessMsg.classList.add('hidden');
-            document.getElementById('scannerBtn').classList.remove('disabled');
-            document.getElementById('uploadBtn').classList.remove('disabled');
-            document.getElementById('absenceBtn').classList.remove('disabled');
-            
-            // Set first sheet as active if none selected
-            if (!currentSheet) {
-                currentSheet = currentUser.sheets[0];
-                currentAccess = currentSheet.access;
-            }
-            
-            container.innerHTML = currentUser.sheets.map((sheet, index) => `
-                <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
-                    <div class="sheet-info">
-                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
-                        <div class="sheet-access">${sheet.access === 'full' ? '✏️ Read/Write' : '👁️ Read Only'}</div>
-                    </div>
-                    <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full Access' : 'View Only'}</div>
-                </div>
-            `).join('');
-        }
-        
-        function selectSheet(index) {
-            currentSheet = currentUser.sheets[index];
-            currentAccess = currentSheet.access;
-            loadUserSheets();
-            addLogToUI('System', `Switched to: ${currentSheet.name} (${currentAccess} access)`, '🔄');
-            
-            // If in main app, reload data
-            if (!document.getElementById('mainApp').classList.contains('hidden')) {
-                loadDates();
-                loadGroupStats();
-            }
-            if (!document.getElementById('absenceView').classList.contains('hidden')) {
-                loadAbsenceDates();
-                loadAbsenceData();
-            }
-        }
-        
-        function getCurrentConfig() {
-            if (!currentSheet) return null;
-            return {
-                SCRIPT_URL: currentSheet.url,
-                SHEET_ID: currentSheet.sheetId,
-                ACCESS: currentSheet.access
-            };
-        }
-        
-        function canWrite() {
-            return currentAccess === 'full';
+            addLogToUI('System', `Welcome ${user.username}! You have access to ${getUserSheets().length} sheet(s)`, '✅');
         }
         
         function logout() {
             currentUser = null;
             currentSheet = null;
             currentAccess = null;
-            localStorage.removeItem('attendance_user');
+            currentGroups = [];
+            localStorage.removeItem(STORAGE_USER_KEY);
             
             if (appState.scanner) {
                 try { appState.scanner.stop(); } catch(e) {}
@@ -869,6 +1048,24 @@ const USERS = [
             document.getElementById('loginView').classList.remove('hidden');
             document.getElementById('username').value = '';
             document.getElementById('email').value = '';
+        }
+        
+        function checkSavedSession() {
+            const saved = localStorage.getItem(STORAGE_USER_KEY);
+            if (saved) {
+                const userData = JSON.parse(saved);
+                const user = USERS.find(u => u.username === userData.username && u.email === userData.email);
+                if (user) {
+                    currentUser = user;
+                    loadSheets();
+                    loadUserSheets();
+                    document.getElementById('loginView').classList.add('hidden');
+                    document.getElementById('welcomeView').classList.remove('hidden');
+                    document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
+                    document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
+                    document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
+                }
+            }
         }
         
         // ============ UI HELPER FUNCTIONS ============
@@ -896,37 +1093,9 @@ const USERS = [
             if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
         }
         
-        // ============ DATE FUNCTIONS ============
         function getTodayDateString() {
             const now = new Date();
             return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
-        }
-        
-        function toggleAutoDate() {
-            const isAuto = document.getElementById('autoDateToggle').checked;
-            const select = document.getElementById('dateSelect');
-            if (isAuto && select.options.length > 0) {
-                select.disabled = true;
-                const todayStr = getTodayDateString();
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === todayStr) {
-                        select.selectedIndex = i;
-                        loadGroupStats();
-                        break;
-                    }
-                }
-            } else {
-                select.disabled = false;
-            }
-        }
-        
-        function onDateManuallySelected() {
-            const autoToggle = document.getElementById('autoDateToggle');
-            if (autoToggle.checked) {
-                autoToggle.checked = false;
-                document.getElementById('dateSelect').disabled = false;
-            }
-            loadGroupStats();
         }
         
         // ============ API FUNCTIONS ============
@@ -961,6 +1130,33 @@ const USERS = [
             }
         }
         
+        function toggleAutoDate() {
+            const isAuto = document.getElementById('autoDateToggle').checked;
+            const select = document.getElementById('dateSelect');
+            if (isAuto && select.options.length > 0) {
+                select.disabled = true;
+                const todayStr = getTodayDateString();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        loadGroupStats();
+                        break;
+                    }
+                }
+            } else {
+                select.disabled = false;
+            }
+        }
+        
+        function onDateManuallySelected() {
+            const autoToggle = document.getElementById('autoDateToggle');
+            if (autoToggle.checked) {
+                autoToggle.checked = false;
+                document.getElementById('dateSelect').disabled = false;
+            }
+            loadGroupStats();
+        }
+        
         async function loadGroupStats() {
             const config = getCurrentConfig();
             if (!config) return;
@@ -979,7 +1175,7 @@ const USERS = [
             const container = document.getElementById('groupStatsContainer');
             if (!container) return;
             
-            container.innerHTML = GROUP_ORDER.map(groupName => {
+            container.innerHTML = currentGroups.map(groupName => {
                 const group = stats[groupName];
                 if (!group) return '';
                 const percentage = group.percentage || 0;
@@ -1168,35 +1364,7 @@ const USERS = [
             }, 5000);
         }
         
-        // ============ BULK UPLOAD FUNCTIONS ============
-        function setupDragAndDrop() {
-            const uploadSection = document.querySelector('.upload-section');
-            if (!uploadSection) return;
-            
-            uploadSection.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadSection.style.borderColor = '#27ae60';
-            });
-            uploadSection.addEventListener('dragleave', () => {
-                uploadSection.style.borderColor = '#e2e8f0';
-            });
-            uploadSection.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadSection.style.borderColor = '#e2e8f0';
-                const file = e.dataTransfer.files[0];
-                if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv'))) {
-                    document.getElementById('fileInput').files = e.dataTransfer.files;
-                    document.getElementById('fileName').innerText = file.name;
-                }
-            });
-            
-            document.getElementById('fileInput').addEventListener('change', (e) => {
-                if (e.target.files[0]) {
-                    document.getElementById('fileName').innerText = e.target.files[0].name;
-                }
-            });
-        }
-        
+        // ============ BULK UPLOAD ============
         async function handleBulkUpload() {
             if (!canWrite()) {
                 alert('Read-only mode. Cannot upload.');
@@ -1217,13 +1385,8 @@ const USERS = [
             
             try {
                 const text = await file.text();
-                let names = text.split(/\r?\n/)
-                    .filter(line => line.trim().length > 0)
-                    .map(n => n.split(',')[0].replace(/["']/g, '').trim())
-                    .filter(n => n.length > 0);
-                
+                let names = text.split(/\r?\n/).filter(l => l.trim().length > 0).map(n => n.split(',')[0].replace(/["']/g, '').trim()).filter(n => n.length > 0);
                 names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
-                
                 if (names.length === 0) {
                     alert("No valid names found!");
                     return;
@@ -1238,7 +1401,6 @@ const USERS = [
                 addLogToUI('System', `Starting upload: ${names.length} names`, '📁');
                 
                 const currentDate = document.getElementById('dateSelect').value;
-                
                 for (let i = 0; i < names.length; i += 50) {
                     const batch = names.slice(i, Math.min(i + 50, names.length));
                     try {
@@ -1252,7 +1414,6 @@ const USERS = [
                             })
                         });
                         const result = await response.json();
-                        
                         if (result.error) {
                             batch.forEach(name => addLogToUI(name, 'error', '❌'));
                             notFound += batch.length;
@@ -1293,14 +1454,12 @@ const USERS = [
                     document.getElementById('progressBar').style.width = '0%';
                     document.getElementById('uploadStats').innerHTML = '';
                 }, 3000);
-                
             } catch(err) {
                 addLogToUI('System', 'Upload failed: ' + err.message, '❌');
                 document.getElementById('uploadBtn').disabled = false;
             }
         }
         
-        // ============ EXPORT FUNCTIONS ============
         function exportToExcel() {
             if (appState.scannedData.length === 0) {
                 alert("No data to export! Please mark some attendance first.");
@@ -1328,7 +1487,7 @@ const USERS = [
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.remove('hidden');
-            document.getElementById('absenceSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access)`;
+            document.getElementById('absenceSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentGroups.length} groups)`;
             await loadAbsenceDates();
         }
         
@@ -1386,7 +1545,7 @@ const USERS = [
             const container = document.getElementById('absenceGroupsContainer');
             if (!container) return;
             
-            container.innerHTML = GROUP_ORDER.map(groupName => {
+            container.innerHTML = currentGroups.map(groupName => {
                 const group = data.groups[groupName];
                 if (!group) return '';
                 
@@ -1418,7 +1577,7 @@ const USERS = [
             
             const wsData = [['Absence Report'], ['Date: ' + absenceData.date], []];
             
-            for (const groupName of GROUP_ORDER) {
+            for (const groupName of currentGroups) {
                 const group = absenceData.groups[groupName];
                 if (group && group.absentNames.length > 0) {
                     wsData.push([groupName + ' - Absent Students (' + group.absentNames.length + ')']);
@@ -1430,7 +1589,7 @@ const USERS = [
             }
             
             wsData.push([], ['Summary']);
-            for (const groupName of GROUP_ORDER) {
+            for (const groupName of currentGroups) {
                 const group = absenceData.groups[groupName];
                 if (group) {
                     wsData.push([groupName, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
@@ -1445,7 +1604,7 @@ const USERS = [
             addLogToUI('System', 'Absence report exported', '📊');
         }
         
-        // ============ NAVIGATION FUNCTIONS ============
+        // ============ NAVIGATION ============
         async function showApp(mode) {
             const config = getCurrentConfig();
             if (!config) {
@@ -1459,7 +1618,7 @@ const USERS = [
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access)`;
+            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access) | ${currentGroups.length} groups`;
             
             appState.currentMode = mode;
             
@@ -1483,7 +1642,6 @@ const USERS = [
                 document.getElementById('fileSection').classList.remove('hidden');
                 await loadDates();
                 await loadGroupStats();
-                setupDragAndDrop();
                 addLogToUI('System', `Upload mode ready - ${currentSheet.name}`, '📁');
             }
         }
@@ -1510,29 +1668,12 @@ const USERS = [
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
+            loadUserSheets();
         }
         
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-        }
-        
-        // Check for saved session
-        function checkSavedSession() {
-            const saved = localStorage.getItem('attendance_user');
-            if (saved) {
-                const userData = JSON.parse(saved);
-                const user = USERS.find(u => u.username === userData.username && u.email === userData.email);
-                if (user) {
-                    currentUser = user;
-                    loadUserSheets();
-                    document.getElementById('loginView').classList.add('hidden');
-                    document.getElementById('welcomeView').classList.remove('hidden');
-                    document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
-                    document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
-                    document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
-                }
-            }
         }
         
         // Initialize
