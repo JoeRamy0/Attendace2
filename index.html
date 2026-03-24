@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Pro - Multi-Sheet Support</title>
+    <title>Attendance Pro - Secure Login</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -37,7 +37,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -49,11 +49,10 @@
             border-radius: 32px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
-            margin-bottom: 20px;
         }
 
-        /* Welcome View Header */
-        #welcomeView .card-header {
+        /* Login View */
+        #loginView .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 40px 30px;
@@ -62,7 +61,7 @@
             overflow: hidden;
         }
 
-        #welcomeView .card-header::before {
+        #loginView .card-header::before {
             content: '⛪';
             position: absolute;
             font-size: 120px;
@@ -72,53 +71,124 @@
             transform: rotate(-15deg);
         }
 
-        #welcomeView .card-header h2 {
+        #loginView .card-header h2 {
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 10px;
         }
 
-        #welcomeView .card-header p {
+        #loginView .card-header p {
             font-size: 14px;
             opacity: 0.9;
         }
 
-        .feature-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-top: 15px;
+        .login-form {
+            padding: 30px;
         }
 
-        .welcome-stats {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-            background: #f8fafc;
-            border-bottom: 1px solid #eef2f6;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .welcome-stat-item {
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
             text-align: center;
         }
 
-        .welcome-stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #2c7da0;
+        /* Welcome View (After Login) */
+        #welcomeView .card-header {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
         }
 
-        .welcome-stat-label {
-            font-size: 11px;
+        .user-info {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #eef2f6;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .user-email {
+            font-size: 12px;
             color: #64748b;
             margin-top: 4px;
-            text-transform: uppercase;
         }
 
-        .card-body {
-            padding: 25px;
+        .user-role {
+            display: inline-block;
+            background: #2c7da0;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
         }
 
         /* Sheet Selector */
@@ -137,12 +207,6 @@
             margin-bottom: 12px;
         }
 
-        .sheet-selector-title {
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 14px;
-        }
-
         .current-sheet {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
@@ -154,6 +218,8 @@
 
         .sheet-list {
             margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .sheet-item {
@@ -179,6 +245,16 @@
             border-color: #667eea;
         }
 
+        .sheet-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f1f5f9;
+        }
+
+        .sheet-item.disabled:hover {
+            transform: none;
+        }
+
         .sheet-info {
             flex: 1;
         }
@@ -186,77 +262,26 @@
         .sheet-name {
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 4px;
         }
 
-        .sheet-details {
+        .sheet-access {
             font-size: 10px;
             color: #64748b;
+            margin-top: 2px;
         }
 
-        .sheet-badge {
-            background: #27ae60;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
+        .access-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
             font-size: 10px;
             font-weight: 600;
         }
 
-        .sheet-actions {
-            display: flex;
-            gap: 8px;
-        }
+        .access-badge.full { background: #d1fae5; color: #059669; }
+        .access-badge.readonly { background: #fef3c7; color: #d97706; }
+        .access-badge.none { background: #fee2e2; color: #dc2626; }
 
-        .icon-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .icon-btn:hover {
-            background: #f1f5f9;
-        }
-
-        .icon-btn.delete:hover {
-            color: #e74c3c;
-        }
-
-        /* Add Sheet Form */
-        .add-sheet-form {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 13px;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #2c7da0;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 12px;
-            border-radius: 10px;
-        }
-
-        /* Welcome Buttons */
+        /* Rest of the styles (same as before) */
         .welcome-buttons {
             display: flex;
             gap: 15px;
@@ -285,36 +310,23 @@
         .welcome-btn.scanner {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(44, 125, 160, 0.3);
         }
 
         .welcome-btn.upload {
             background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
 
         .welcome-btn.absence {
             background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
         }
 
-        .welcome-btn.settings {
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+        .welcome-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .welcome-btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .welcome-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Info Cards */
         .info-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -328,19 +340,15 @@
             border-radius: 20px;
             text-align: center;
             border: 1px solid #eef2f6;
-            transition: all 0.2s;
-        }
-
-        .info-card:hover {
-            transform: translateY(-2px);
-            border-color: #2c7da0;
         }
 
         .info-icon { font-size: 28px; margin-bottom: 8px; }
-        .info-title { font-size: 13px; font-weight: 600; color: #1e293b; }
+        .info-title { font-size: 13px; font-weight: 600; }
         .info-desc { font-size: 11px; color: #64748b; }
 
-        /* Main App Header */
+        .hidden { display: none; }
+
+        /* Main App Styles */
         #mainApp .card-header, #absenceView .card-header {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
@@ -348,9 +356,6 @@
             text-align: center;
         }
 
-        /* Group Stats */
-        .group-stats { margin-bottom: 20px; }
-        
         .group-card {
             background: #f8fafc;
             border-radius: 16px;
@@ -359,122 +364,13 @@
             border: 1px solid #eef2f6;
         }
 
-        .group-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #2c7da0;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .group-stats-row {
-            display: flex;
-            gap: 15px;
-            justify-content: space-around;
-            margin-bottom: 10px;
-        }
-
-        .group-stat-item { text-align: center; flex: 1; }
-        .group-stat-number { font-size: 20px; font-weight: 700; }
-        .group-stat-number.present { color: #27ae60; }
-        .group-stat-number.absent { color: #e74c3c; }
-        .group-stat-label { font-size: 10px; color: #64748b; }
-
-        .progress-bar-container {
-            background: #e2e8f0;
-            border-radius: 10px;
-            height: 6px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            background: #27ae60;
-            height: 100%;
-            transition: width 0.3s;
-        }
-
-        /* Date Selector */
         .date-section {
             background: #f8fafc;
             padding: 15px;
             border-radius: 20px;
             margin-bottom: 20px;
-            border: 1px solid #eef2f6;
         }
 
-        .auto-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-
-        .auto-toggle-info {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 8px;
-            text-align: center;
-            padding: 6px;
-            background: #f1f5f9;
-            border-radius: 8px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .toggle-slider { background-color: #27ae60; }
-        input:checked + .toggle-slider:before { transform: translateX(20px); }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-        }
-
-        select:disabled {
-            background: #f1f5f9;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Logs */
         .logs-container {
             background: #f8fafc;
             border-radius: 20px;
@@ -484,32 +380,6 @@
             overflow-y: auto;
         }
 
-        .logs-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .log-entry {
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: white;
-        }
-
-        .log-icon { font-size: 14px; min-width: 28px; }
-        .log-name { font-weight: 500; flex: 1; }
-        .log-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; }
-        .log-status.processing { background: #fef3c7; color: #d97706; }
-        .log-status.success { background: #d1fae5; color: #059669; }
-        .log-status.error { background: #fee2e2; color: #dc2626; }
-
-        /* Buttons */
         .btn {
             padding: 12px;
             border: none;
@@ -521,7 +391,6 @@
         }
 
         .btn-primary { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
-        .btn-success { background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%); color: white; }
         .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
         .button-group {
@@ -531,118 +400,72 @@
             margin-top: 15px;
         }
 
-        .hidden { display: none; }
-
-        #reader {
-            width: 100%;
-            border-radius: 20px;
-            display: none;
-            background: #000;
-        }
-
-        .scanner-status {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 16px;
-            text-align: center;
-            font-size: 13px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .upload-section {
-            border: 2px dashed #e2e8f0;
-            border-radius: 20px;
-            padding: 25px 20px;
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .file-input-label {
-            display: inline-flex;
-            padding: 12px 28px;
-            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
-            color: white;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-
+        #reader { width: 100%; border-radius: 20px; display: none; background: #000; }
+        .scanner-status { background: #f1f5f9; padding: 12px; border-radius: 16px; text-align: center; margin: 10px 0; display: none; }
+        .upload-section { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 25px 20px; text-align: center; margin: 15px 0; }
+        .file-input-label { display: inline-flex; padding: 12px 28px; background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; border-radius: 40px; cursor: pointer; }
         input[type="file"] { display: none; }
-
-        .progress-container {
-            background: #e2e8f0;
-            border-radius: 20px;
-            height: 6px;
-            margin: 15px 0;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #27ae60 0%, #2c7da0 100%);
-            border-radius: 20px;
-            transition: width 0.3s;
-        }
-
-        .processing-pulse { animation: pulse 1s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .progress-container { background: #e2e8f0; border-radius: 20px; height: 6px; margin: 15px 0; display: none; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60 0%, #2c7da0 100%); border-radius: 20px; transition: width 0.3s; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Welcome View -->
-        <div class="card" id="welcomeView">
+        <!-- Login View -->
+        <div class="card" id="loginView">
             <div class="card-header">
                 <h2>⛪ Attendance Pro</h2>
-                <p>Multi-Sheet Attendance Management System</p>
-                <div class="feature-badge">⚡ Multi-Sheet | 📱 Offline Sync | 🔒 Secure</div>
+                <p>Secure Access Control System</p>
             </div>
-            <div class="welcome-stats">
-                <div class="welcome-stat-item"><div class="welcome-stat-number">⚡</div><div class="welcome-stat-label">Multi-Sheet</div></div>
-                <div class="welcome-stat-item"><div class="welcome-stat-number">📱</div><div class="welcome-stat-label">Offline Sync</div></div>
-                <div class="welcome-stat-item"><div class="welcome-stat-number">🔒</div><div class="welcome-stat-label">Secure</div></div>
+            <div class="login-form">
+                <div id="loginError" class="error-message hidden"></div>
+                <div class="form-group">
+                    <label>👤 Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" autocomplete="off">
+                </div>
+                <button class="login-btn" onclick="login()">🔐 Login</button>
             </div>
-            <div class="card-body">
+        </div>
+
+        <!-- Welcome View (After Login) -->
+        <div class="card hidden" id="welcomeView">
+            <div class="card-header">
+                <h2>⛪ Attendance Pro</h2>
+                <p>Welcome to Attendance Management System</p>
+            </div>
+            <div class="card-body" style="padding: 25px;">
+                <div class="user-info">
+                    <div class="user-name" id="displayName"></div>
+                    <div class="user-email" id="displayEmail"></div>
+                    <div class="user-role" id="displayRole"></div>
+                    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                </div>
+
                 <!-- Sheet Selector Section -->
                 <div class="sheet-selector">
                     <div class="sheet-selector-header">
-                        <span class="sheet-selector-title">📊 Active Sheet</span>
-                        <button class="icon-btn" onclick="toggleSheetManager()" style="font-size: 14px;">⚙️ Manage</button>
+                        <span class="sheet-selector-title">📊 Available Sheets</span>
                     </div>
-                    <div id="currentSheetDisplay">
-                        <div class="current-sheet" id="currentSheetLabel">Loading...</div>
-                    </div>
-                    
-                    <!-- Sheet Manager (Hidden by default) -->
-                    <div id="sheetManager" class="hidden" style="margin-top: 15px;">
-                        <div class="sheet-list" id="sheetList"></div>
-                        
-                        <div class="add-sheet-form">
-                            <div class="form-group">
-                                <input type="text" id="newSheetName" placeholder="Sheet Name (e.g., Sunday School)">
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="newSheetUrl" placeholder="Google Apps Script URL">
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="newSheetId" placeholder="Google Sheet ID">
-                            </div>
-                            <button class="btn btn-small btn-primary" onclick="addNewSheet()" style="width: 100%;">+ Add New Sheet</button>
-                        </div>
+                    <div id="availableSheetsList"></div>
+                    <div id="noAccessMessage" class="hidden" style="text-align: center; padding: 20px; color: #dc2626;">
+                        ⚠️ You don't have access to any sheets. Please contact administrator.
                     </div>
                 </div>
 
                 <div class="welcome-buttons">
-                    <button class="welcome-btn scanner" onclick="showApp('scan')">
+                    <button class="welcome-btn scanner" id="scannerBtn" onclick="showApp('scan')">
                         <div class="btn-icon">📸</div>
                         <div class="btn-text">QR Scanner</div>
                     </button>
-                    <button class="welcome-btn upload" onclick="showApp('upload')">
+                    <button class="welcome-btn upload" id="uploadBtn" onclick="showApp('upload')">
                         <div class="btn-icon">📁</div>
                         <div class="btn-text">Bulk Upload</div>
                     </button>
-                    <button class="welcome-btn absence" onclick="showAbsenceExport()">
+                    <button class="welcome-btn absence" id="absenceBtn" onclick="showAbsenceExport()">
                         <div class="btn-icon">📋</div>
                         <div class="btn-text">Export Absence</div>
                     </button>
@@ -652,296 +475,106 @@
                     <div class="info-card"><div class="info-icon">✅</div><div class="info-title">Quick Marking</div><div class="info-desc">Scan QR codes instantly</div></div>
                     <div class="info-card"><div class="info-icon">📊</div><div class="info-title">Export Reports</div><div class="info-desc">Attendance & Absence lists</div></div>
                     <div class="info-card"><div class="info-icon">📱</div><div class="info-title">Works Offline</div><div class="info-desc">Sync when back online</div></div>
-                    <div class="info-card"><div class="info-icon">📚</div><div class="info-title">Multi-Sheet</div><div class="info-desc">Manage multiple groups</div></div>
+                    <div class="info-card"><div class="info-icon">🔒</div><div class="info-title">Role-Based Access</div><div class="info-desc">Secure sheet permissions</div></div>
                 </div>
             </div>
         </div>
 
-        <!-- Main App View -->
+        <!-- Main App View (Scanner & Upload) -->
         <div class="card hidden" id="mainApp">
             <div class="card-header">
                 <h2 id="modeTitle">Scanner Mode</h2>
                 <p id="modeDescription">Scan QR code to mark attendance</p>
-                <div id="activeSheetBadge" style="font-size: 11px; margin-top: 8px; opacity: 0.9;"></div>
+                <div id="activeSheetBadge" style="font-size: 11px; margin-top: 8px;"></div>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 20px;">
                 <div id="groupStatsContainer"></div>
-
                 <div class="date-section">
-                    <div class="auto-toggle">
+                    <div class="auto-toggle" style="display: flex; justify-content: space-between; margin-bottom: 12px;">
                         <span>📅 Auto-select today</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
-                            <span class="toggle-slider"></span>
+                        <label class="toggle-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()" style="opacity:0; width:0; height:0;">
+                            <span class="toggle-slider" style="position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background-color:#cbd5e1; border-radius:24px;"></span>
                         </label>
-                    </div>
-                    <div class="auto-toggle-info" id="dateToggleInfo">
-                        💡 Auto mode: Today's date is automatically selected
                     </div>
                     <select id="dateSelect" onchange="onDateManuallySelected()"></select>
                 </div>
-
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus"><span>📷 Ready to scan</span></div>
-
                 <div id="fileSection" class="hidden">
-                    <div class="upload-section" id="uploadArea">
-                        <label class="file-input-label">📁 Choose File (.txt or .csv)<input type="file" id="fileInput" accept=".txt,.csv"></label>
-                        <div class="file-name" id="fileName">No file selected</div>
-                        <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-                        <button class="btn btn-success" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 12px;">🚀 Start Upload</button>
-                        <div id="uploadStats" style="font-size: 12px; color: #64748b; margin-top: 10px;"></div>
-                    </div>
+                    <div class="upload-section"><label class="file-input-label">📁 Choose File<input type="file" id="fileInput" accept=".txt,.csv"></label>
+                    <div id="fileName" style="margin-top:10px;">No file selected</div>
+                    <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
+                    <button class="btn btn-primary" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top:12px;">🚀 Start Upload</button>
+                    <div id="uploadStats" style="font-size:12px; margin-top:10px;"></div></div>
                 </div>
-
-                <div class="logs-container">
-                    <div class="logs-header"><span>📋 Activity Log</span><button class="clear-logs" onclick="clearLogs()">Clear</button></div>
-                    <div id="logsList"><div class="log-entry"><div class="log-icon">⏳</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div></div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
-                    <button class="btn btn-secondary" onclick="resetApp()">🏠 Main Menu</button>
-                </div>
-                
-                <button id="syncBtn" class="btn btn-success hidden" onclick="syncQueue()" style="margin-top: 12px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
+                <div class="logs-container"><div class="logs-header"><span>📋 Activity Log</span><button onclick="clearLogs()" style="background:none; border:none;">Clear</button></div>
+                <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div></div>
+                <div class="button-group"><button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+                <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button></div>
+                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top:12px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
             </div>
         </div>
 
         <!-- Absence Export View -->
         <div class="card hidden" id="absenceView">
-            <div class="card-header">
-                <h2>📋 Absence Report</h2>
-                <p>View and export absence list by group</p>
-                <div id="absenceSheetBadge" style="font-size: 11px; margin-top: 8px; opacity: 0.9;"></div>
-            </div>
-            <div class="card-body">
-                <div class="date-section">
-                    <label style="font-weight: 600;">Select Date:</label>
-                    <select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top: 10px;"></select>
-                </div>
-                <div id="absenceLoading" style="display: none; text-align: center; padding: 20px;"><div class="processing-pulse">⏳ Loading...</div></div>
+            <div class="card-header"><h2>📋 Absence Report</h2><p>View and export absence list</p></div>
+            <div class="card-body" style="padding:20px;">
+                <div class="date-section"><label>Select Date:</label><select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top:10px; width:100%; padding:12px;"></select></div>
+                <div id="absenceLoading" style="display:none; text-align:center; padding:20px;">⏳ Loading...</div>
                 <div id="absenceGroupsContainer"></div>
-                <div class="button-group" style="margin-top: 15px;">
-                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display: none;">📥 Export Absence List</button>
-                    <button class="btn btn-secondary" onclick="backToHome()">🏠 Back to Home</button>
+                <div class="button-group" style="margin-top:15px;">
+                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export Absence</button>
+                    <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Storage key for localStorage
-        const STORAGE_KEY = 'attendance_sheets';
-        
-        // Default sheets
-        const DEFAULT_SHEETS = [
-            { name: 'Sunday School', url: 'https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec', sheetId: '1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA', active: true }
+        // ============ USER CONFIGURATION ============
+        // Define users with their roles and sheet permissions
+        const USERS = [
+            {
+                username: "youssef",
+                email: "joramy0000@gmail.com",
+                role: "Admin",
+                sheets: [
+                    { name: "Sunday School", url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec", sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA", access: "full" },
+                    { name: "Youth Group", url: "https://script.google.com/macros/s/AKfycbxYotAOxC314l0PAQ67j9Q0SGUrFwbyVQiKLIVC6R-AKZ5glHa0ba4PonkbeDvHpxCx/exec", sheetId: "1665W6Z9bNbcJ6l5rLbi41c_xC1FGzRySyMtdAaO5g9A", access: "full" },
+                    { name: "Bible Study", url: "YOUR_SCRIPT_URL_3", sheetId: "SHEET_ID_3", access: "full" }
+                ]
+            },
+            {
+                username: "soso",
+                email: "soso@gmail.com",
+                role: "Teacher",
+                sheets: [
+                    { name: "Sunday School", url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec", sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx", access: "readonly" },
+                    { name: "Youth Group", url: "YOUR_SCRIPT_URL_2", sheetId: "SHEET_ID_2", access: "readonly" }
+                ]
+            },
+            {
+                username: "viewer",
+                email: "viewer@church.com",
+                role: "Viewer",
+                sheets: [
+                    { name: "Sunday School", url: "YOUR_SCRIPT_URL_1", sheetId: "SHEET_ID_1", access: "readonly" }
+                ]
+            },
+            {
+                username: "guest",
+                email: "guest@church.com",
+                role: "Guest",
+                sheets: []  // No access to any sheets
+            }
         ];
 
-        // Load sheets from localStorage or use defaults
-        let sheets = [];
+        // ============ GLOBAL STATE ============
+        let currentUser = null;
+        let userSheets = [];
         let currentSheet = null;
-        let isManuallySelecting = false;
-
-        // Initialize sheets
-        function initSheets() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                sheets = JSON.parse(stored);
-                if (!sheets.some(s => s.active)) {
-                    sheets[0].active = true;
-                }
-            } else {
-                sheets = JSON.parse(JSON.stringify(DEFAULT_SHEETS));
-                sheets[0].active = true;
-            }
-            currentSheet = sheets.find(s => s.active) || sheets[0];
-            updateCurrentSheetDisplay();
-            renderSheetList();
-        }
-
-        // Save sheets to localStorage
-        function saveSheets() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sheets));
-        }
-
-        // Update current sheet display
-        function updateCurrentSheetDisplay() {
-            const display = document.getElementById('currentSheetLabel');
-            if (display && currentSheet) {
-                display.innerHTML = `📄 ${currentSheet.name}`;
-            }
-            const badge = document.getElementById('activeSheetBadge');
-            if (badge) badge.innerHTML = `📄 Active: ${currentSheet.name}`;
-            const absenceBadge = document.getElementById('absenceSheetBadge');
-            if (absenceBadge) absenceBadge.innerHTML = `📄 Active: ${currentSheet.name}`;
-        }
-
-        // Render sheet list in manager
-        function renderSheetList() {
-            const container = document.getElementById('sheetList');
-            if (!container) return;
-            
-            container.innerHTML = sheets.map((sheet, index) => `
-                <div class="sheet-item ${sheet.active ? 'active' : ''}" onclick="switchSheet(${index})">
-                    <div class="sheet-info">
-                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
-                        <div class="sheet-details">${sheet.sheetId.substring(0, 20)}...</div>
-                    </div>
-                    <div class="sheet-actions">
-                        ${sheet.active ? '<span class="sheet-badge">Active</span>' : ''}
-                        <button class="icon-btn delete" onclick="event.stopPropagation(); deleteSheet(${index})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Switch active sheet
-        function switchSheet(index) {
-            sheets.forEach((s, i) => s.active = (i === index));
-            currentSheet = sheets[index];
-            saveSheets();
-            updateCurrentSheetDisplay();
-            renderSheetList();
-            addLog('System', `Switched to: ${currentSheet.name}`, '🔄');
-            
-            // Reload data if in a mode
-            if (!document.getElementById('welcomeView').classList.contains('hidden')) {
-                // On home page, just update display
-            } else if (!document.getElementById('mainApp').classList.contains('hidden')) {
-                loadDates();
-                loadGroupStats();
-                addLog('System', `Reloading data for ${currentSheet.name}`, '📊');
-            } else if (!document.getElementById('absenceView').classList.contains('hidden')) {
-                loadAbsenceDates();
-                loadAbsenceData();
-            }
-        }
-
-        // Add new sheet
-        function addNewSheet() {
-            const name = document.getElementById('newSheetName').value.trim();
-            const url = document.getElementById('newSheetUrl').value.trim();
-            const sheetId = document.getElementById('newSheetId').value.trim();
-            
-            if (!name || !url || !sheetId) {
-                alert('Please fill all fields!');
-                return;
-            }
-            
-            sheets.push({
-                name: name,
-                url: url,
-                sheetId: sheetId,
-                active: false
-            });
-            
-            saveSheets();
-            renderSheetList();
-            
-            document.getElementById('newSheetName').value = '';
-            document.getElementById('newSheetUrl').value = '';
-            document.getElementById('newSheetId').value = '';
-            
-            addLog('System', `Added new sheet: ${name}`, '✅');
-        }
-
-        // Delete sheet
-        function deleteSheet(index) {
-            if (sheets.length === 1) {
-                alert('Cannot delete the last sheet!');
-                return;
-            }
-            
-            const sheetName = sheets[index].name;
-            const wasActive = sheets[index].active;
-            
-            sheets.splice(index, 1);
-            
-            if (wasActive) {
-                sheets[0].active = true;
-                currentSheet = sheets[0];
-            }
-            
-            saveSheets();
-            renderSheetList();
-            updateCurrentSheetDisplay();
-            addLog('System', `Deleted sheet: ${sheetName}`, '🗑️');
-        }
-
-        // Toggle sheet manager
-        function toggleSheetManager() {
-            const manager = document.getElementById('sheetManager');
-            if (manager) {
-                manager.classList.toggle('hidden');
-            }
-        }
-
-        // Get current config
-        function getCurrentConfig() {
-            if (!currentSheet) return null;
-            return {
-                SCRIPT_URL: currentSheet.url,
-                SHEET_ID: currentSheet.sheetId
-            };
-        }
-
-        // Handle manual date selection
-        function onDateManuallySelected() {
-            const autoToggle = document.getElementById('autoDateToggle');
-            const infoDiv = document.getElementById('dateToggleInfo');
-            
-            if (autoToggle.checked) {
-                // User manually selected a date while auto mode is on
-                // Disable auto mode to allow manual selection
-                autoToggle.checked = false;
-                const select = document.getElementById('dateSelect');
-                select.disabled = false;
-                infoDiv.innerHTML = '🔓 Manual mode: You can select any date';
-                addLog('System', 'Manual date selection enabled', '📅');
-            }
-            
-            // Reload stats for the selected date
-            loadGroupStats();
-        }
-
-        function toggleAutoDate() {
-            const isAuto = document.getElementById('autoDateToggle').checked;
-            const select = document.getElementById('dateSelect');
-            const infoDiv = document.getElementById('dateToggleInfo');
-            
-            if (isAuto) {
-                select.disabled = true;
-                const todayStr = getTodayDateString();
-                let found = false;
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === todayStr) {
-                        select.selectedIndex = i;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && select.options.length > 0) {
-                    select.selectedIndex = 0;
-                    infoDiv.innerHTML = '⚠️ Today\'s date not available. Auto mode disabled.';
-                    select.disabled = false;
-                    document.getElementById('autoDateToggle').checked = false;
-                    return;
-                }
-                infoDiv.innerHTML = '✅ Auto mode: Today\'s date is automatically selected (click date to switch to manual)';
-                addLog('System', `Auto mode: Selected ${todayStr}`, '📅');
-            } else {
-                select.disabled = false;
-                infoDiv.innerHTML = '🔓 Manual mode: You can select any date from the list';
-                addLog('System', 'Manual mode enabled', '📅');
-            }
-            
-            loadGroupStats();
-        }
-
-        // Group definitions
-        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
+        let currentAccessLevel = null;
 
         let appState = {
             scanner: null,
@@ -955,81 +588,166 @@
         };
 
         let absenceData = null;
+        const GROUP_ORDER = ['خدام', 'رابعة بنين', 'تالتة بنين', 'رابعة بنات', 'تالتة بنات'];
 
-        // Add Log
-        function addLog(name, status, icon = '📌') {
-            const logsContainer = document.getElementById('logsList');
-            if (!logsContainer) return;
+        // ============ LOGIN FUNCTIONS ============
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const errorDiv = document.getElementById('loginError');
             
-            let statusClass = '', statusText = '';
-            switch(status) {
-                case 'processing': statusClass = 'processing'; statusText = 'processing'; icon = '⏳'; break;
-                case 'success': statusClass = 'success'; statusText = '✓ marked'; icon = '✅'; break;
-                case 'error': statusClass = 'error'; statusText = 'error'; icon = '❌'; break;
-                case 'notfound': statusClass = 'error'; statusText = 'not found'; icon = '🔍'; break;
-                case 'already': statusClass = 'warning'; statusText = 'already marked'; icon = '⚠️'; break;
-                case 'queued': statusClass = 'warning'; statusText = 'queued'; icon = '📱'; break;
-                default: statusClass = 'processing'; statusText = status;
+            if (!username || !email) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Please enter both username and email';
+                return;
             }
             
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<div class="log-icon">${icon}</div><div class="log-name">${escapeHtml(name)}</div><div class="log-status ${statusClass}">${statusText}</div>`;
-            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
-            while (logsContainer.children.length > 30) logsContainer.removeChild(logsContainer.lastChild);
-        }
-
-        function clearLogs() {
-            const logsContainer = document.getElementById('logsList');
-            if (logsContainer) {
-                logsContainer.innerHTML = '<div class="log-entry"><div class="log-icon">⏳</div><div class="log-name">Ready to start</div><div class="log-status">waiting</div></div>';
-            }
-        }
-
-        // Load Group Stats
-        async function loadGroupStats() {
-            const config = getCurrentConfig();
-            if (!config) return;
+            // Find user
+            const user = USERS.find(u => u.username.toLowerCase() === username.toLowerCase() && u.email.toLowerCase() === email.toLowerCase());
             
-            const date = document.getElementById('dateSelect').value;
-            if (!date) return;
-            
-            try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-                const stats = await response.json();
-                if (!stats.error) renderGroupStats(stats);
-            } catch (error) {
-                console.error("Error loading group stats:", error);
+            if (!user) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Invalid credentials. Please check your username and email.';
+                return;
             }
+            
+            currentUser = user;
+            userSheets = [...user.sheets];
+            
+            // Save to localStorage for session persistence
+            localStorage.setItem('attendance_user', JSON.stringify({
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }));
+            
+            // Load user's sheets
+            loadUserSheets();
+            
+            // Show welcome view
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('welcomeView').classList.remove('hidden');
+            
+            // Update user info display
+            document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
+            document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
+            document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
+            
+            addLogToWelcome('System', `Welcome ${user.username}! You have ${userSheets.length} sheet(s) available.`, '✅');
         }
-
-        function renderGroupStats(stats) {
-            const container = document.getElementById('groupStatsContainer');
+        
+        function loadUserSheets() {
+            const container = document.getElementById('availableSheetsList');
+            const noAccessMsg = document.getElementById('noAccessMessage');
+            
             if (!container) return;
             
-            container.innerHTML = GROUP_ORDER.map(groupName => {
-                const group = stats[groupName];
-                if (!group) return '';
-                const percentage = group.percentage || 0;
-                return `
-                    <div class="group-card">
-                        <div class="group-title"><span>${groupName}</span><span>${percentage}%</span></div>
-                        <div class="group-stats-row">
-                            <div class="group-stat-item"><div class="group-stat-number">${group.total}</div><div class="group-stat-label">Total</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number present">${group.present}</div><div class="group-stat-label">Present</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number absent">${group.absent}</div><div class="group-stat-label">Absent</div></div>
-                        </div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${percentage}%"></div></div>
+            if (userSheets.length === 0) {
+                container.innerHTML = '';
+                noAccessMsg.classList.remove('hidden');
+                // Disable all action buttons
+                document.getElementById('scannerBtn').classList.add('disabled');
+                document.getElementById('uploadBtn').classList.add('disabled');
+                document.getElementById('absenceBtn').classList.add('disabled');
+                return;
+            }
+            
+            noAccessMsg.classList.add('hidden');
+            // Enable buttons if user has at least one sheet
+            document.getElementById('scannerBtn').classList.remove('disabled');
+            document.getElementById('uploadBtn').classList.remove('disabled');
+            document.getElementById('absenceBtn').classList.remove('disabled');
+            
+            // Set first sheet as active by default
+            if (!currentSheet && userSheets.length > 0) {
+                currentSheet = userSheets[0];
+                currentAccessLevel = currentSheet.access;
+            }
+            
+            container.innerHTML = userSheets.map((sheet, index) => `
+                <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
+                    <div class="sheet-info">
+                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
+                        <div class="sheet-access">Access: ${sheet.access === 'full' ? '✏️ Read/Write' : '👁️ Read Only'}</div>
                     </div>
-                `;
-            }).join('');
+                    <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full Access' : 'View Only'}</div>
+                </div>
+            `).join('');
         }
-
-        // Show App
+        
+        function selectSheet(index) {
+            currentSheet = userSheets[index];
+            currentAccessLevel = currentSheet.access;
+            loadUserSheets(); // Refresh to show active
+            
+            addLogToWelcome('System', `Switched to: ${currentSheet.name} (${currentAccessLevel} access)`, '🔄');
+            
+            // If in main app, reload data
+            if (!document.getElementById('mainApp').classList.contains('hidden')) {
+                loadDates();
+                loadGroupStats();
+            }
+            if (!document.getElementById('absenceView').classList.contains('hidden')) {
+                loadAbsenceDates();
+                loadAbsenceData();
+            }
+        }
+        
+        function getCurrentConfig() {
+            if (!currentSheet) return null;
+            return {
+                SCRIPT_URL: currentSheet.url,
+                SHEET_ID: currentSheet.sheetId,
+                ACCESS: currentSheet.access
+            };
+        }
+        
+        function canWrite() {
+            return currentAccessLevel === 'full';
+        }
+        
+        function logout() {
+            currentUser = null;
+            currentSheet = null;
+            userSheets = [];
+            localStorage.removeItem('attendance_user');
+            
+            // Reset UI
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            
+            // Reset app state
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+        }
+        
+        function addLogToWelcome(name, status, icon = '📌') {
+            // For welcome view logs if needed
+            console.log(`${icon} ${name}: ${status}`);
+        }
+        
+        // ============ APP FUNCTIONS (Same as before but with access control) ============
+        
+        function checkAccess(action) {
+            if (!canWrite() && action !== 'view') {
+                alert(`⚠️ You have read-only access to ${currentSheet.name}. You cannot ${action}.`);
+                return false;
+            }
+            return true;
+        }
+        
         async function showApp(mode) {
             const config = getCurrentConfig();
             if (!config) {
-                alert('Please add a sheet first!');
+                alert('Please select a sheet first!');
                 return;
             }
             
@@ -1039,180 +757,171 @@
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
+            document.getElementById('activeSheetBadge').innerHTML = `📄 ${currentSheet.name} (${currentAccessLevel} access)`;
+            
             appState.currentMode = mode;
             
             if (mode === 'scan') {
                 document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
-                document.getElementById('modeDescription').innerText = 'Scan QR code to mark attendance';
+                document.getElementById('modeDescription').innerText = canWrite() ? 'Scan QR code to mark attendance' : 'Read-only mode - cannot mark attendance';
                 document.getElementById('fileSection').classList.add('hidden');
                 await loadDates();
                 await loadGroupStats();
-                await startScanner();
-                startBackgroundSync();
-                addLog('System', `Scanner ready - ${currentSheet.name}`, '📸');
+                if (canWrite()) {
+                    await startScanner();
+                    startBackgroundSync();
+                } else {
+                    document.getElementById('scannerStatus').style.display = 'block';
+                    document.getElementById('scannerStatus').innerHTML = '<span>🔒 Read-only mode. You cannot mark attendance.</span>';
+                }
+                addLogToWelcome('System', `${currentSheet.name} - ${currentAccessLevel} mode`, '📸');
             } else {
+                if (!canWrite()) {
+                    alert('⚠️ You have read-only access. Bulk upload is disabled.');
+                    backToWelcome();
+                    return;
+                }
                 document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
                 document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
                 document.getElementById('fileSection').classList.remove('hidden');
                 await loadDates();
                 await loadGroupStats();
                 setupDragAndDrop();
-                addLog('System', `Upload mode ready - ${currentSheet.name}`, '📁');
+                addLogToWelcome('System', `Upload mode ready - ${currentSheet.name}`, '📁');
             }
         }
-
+        
         async function loadDates() {
             const config = getCurrentConfig();
             if (!config) return;
-            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
                 const dates = await response.json();
                 const select = document.getElementById('dateSelect');
                 select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                
-                // Set up auto toggle after dates are loaded
-                const autoToggle = document.getElementById('autoDateToggle');
-                if (autoToggle.checked) {
-                    const todayStr = getTodayDateString();
-                    let found = false;
-                    for (let i = 0; i < select.options.length; i++) {
-                        if (select.options[i].value === todayStr) {
-                            select.selectedIndex = i;
-                            found = true;
-                            break;
-                        }
+                toggleAutoDate();
+            } catch(e) { console.error(e); }
+        }
+        
+        function toggleAutoDate() {
+            const isAuto = document.getElementById('autoDateToggle').checked;
+            const select = document.getElementById('dateSelect');
+            if (isAuto && select.options.length > 0) {
+                select.disabled = true;
+                const todayStr = getTodayDateString();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        loadGroupStats();
+                        break;
                     }
-                    if (found) {
-                        select.disabled = true;
-                        document.getElementById('dateToggleInfo').innerHTML = '✅ Auto mode: Today\'s date is automatically selected (click date to switch to manual)';
-                    } else {
-                        autoToggle.checked = false;
-                        select.disabled = false;
-                        document.getElementById('dateToggleInfo').innerHTML = '🔓 Manual mode: You can select any date from the list';
-                        addLog('System', 'Today\'s date not available, switched to manual mode', '⚠️');
-                    }
-                } else {
-                    select.disabled = false;
                 }
-                
-                loadGroupStats();
-            } catch(e) {
-                console.error("Error loading dates:", e);
-                addLog('System', 'Failed to load dates', '❌');
+            } else {
+                select.disabled = false;
             }
         }
-
+        
+        function onDateManuallySelected() {
+            const autoToggle = document.getElementById('autoDateToggle');
+            if (autoToggle.checked) {
+                autoToggle.checked = false;
+                document.getElementById('dateSelect').disabled = false;
+                addLogToWelcome('System', 'Manual date selection enabled', '📅');
+            }
+            loadGroupStats();
+        }
+        
+        async function loadGroupStats() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            const date = document.getElementById('dateSelect').value;
+            if (!date) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const stats = await response.json();
+                if (!stats.error) renderGroupStats(stats);
+            } catch(e) { console.error(e); }
+        }
+        
+        function renderGroupStats(stats) {
+            const container = document.getElementById('groupStatsContainer');
+            if (!container) return;
+            container.innerHTML = GROUP_ORDER.map(groupName => {
+                const group = stats[groupName];
+                if (!group) return '';
+                return `<div class="group-card"><div class="group-title"><span>${groupName}</span><span>${group.percentage}%</span></div>
+                        <div>Total: ${group.total} | Present: ${group.present} | Absent: ${group.absent}</div>
+                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${group.percentage}%; height:6px; background:#27ae60;"></div></div></div>`;
+            }).join('');
+        }
+        
         async function startScanner() {
-            if (!document.getElementById('reader')) return;
-            document.getElementById('reader').style.display = 'block';
+            if (!canWrite()) return;
+            const readerDiv = document.getElementById('reader');
+            if (!readerDiv) return;
+            readerDiv.style.display = 'block';
             document.getElementById('scannerStatus').style.display = 'block';
-            
             try {
                 appState.scanner = new Html5Qrcode("reader");
-                await appState.scanner.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                await appState.scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
                     (decodedText) => { if (!appState.isProcessing) processScan(decodedText.trim()); },
-                    () => {}
-                );
+                    () => {});
                 document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
-            } catch (err) {
-                addLog('System', 'Camera access failed', '❌');
-                document.getElementById('scannerStatus').innerHTML = '<span>❌ Camera access denied</span>';
+            } catch(err) {
+                addLogToWelcome('System', 'Camera access failed', '❌');
             }
         }
-
-        async function stopScanner() {
-            if (appState.scanner && appState.scanner.isScanning) {
-                try { await appState.scanner.stop(); appState.scanner.clear(); } catch (err) {}
-            }
-            appState.scanner = null;
-            document.getElementById('reader').style.display = 'none';
-            document.getElementById('scannerStatus').style.display = 'none';
-        }
-
+        
         async function processScan(name, isBatch = false) {
+            if (!canWrite()) return false;
             const config = getCurrentConfig();
             if (!config) return false;
-            
             if (!name || appState.scannedNamesSet.has(name) || appState.isProcessing) return false;
             appState.isProcessing = true;
-            
-            if (!isBatch) {
-                addLog(name, 'processing', '⏳');
-                document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ Processing: ${escapeHtml(name)}...</span>`;
-            }
-            
+            if (!isBatch) addLogToWelcome(name, 'processing', '⏳');
             const currentDate = document.getElementById('dateSelect').value;
             if (!currentDate) { appState.isProcessing = false; return false; }
-            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=mark&sheetId=${config.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`, 1);
                 const text = await response.text();
-                
                 if (text.includes("Success")) {
-                    addLog(name, 'success', '✅');
+                    addLogToWelcome(name, 'success', '✅');
                     appState.scannedNamesSet.add(name);
-                    if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
-                        setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>'; }, 1500);
-                    }
                     await loadGroupStats();
                     appState.isProcessing = false;
                     return true;
                 } else if (text.includes("Already Marked")) {
-                    addLog(name, 'already', '⚠️');
-                    if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
-                        setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>'; }, 1500);
-                    }
-                    appState.isProcessing = false;
-                    return false;
-                } else if (text.includes("not found")) {
-                    addLog(name, 'notfound', '🔍');
-                    if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
-                        setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>'; }, 1500);
-                    }
+                    addLogToWelcome(name, 'already', '⚠️');
                     appState.isProcessing = false;
                     return false;
                 } else {
-                    addLog(name, 'error', '❌');
+                    addLogToWelcome(name, 'error', '❌');
                     appState.isProcessing = false;
                     return false;
                 }
             } catch (error) {
-                addLog(name, 'queued', '📱');
+                addLogToWelcome(name, 'queued', '📱');
                 if (!isBatch && !appState.offlineQueue.includes(name)) appState.offlineQueue.push(name);
                 updateQueueUI();
                 appState.isProcessing = false;
-                if (!isBatch) {
-                    document.getElementById('scannerStatus').innerHTML = '<span>📱 Offline - Saved to queue</span>';
-                    setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>'; }, 1500);
-                }
                 return false;
             }
         }
-
+        
         function updateQueueUI() {
-            const queueCount = appState.offlineQueue.length;
-            document.getElementById('queueCount') && (document.getElementById('queueCount').innerText = queueCount);
+            document.getElementById('queueCount') && (document.getElementById('queueCount').innerText = appState.offlineQueue.length);
             const syncBtn = document.getElementById('syncBtn');
-            if (syncBtn) queueCount > 0 ? syncBtn.classList.remove('hidden') : syncBtn.classList.add('hidden');
+            if (syncBtn) appState.offlineQueue.length > 0 ? syncBtn.classList.remove('hidden') : syncBtn.classList.add('hidden');
         }
-
+        
         async function syncQueue() {
+            if (!canWrite()) return;
             const config = getCurrentConfig();
             if (!config || appState.isSyncing || appState.offlineQueue.length === 0) return;
-            
             appState.isSyncing = true;
-            addLog('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
-            
             try {
                 const currentDate = document.getElementById('dateSelect').value;
                 if (!currentDate) return;
-                
                 const toSync = [...appState.offlineQueue];
                 for (let i = 0; i < toSync.length; i += 20) {
                     const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
@@ -1223,31 +932,30 @@
                         });
                         const result = await response.json();
                         if (!result.error && result.success) {
-                            result.success.forEach(name => { if (!appState.scannedNamesSet.has(name)) appState.scannedNamesSet.add(name); });
+                            result.success.forEach(name => appState.scannedNamesSet.add(name));
                         }
-                    } catch (err) {}
+                    } catch(e) {}
                 }
                 appState.offlineQueue = [];
                 updateQueueUI();
-                addLog('System', 'Sync completed', '✅');
                 await loadGroupStats();
             } finally { appState.isSyncing = false; updateQueueUI(); }
         }
-
+        
         function startBackgroundSync() {
             if (appState.syncInterval) clearInterval(appState.syncInterval);
             appState.syncInterval = setInterval(() => {
                 if (appState.offlineQueue.length > 0 && navigator.onLine && appState.currentMode === 'scan') syncQueue();
             }, 5000);
         }
-
+        
         function setupDragAndDrop() {
-            const uploadArea = document.getElementById('uploadArea');
-            if (!uploadArea) return;
-            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-            uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('drag-over'); });
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault(); uploadArea.classList.remove('drag-over');
+            const area = document.getElementById('uploadArea') || document.querySelector('.upload-section');
+            if (!area) return;
+            area.addEventListener('dragover', (e) => { e.preventDefault(); area.style.borderColor = '#27ae60'; });
+            area.addEventListener('dragleave', () => { area.style.borderColor = '#e2e8f0'; });
+            area.addEventListener('drop', (e) => {
+                e.preventDefault(); area.style.borderColor = '#e2e8f0';
                 const file = e.dataTransfer.files[0];
                 if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv'))) {
                     document.getElementById('fileInput').files = e.dataTransfer.files;
@@ -1258,28 +966,23 @@
                 if (e.target.files[0]) document.getElementById('fileName').innerText = e.target.files[0].name;
             });
         }
-
+        
         async function handleBulkUpload() {
+            if (!canWrite()) { alert('Read-only mode. Cannot upload.'); return; }
             const config = getCurrentConfig();
-            if (!config) { alert('No active sheet!'); return; }
-            
+            if (!config) return;
             const file = document.getElementById('fileInput').files[0];
             if (!file) { alert("Please select a file!"); return; }
-            
             try {
                 const text = await file.text();
-                let names = text.split(/\r?\n/).filter(line => line.trim().length > 0).map(n => n.split(',')[0].replace(/["']/g, '').trim()).filter(n => n.length > 0);
+                let names = text.split(/\r?\n/).filter(l => l.trim().length > 0).map(n => n.split(',')[0].replace(/["']/g, '').trim()).filter(n => n.length > 0);
                 names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
                 if (names.length === 0) { alert("No valid names found!"); return; }
-                
                 document.getElementById('progressContainer').style.display = 'block';
                 const uploadBtn = document.getElementById('uploadBtn');
                 uploadBtn.disabled = true;
-                
                 let processed = 0, successful = 0, alreadyMarked = 0, notFound = 0;
                 const startTime = Date.now();
-                addLog('System', `Starting upload: ${names.length} names`, '📁');
-                
                 const currentDate = document.getElementById('dateSelect').value;
                 for (let i = 0; i < names.length; i += 50) {
                     const batch = names.slice(i, Math.min(i + 50, names.length));
@@ -1289,57 +992,49 @@
                             body: JSON.stringify({ action: 'batchMark', sheetId: config.SHEET_ID, names: batch, date: currentDate })
                         });
                         const result = await response.json();
-                        if (result.error) { batch.forEach(name => addLog(name, 'error', '❌')); notFound += batch.length; }
+                        if (result.error) { notFound += batch.length; }
                         else {
-                            (result.success || []).forEach(name => { addLog(name, 'success', '✅'); successful++; });
-                            (result.alreadyMarked || []).forEach(name => { addLog(name, 'already', '⚠️'); alreadyMarked++; });
-                            (result.notFound || []).forEach(name => { addLog(name, 'notfound', '🔍'); notFound++; });
+                            successful += result.success?.length || 0;
+                            alreadyMarked += result.alreadyMarked?.length || 0;
+                            notFound += result.notFound?.length || 0;
                         }
-                    } catch (err) { batch.forEach(name => addLog(name, 'error', '❌')); notFound += batch.length; }
-                    
+                    } catch(e) { notFound += batch.length; }
                     processed += batch.length;
                     document.getElementById('progressBar').style.width = `${(processed / names.length) * 100}%`;
                     const speed = (processed / ((Date.now() - startTime) / 1000)).toFixed(1);
                     document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${alreadyMarked} | 🔍 ${notFound} | ⚡ ${speed}/s`;
                 }
-                
                 await loadGroupStats();
-                addLog('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found`, '✅');
                 uploadBtn.disabled = false;
                 setTimeout(() => {
                     document.getElementById('progressContainer').style.display = 'none';
                     document.getElementById('progressBar').style.width = '0%';
                     document.getElementById('uploadStats').innerHTML = '';
                 }, 3000);
-            } catch (err) { addLog('System', 'Upload failed: ' + err.message, '❌'); document.getElementById('uploadBtn').disabled = false; }
+            } catch(e) { alert('Upload failed'); document.getElementById('uploadBtn').disabled = false; }
         }
-
+        
         function exportToExcel() {
             if (appState.scannedData.length === 0) { alert("No data to export!"); return; }
             const wsData = [['Name'], ...appState.scannedData.map(item => [item.Name])];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            ws['!cols'] = [{wch: 30}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Attendance");
             XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value.replace(/\//g, '-')}.xlsx`);
-            addLog('System', `Exported ${appState.scannedData.length} names`, '📊');
         }
-
-        // Absence Functions
+        
         async function showAbsenceExport() {
             const config = getCurrentConfig();
-            if (!config) { alert('Please add a sheet first!'); return; }
-            
+            if (!config) { alert('Please select a sheet first!'); return; }
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.remove('hidden');
             await loadAbsenceDates();
         }
-
+        
         async function loadAbsenceDates() {
             const config = getCurrentConfig();
             if (!config) return;
-            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
                 const dates = await response.json();
@@ -1350,81 +1045,60 @@
                     if (select.options[i].value === todayStr) { select.selectedIndex = i; break; }
                 }
                 await loadAbsenceData();
-            } catch(e) { console.error("Error loading absence dates:", e); }
+            } catch(e) { console.error(e); }
         }
-
+        
         async function loadAbsenceData() {
             const config = getCurrentConfig();
             if (!config) return;
-            
             const date = document.getElementById('absenceDateSelect').value;
             if (!date) return;
-            
             document.getElementById('absenceLoading').style.display = 'block';
             document.getElementById('absenceGroupsContainer').innerHTML = '';
             document.getElementById('exportAbsenceBtn').style.display = 'none';
-            
             try {
                 const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
                 const data = await response.json();
-                if (data.error) { document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">${data.error}</div>`; return; }
+                if (data.error) throw new Error(data.error);
                 absenceData = data;
                 renderAbsenceGroups(data);
                 document.getElementById('exportAbsenceBtn').style.display = 'block';
-            } catch (error) {
-                console.error("Error loading absence data:", error);
-                document.getElementById('absenceGroupsContainer').innerHTML = '<div style="text-align:center;color:red;">Failed to load data</div>';
+            } catch(e) {
+                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="color:red;">Error: ${e.message}</div>`;
             } finally { document.getElementById('absenceLoading').style.display = 'none'; }
         }
-
+        
         function renderAbsenceGroups(data) {
             const container = document.getElementById('absenceGroupsContainer');
             if (!container) return;
             container.innerHTML = GROUP_ORDER.map(groupName => {
                 const group = data.groups[groupName];
                 if (!group) return '';
-                const absentList = group.absentNames.map(name => `<div style="padding: 8px 12px; background: #fee2e2; margin: 4px 0; border-radius: 8px;">❌ ${escapeHtml(name)}</div>`).join('');
-                return `
-                    <div class="group-card" style="margin-bottom: 15px;">
-                        <div class="group-title"><span>${groupName}</span><span>${group.percentage}%</span></div>
-                        <div class="group-stats-row">
-                            <div class="group-stat-item"><div class="group-stat-number">${group.total}</div><div class="group-stat-label">Total</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number present">${group.present}</div><div class="group-stat-label">Present</div></div>
-                            <div class="group-stat-item"><div class="group-stat-number absent">${group.absent}</div><div class="group-stat-label">Absent</div></div>
-                        </div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${group.percentage}%"></div></div>
-                        ${group.absent > 0 ? `<div style="margin-top: 12px;"><strong>📋 Absent List (${group.absent}):</strong><div style="margin-top: 8px;">${absentList}</div></div>` : '<div style="margin-top: 12px; color: #27ae60;">✅ All students are present</div>'}
-                    </div>
-                `;
+                return `<div class="group-card"><div class="group-title">${groupName} - ${group.percentage}%</div>
+                        <div>Total: ${group.total} | Present: ${group.present} | Absent: ${group.absent}</div>
+                        ${group.absent > 0 ? `<div><strong>Absent (${group.absent}):</strong> ${group.absentNames.join(', ')}</div>` : '<div>✅ All present</div>'}</div>`;
             }).join('');
         }
-
+        
         function exportAbsenceToExcel() {
             if (!absenceData) return;
             const wsData = [['Absence Report'], ['Date: ' + absenceData.date], []];
             for (const groupName of GROUP_ORDER) {
                 const group = absenceData.groups[groupName];
                 if (group && group.absentNames.length > 0) {
-                    wsData.push([groupName + ' - Absent Students (' + group.absentNames.length + ')']);
+                    wsData.push([groupName + ' - Absent (' + group.absentNames.length + ')']);
                     group.absentNames.forEach(name => wsData.push([name]));
                     wsData.push([]);
-                } else if (group) { wsData.push([groupName + ' - All students present ✅'], []); }
-            }
-            wsData.push([], ['Summary']);
-            for (const groupName of GROUP_ORDER) {
-                const group = absenceData.groups[groupName];
-                if (group) wsData.push([groupName, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
+                }
             }
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            ws['!cols'] = [{wch: 25}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
             XLSX.writeFile(wb, `Absence_Report_${absenceData.date.replace(/\//g, '-')}.xlsx`);
-            addLog('System', 'Absence report exported', '📊');
         }
-
+        
         function resetAppState() {
-            if (appState.scanner) stopScanner();
+            if (appState.scanner) { try { appState.scanner.stop(); } catch(e) {} appState.scanner = null; }
             if (appState.syncInterval) clearInterval(appState.syncInterval);
             appState.scannedNamesSet.clear();
             appState.scannedData = [];
@@ -1432,21 +1106,29 @@
             appState.isSyncing = false;
             appState.isProcessing = false;
         }
-
-        function resetApp() {
+        
+        function backToWelcome() {
             resetAppState();
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('welcomeView').classList.remove('hidden');
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileName') && (document.getElementById('fileName').innerText = 'No file selected');
-            clearLogs();
-        }
-
-        function backToHome() {
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
         }
-
+        
+        function addLog(name, status, icon = '📌') {
+            const container = document.getElementById('logsList');
+            if (!container) return;
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span>${icon}</span><span>${escapeHtml(name)}</span><span>${status}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            while (container.children.length > 30) container.removeChild(container.lastChild);
+        }
+        
+        function clearLogs() {
+            const container = document.getElementById('logsList');
+            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
+        }
+        
         async function fetchWithRetry(url, retries = 2) {
             for (let i = 0; i < retries; i++) {
                 try {
@@ -1456,28 +1138,44 @@
                     clearTimeout(timeoutId);
                     if (response.ok) return response;
                     if (response.status === 429) await delay(1000);
-                } catch (error) { if (i === retries - 1) throw error; await delay(1000); }
+                } catch(e) { if (i === retries - 1) throw e; await delay(1000); }
             }
-            throw new Error(`Failed after ${retries} retries`);
+            throw new Error('Fetch failed');
         }
-
+        
         function getTodayDateString() {
             const now = new Date();
             return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
         }
-
+        
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
-
+        
         function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
+        
+        // Check for saved session
+        function checkSavedSession() {
+            const saved = localStorage.getItem('attendance_user');
+            if (saved) {
+                const userData = JSON.parse(saved);
+                const user = USERS.find(u => u.username === userData.username && u.email === userData.email);
+                if (user) {
+                    currentUser = user;
+                    userSheets = [...user.sheets];
+                    loadUserSheets();
+                    document.getElementById('loginView').classList.add('hidden');
+                    document.getElementById('welcomeView').classList.remove('hidden');
+                    document.getElementById('displayName').innerHTML = `👤 ${user.username}`;
+                    document.getElementById('displayEmail').innerHTML = `📧 ${user.email}`;
+                    document.getElementById('displayRole').innerHTML = `🔑 ${user.role}`;
+                }
+            }
+        }
+        
         // Initialize
-        initSheets();
-
-        window.addEventListener('online', () => { if (appState.currentMode === 'scan' && appState.offlineQueue.length > 0) syncQueue(); });
-        window.addEventListener('beforeunload', () => { if (appState.scanner) stopScanner(); if (appState.syncInterval) clearInterval(appState.syncInterval); });
+        checkSavedSession();
     </script>
 </body>
 </html>
