@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta name="format-detection" content="telephone=no">
+    
     <title>St. Joseph Attendance Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -127,6 +133,16 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .error-message {
@@ -157,7 +173,7 @@
             margin-top: 5px;
         }
 
-        /* User Profile Sidebar Style */
+        /* User Profile */
         .user-profile {
             background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
             border-radius: 20px;
@@ -245,16 +261,6 @@
             margin-bottom: 12px;
         }
 
-        .add-sheet-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
         .current-sheet {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
@@ -320,57 +326,6 @@
         .access-badge.full { background: #d1fae5; color: #059669; }
         .access-badge.readonly { background: #fef3c7; color: #d97706; }
 
-        .sheet-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 6px;
-        }
-
-        .icon-btn:hover {
-            background: #f1f5f9;
-        }
-
-        .add-sheet-form {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .form-group-small {
-            margin-bottom: 10px;
-        }
-
-        .form-group-small input, .form-group-small select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 12px;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 12px;
-            border-radius: 20px;
-            background: #2c7da0;
-            color: white;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-small:hover {
-            background: #1f5e7a;
-        }
-
         /* Welcome Buttons */
         .welcome-buttons {
             display: flex;
@@ -391,6 +346,11 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
+            transition: transform 0.2s;
+        }
+
+        .welcome-btn:hover {
+            transform: translateY(-2px);
         }
 
         .welcome-btn .btn-icon { font-size: 24px; }
@@ -416,24 +376,9 @@
             cursor: not-allowed;
         }
 
-        .info-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
+        .welcome-btn.disabled:hover {
+            transform: none;
         }
-
-        .info-card {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid #eef2f6;
-        }
-
-        .info-icon { font-size: 24px; }
-        .info-title { font-size: 12px; font-weight: 600; margin-top: 5px; }
-        .info-desc { font-size: 10px; color: #64748b; }
 
         /* Main App Styles */
         #mainApp .card-header, #absenceView .card-header {
@@ -594,6 +539,11 @@
             font-weight: 500;
             cursor: pointer;
             width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
         }
 
         .btn-primary { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
@@ -642,6 +592,11 @@
             border-radius: 40px;
             cursor: pointer;
             font-size: 13px;
+            transition: transform 0.2s;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
         }
 
         input[type="file"] { display: none; }
@@ -664,6 +619,12 @@
 
         .processing-pulse { animation: pulse 1s ease-in-out infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
     </style>
 </head>
 <body>
@@ -679,11 +640,11 @@
                 <div id="loginError" class="error-message hidden"></div>
                 <div class="form-group">
                     <label>👤 Username</label>
-                    <input type="text" id="username" placeholder="Enter your username">
+                    <input type="text" id="username" placeholder="Enter your username" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label>📧 Email</label>
-                    <input type="email" id="email" placeholder="Enter your email">
+                    <label>🔒 Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" autocomplete="off">
                 </div>
                 <button class="login-btn" onclick="login()">🔐 Login</button>
             </div>
@@ -696,7 +657,7 @@
                 <div class="welcome-creator">Created by: Youssef Ramy</div>
             </div>
             <div class="card-body">
-                <!-- User Profile - Side Style -->
+                <!-- User Profile -->
                 <div class="user-profile">
                     <div class="user-avatar" id="userAvatar">👤</div>
                     <div class="user-details">
@@ -710,33 +671,9 @@
                 <div class="sheet-selector">
                     <div class="sheet-selector-header">
                         <span class="sheet-selector-title">📊 Available Sheets</span>
-                        <button class="add-sheet-btn" onclick="toggleAddSheetForm()">+ Add Sheet</button>
                     </div>
                     <div id="currentSheetDisplay" class="current-sheet"></div>
                     <div id="sheetListContainer"></div>
-                    
-                    <!-- Add Sheet Form (Hidden by default) -->
-                    <div id="addSheetForm" class="add-sheet-form hidden">
-                        <div class="form-group-small">
-                            <input type="text" id="newSheetName" placeholder="Sheet Name (e.g., Sunday School)">
-                        </div>
-                        <div class="form-group-small">
-                            <input type="text" id="newSheetUrl" placeholder="Google Apps Script URL">
-                        </div>
-                        <div class="form-group-small">
-                            <input type="text" id="newSheetId" placeholder="Google Sheet ID">
-                        </div>
-                        <div class="form-group-small">
-                            <input type="text" id="newSheetGroups" placeholder="Group Names (comma separated, e.g., خدم,اولى بنين,تانيه بنين)">
-                        </div>
-                        <div class="form-group-small">
-                            <select id="newSheetAccess">
-                                <option value="full">Full Access (Read/Write)</option>
-                                <option value="readonly">Read Only</option>
-                            </select>
-                        </div>
-                        <button class="btn-small" onclick="addNewSheet()">➕ Add Sheet</button>
-                    </div>
                 </div>
 
                 <div class="welcome-buttons">
@@ -753,13 +690,6 @@
                         <div class="btn-text">Export Absence</div>
                     </button>
                 </div>
-                
-                <!-- <div class="info-cards">
-                    <div class="info-card"><div class="info-icon">✅</div><div class="info-title">Quick Marking</div><div class="info-desc">Scan QR codes instantly</div></div>
-                    <div class="info-card"><div class="info-icon">📊</div><div class="info-title">Export Reports</div><div class="info-desc">Attendance & Absence lists</div></div>
-                    <div class="info-card"><div class="info-icon">📱</div><div class="info-title">Offline Sync</div><div class="info-desc">Sync when back online</div></div>
-                    <div class="info-card"><div class="info-icon">🔌</div><div class="info-title">Multi-Sheet</div><div class="info-desc">Add unlimited sheets</div></div>
-                </div> -->
             </div>
         </div>
 
@@ -792,7 +722,7 @@
                         <label class="file-input-label">📁 Choose File (.txt or .csv)<input type="file" id="fileInput" accept=".txt,.csv"></label>
                         <div id="fileName" style="margin-top: 10px; font-size: 12px;">No file selected</div>
                         <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-                        <button class="btn btn-primary" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 10px;">🚀 Start Upload</button>
+                        <button class="btn btn-primary" id="uploadBtnAction" onclick="handleBulkUpload()" style="margin-top: 10px;">🚀 Start Upload</button>
                         <div id="uploadStats" style="font-size: 11px; margin-top: 8px;"></div>
                     </div>
                 </div>
@@ -829,53 +759,10 @@
     </div>
 
     <script>
-        // ============ STORAGE KEYS ============
-        const STORAGE_SHEETS_KEY = 'attendance_universal_sheets';
-        const STORAGE_USER_KEY = 'attendance_user';
-        
-        // ============ DEFAULT SHEETS ============
-        const DEFAULT_SHEETS = [
-            {
-                name: "M2",
-                url: "https://script.google.com/macros/s/AKfycbxYotAOxC314l0PAQ67j9Q0SGUrFwbyVQiKLIVC6R-AKZ5glHa0ba4PonkbeDvHpxCx/exec",
-                sheetId: "1665W6Z9bNbcJ6l5rLbi41c_xC1FGzRySyMtdAaO5g9A",
-                groups: ["خدام", "اولى بنين", "تانيه بنين", "اولى بنات", "تانيه بنات"],
-                access: "full"
-            },
-            {
-                name: "M3",
-                url: "https://script.google.com/macros/s/AKfycbwAxnQgxbxPrG-75bKT_mqHLalPYY2fueedzKgeJSDq2Ekh0viLd8PtkV_m1cBs7bIFSg/exec",
-                sheetId: "1eLBj6T5M8toC9nBgZt70elYYrRjWYkdWzTkeKx-k5zA",
-                groups: ["خدام", "رابعة بنين", "تالتة بنين", "رابعة بنات", "تالتة بنات"],
-                access: "full"
-            }
-        ];
-        
-        // ============ USERS ============
-        const USERS = [
-            {
-                username: "joe",
-                email: "joe@123",
-                role: "Admin",
-                sheets: null // null means access to all sheets
-            },
-            {
-                username: "m3",
-                email: "m3@123",
-                role: "Teacher",
-                sheets: ["M3"] // null means access to all sheets
-            },
-            {
-                username: "m2",
-                email: "m2@123",
-                role: "Teacher",
-                sheets: ["M2"] // only access to specific sheets by name
-            }
-        ];
-        
         // ============ GLOBAL STATE ============
-        let allSheets = [];
+        let sessionToken = null;
         let currentUser = null;
+        let allSheets = [];
         let currentSheet = null;
         let currentAccess = null;
         let currentGroups = [];
@@ -892,35 +779,139 @@
         };
         
         let absenceData = null;
+        let sessionTimeout = null;
         
-        // ============ INITIALIZATION ============
-        function loadSheets() {
-            const stored = localStorage.getItem(STORAGE_SHEETS_KEY);
-            if (stored) {
-                allSheets = JSON.parse(stored);
+        // ============ API FUNCTIONS ============
+        async function apiCall(action, params = {}, isPost = false) {
+            const scriptUrl = window.location.href.split('?')[0];
+            
+            if (isPost) {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Token': sessionToken || ''
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        sessionToken: sessionToken,
+                        ...params
+                    })
+                });
+                return await response.json();
             } else {
-                allSheets = JSON.parse(JSON.stringify(DEFAULT_SHEETS));
-                saveSheets();
+                let url = `${scriptUrl}?action=${action}&sessionToken=${sessionToken || ''}`;
+                for (const [key, value] of Object.entries(params)) {
+                    url += `&${key}=${encodeURIComponent(value)}`;
+                }
+                const response = await fetch(url);
+                return await response.json();
             }
         }
         
-        function saveSheets() {
-            localStorage.setItem(STORAGE_SHEETS_KEY, JSON.stringify(allSheets));
+        // ============ LOGIN FUNCTIONS ============
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+            const loginBtn = document.querySelector('.login-btn');
+            
+            if (!username || !password) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Please enter both username and password';
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ Logging in...';
+            
+            try {
+                const result = await apiCall('login', { username, password }, true);
+                
+                if (result.error) {
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.innerHTML = `❌ ${result.error}`;
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '🔐 Login';
+                    return;
+                }
+                
+                if (result.success) {
+                    sessionToken = result.sessionToken;
+                    currentUser = result.user;
+                    
+                    // Load sheets from server
+                    const sheetsResult = await apiCall('getSheets', {});
+                    if (!sheetsResult.error) {
+                        allSheets = sheetsResult;
+                    }
+                    
+                    document.getElementById('loginView').classList.add('hidden');
+                    document.getElementById('welcomeView').classList.remove('hidden');
+                    
+                    const avatar = document.getElementById('userAvatar');
+                    if (avatar) {
+                        avatar.innerHTML = currentUser.username.charAt(0).toUpperCase();
+                    }
+                    
+                    document.getElementById('displayName').innerHTML = currentUser.username;
+                    document.getElementById('displayEmail').innerHTML = currentUser.email;
+                    document.getElementById('displayRole').innerHTML = currentUser.role;
+                    
+                    loadUserSheets();
+                    addLogToUI('System', `Welcome ${currentUser.username}!`, '✅');
+                    resetSessionTimeout();
+                }
+            } catch (err) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Connection error. Please try again.';
+                console.error(err);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🔐 Login';
+            }
         }
         
-        function getUserSheets() {
-            if (!currentUser) return [];
-            if (currentUser.sheets === null) return allSheets;
-            return allSheets.filter(sheet => currentUser.sheets.includes(sheet.name));
+        function logout() {
+            if (sessionTimeout) clearTimeout(sessionTimeout);
+            sessionToken = null;
+            currentUser = null;
+            currentSheet = null;
+            currentAccess = null;
+            currentGroups = [];
+            allSheets = [];
+            
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
         }
         
+        function resetSessionTimeout() {
+            if (sessionTimeout) clearTimeout(sessionTimeout);
+            sessionTimeout = setTimeout(() => {
+                if (currentUser) {
+                    alert('Session expired. Please login again.');
+                    logout();
+                }
+            }, 30 * 60 * 1000);
+        }
+        
+        // ============ SHEET FUNCTIONS ============
         function loadUserSheets() {
             const container = document.getElementById('sheetListContainer');
             const currentDisplay = document.getElementById('currentSheetDisplay');
-            const userSheets = getUserSheets();
             
-            if (!currentUser || userSheets.length === 0) {
-                container.innerHTML = '';
+            if (!currentUser || allSheets.length === 0) {
+                container.innerHTML = '<div class="loading">No sheets available</div>';
                 if (currentDisplay) currentDisplay.innerHTML = 'No sheets available';
                 document.getElementById('scannerBtn').classList.add('disabled');
                 document.getElementById('uploadBtn').classList.add('disabled');
@@ -932,34 +923,29 @@
             document.getElementById('uploadBtn').classList.remove('disabled');
             document.getElementById('absenceBtn').classList.remove('disabled');
             
-            // Set first sheet as active if none selected
-            if (!currentSheet) {
-                currentSheet = userSheets[0];
+            if (!currentSheet && allSheets.length > 0) {
+                currentSheet = allSheets[0];
                 currentAccess = currentSheet.access;
                 currentGroups = currentSheet.groups;
             }
             
-            if (currentDisplay) {
+            if (currentDisplay && currentSheet) {
                 currentDisplay.innerHTML = `📄 Active: ${currentSheet.name} (${currentGroups.length} groups)`;
             }
             
-            container.innerHTML = userSheets.map((sheet, index) => `
+            container.innerHTML = allSheets.map((sheet, index) => `
                 <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
                     <div class="sheet-info">
                         <div class="sheet-name">${escapeHtml(sheet.name)}</div>
-                        <div class="sheet-details">${sheet.groups.length} groups | ${sheet.sheetId.substring(0, 15)}...</div>
+                        <div class="sheet-details">${sheet.groups.length} groups</div>
                     </div>
-                    <div class="sheet-actions">
-                        <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full' : 'View'}</div>
-                        <button class="icon-btn" onclick="event.stopPropagation(); deleteSheet(${index})">🗑️</button>
-                    </div>
+                    <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full' : 'View'}</div>
                 </div>
             `).join('');
         }
         
         function selectSheet(index) {
-            const userSheets = getUserSheets();
-            currentSheet = userSheets[index];
+            currentSheet = allSheets[index];
             currentAccess = currentSheet.access;
             currentGroups = currentSheet.groups;
             loadUserSheets();
@@ -973,76 +959,6 @@
                 loadAbsenceDates();
                 loadAbsenceData();
             }
-        }
-        
-        function addNewSheet() {
-            const name = document.getElementById('newSheetName').value.trim();
-            const url = document.getElementById('newSheetUrl').value.trim();
-            const sheetId = document.getElementById('newSheetId').value.trim();
-            const groupsStr = document.getElementById('newSheetGroups').value.trim();
-            const access = document.getElementById('newSheetAccess').value;
-            
-            if (!name || !url || !sheetId || !groupsStr) {
-                alert('Please fill all fields!');
-                return;
-            }
-            
-            const groups = groupsStr.split(',').map(g => g.trim()).filter(g => g);
-            
-            allSheets.push({
-                name: name,
-                url: url,
-                sheetId: sheetId,
-                groups: groups,
-                access: access
-            });
-            
-            saveSheets();
-            loadUserSheets();
-            
-            // Clear form
-            document.getElementById('newSheetName').value = '';
-            document.getElementById('newSheetUrl').value = '';
-            document.getElementById('newSheetId').value = '';
-            document.getElementById('newSheetGroups').value = '';
-            document.getElementById('addSheetForm').classList.add('hidden');
-            
-            addLogToUI('System', `Added new sheet: ${name} with ${groups.length} groups`, '✅');
-        }
-        
-        function deleteSheet(index) {
-            const userSheets = getUserSheets();
-            if (userSheets.length === 1) {
-                alert('Cannot delete the only sheet you have access to!');
-                return;
-            }
-            
-            const sheetName = userSheets[index].name;
-            const globalIndex = allSheets.findIndex(s => s.name === sheetName);
-            
-            if (globalIndex !== -1) {
-                allSheets.splice(globalIndex, 1);
-                saveSheets();
-            }
-            
-            if (currentSheet && currentSheet.name === sheetName) {
-                const remaining = getUserSheets();
-                if (remaining.length > 0) {
-                    currentSheet = remaining[0];
-                    currentAccess = currentSheet.access;
-                    currentGroups = currentSheet.groups;
-                } else {
-                    currentSheet = null;
-                }
-            }
-            
-            loadUserSheets();
-            addLogToUI('System', `Deleted sheet: ${sheetName}`, '🗑️');
-        }
-        
-        function toggleAddSheetForm() {
-            const form = document.getElementById('addSheetForm');
-            form.classList.toggle('hidden');
         }
         
         function getCurrentConfig() {
@@ -1059,154 +975,17 @@
             return currentAccess === 'full';
         }
         
-        // ============ LOGIN FUNCTIONS ============
-        function login() {
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const errorDiv = document.getElementById('loginError');
-            
-            if (!username || !email) {
-                errorDiv.classList.remove('hidden');
-                errorDiv.innerHTML = '❌ Please enter both username and email';
-                return;
-            }
-            
-            const user = USERS.find(u => u.username.toLowerCase() === username.toLowerCase() && u.email.toLowerCase() === email.toLowerCase());
-            
-            if (!user) {
-                errorDiv.classList.remove('hidden');
-                errorDiv.innerHTML = '❌ Invalid credentials. Please check your username and email.';
-                return;
-            }
-            
-            currentUser = user;
-            
-            localStorage.setItem(STORAGE_USER_KEY, JSON.stringify({
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }));
-            
-            loadSheets();
-            loadUserSheets();
-            
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('welcomeView').classList.remove('hidden');
-            
-            // Get avatar initial
-            const avatar = document.getElementById('userAvatar');
-            if (avatar) {
-                avatar.innerHTML = user.username.charAt(0).toUpperCase();
-            }
-            
-            document.getElementById('displayName').innerHTML = `${user.username}`;
-            document.getElementById('displayEmail').innerHTML = `${user.email}`;
-            document.getElementById('displayRole').innerHTML = `${user.role}`;
-            
-            addLogToUI('System', `Welcome ${user.username}! You have access to ${getUserSheets().length} sheet(s)`, '✅');
-        }
-        
-        function logout() {
-            currentUser = null;
-            currentSheet = null;
-            currentAccess = null;
-            currentGroups = [];
-            localStorage.removeItem(STORAGE_USER_KEY);
-            
-            if (appState.scanner) {
-                try { appState.scanner.stop(); } catch(e) {}
-                appState.scanner = null;
-            }
-            if (appState.syncInterval) clearInterval(appState.syncInterval);
-            
-            document.getElementById('welcomeView').classList.add('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('absenceView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('username').value = '';
-            document.getElementById('email').value = '';
-        }
-        
-        function checkSavedSession() {
-            const saved = localStorage.getItem(STORAGE_USER_KEY);
-            if (saved) {
-                const userData = JSON.parse(saved);
-                const user = USERS.find(u => u.username === userData.username && u.email === userData.email);
-                if (user) {
-                    currentUser = user;
-                    loadSheets();
-                    loadUserSheets();
-                    document.getElementById('loginView').classList.add('hidden');
-                    document.getElementById('welcomeView').classList.remove('hidden');
-                    
-                    const avatar = document.getElementById('userAvatar');
-                    if (avatar) {
-                        avatar.innerHTML = user.username.charAt(0).toUpperCase();
-                    }
-                    document.getElementById('displayName').innerHTML = `${user.username}`;
-                    document.getElementById('displayEmail').innerHTML = `${user.email}`;
-                    document.getElementById('displayRole').innerHTML = `${user.role}`;
-                }
-            }
-        }
-        
-        // ============ UI HELPER FUNCTIONS ============
-        function addLogToUI(name, status, icon = '📌') {
-            const container = document.getElementById('logsList');
-            if (!container) return;
-            
-            let statusText = status;
-            if (status === 'processing') statusText = 'processing';
-            if (status === 'success') statusText = '✓ marked';
-            if (status === 'already') statusText = 'already marked';
-            if (status === 'error') statusText = 'error';
-            if (status === 'notfound') statusText = 'not found';
-            if (status === 'queued') statusText = 'queued';
-            
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${statusText}</span>`;
-            container.insertBefore(entry, container.firstChild);
-            while (container.children.length > 30) container.removeChild(container.lastChild);
-        }
-        
-        function clearLogs() {
-            const container = document.getElementById('logsList');
-            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
-        }
-        
-        function getTodayDateString() {
-            const now = new Date();
-            return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
-        }
-        
-        // ============ API FUNCTIONS ============
-        async function fetchWithRetry(url, retries = 2) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
-                    const response = await fetch(url, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (response.ok) return response;
-                    if (response.status === 429) await new Promise(r => setTimeout(r, 1000));
-                } catch(e) {
-                    if (i === retries - 1) throw e;
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-            }
-            throw new Error('Fetch failed');
-        }
-        
+        // ============ DATA LOADING FUNCTIONS ============
         async function loadDates() {
             const config = getCurrentConfig();
             if (!config) return;
             try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
-                const dates = await response.json();
-                const select = document.getElementById('dateSelect');
-                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                toggleAutoDate();
+                const result = await apiCall('getDates', { sheetId: config.SHEET_ID });
+                if (!result.error) {
+                    const select = document.getElementById('dateSelect');
+                    select.innerHTML = result.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                    toggleAutoDate();
+                }
             } catch(e) {
                 addLogToUI('System', 'Failed to load dates', '❌');
             }
@@ -1245,9 +1024,8 @@
             const date = document.getElementById('dateSelect').value;
             if (!date) return;
             try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-                const stats = await response.json();
-                if (!stats.error) renderGroupStats(stats);
+                const result = await apiCall('getGroupStats', { sheetId: config.SHEET_ID, date: date });
+                if (!result.error) renderGroupStats(result);
             } catch(e) {
                 console.error(e);
             }
@@ -1326,12 +1104,16 @@
             }
             
             try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=mark&sheetId=${config.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`, 1);
-                const text = await response.text();
+                const result = await apiCall('mark', { 
+                    sheetId: config.SHEET_ID, 
+                    name: name, 
+                    date: currentDate 
+                });
                 
-                if (text.includes("Success")) {
+                if (result.success) {
                     addLogToUI(name, 'success', '✅');
                     appState.scannedNamesSet.add(name);
+                    appState.scannedData.push({ Name: name, Date: currentDate });
                     if (!isBatch) {
                         document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
@@ -1341,7 +1123,7 @@
                     await loadGroupStats();
                     appState.isProcessing = false;
                     return true;
-                } else if (text.includes("Already Marked")) {
+                } else if (result.error === "Already marked") {
                     addLogToUI(name, 'already', '⚠️');
                     if (!isBatch) {
                         document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
@@ -1351,18 +1133,8 @@
                     }
                     appState.isProcessing = false;
                     return false;
-                } else if (text.includes("not found")) {
-                    addLogToUI(name, 'notfound', '🔍');
-                    if (!isBatch) {
-                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
-                        setTimeout(() => {
-                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
-                        }, 1500);
-                    }
-                    appState.isProcessing = false;
-                    return false;
                 } else {
-                    addLogToUI(name, 'error', '❌');
+                    addLogToUI(name, result.error || 'error', '❌');
                     appState.isProcessing = false;
                     return false;
                 }
@@ -1407,20 +1179,17 @@
                 for (let i = 0; i < toSync.length; i += 20) {
                     const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
                     try {
-                        const response = await fetch(`${config.SCRIPT_URL}`, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: 'batchMark',
-                                sheetId: config.SHEET_ID,
-                                names: batch,
-                                date: currentDate
-                            })
-                        });
-                        const result = await response.json();
+                        const result = await apiCall('batchMark', {
+                            sheetId: config.SHEET_ID,
+                            names: batch,
+                            date: currentDate
+                        }, true);
+                        
                         if (!result.error && result.success) {
                             result.success.forEach(name => {
                                 if (!appState.scannedNamesSet.has(name)) {
                                     appState.scannedNamesSet.add(name);
+                                    appState.scannedData.push({ Name: name, Date: currentDate });
                                     addLogToUI(name, 'success', '✅');
                                 }
                             });
@@ -1474,8 +1243,14 @@
                     return;
                 }
                 
+                if (names.length > 500) {
+                    if (!confirm(`You're about to upload ${names.length} names. This may take a while. Continue?`)) {
+                        return;
+                    }
+                }
+                
                 document.getElementById('progressContainer').style.display = 'block';
-                const uploadBtn = document.getElementById('uploadBtn');
+                const uploadBtn = document.getElementById('uploadBtnAction');
                 uploadBtn.disabled = true;
                 
                 let processed = 0, successful = 0, alreadyMarked = 0, notFound = 0;
@@ -1486,16 +1261,12 @@
                 for (let i = 0; i < names.length; i += 50) {
                     const batch = names.slice(i, Math.min(i + 50, names.length));
                     try {
-                        const response = await fetch(`${config.SCRIPT_URL}`, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: 'batchMark',
-                                sheetId: config.SHEET_ID,
-                                names: batch,
-                                date: currentDate
-                            })
-                        });
-                        const result = await response.json();
+                        const result = await apiCall('batchMark', {
+                            sheetId: config.SHEET_ID,
+                            names: batch,
+                            date: currentDate
+                        }, true);
+                        
                         if (result.error) {
                             batch.forEach(name => addLogToUI(name, 'error', '❌'));
                             notFound += batch.length;
@@ -1503,6 +1274,7 @@
                             (result.success || []).forEach(name => {
                                 addLogToUI(name, 'success', '✅');
                                 successful++;
+                                appState.scannedData.push({ Name: name, Date: currentDate });
                             });
                             (result.alreadyMarked || []).forEach(name => {
                                 addLogToUI(name, 'already', '⚠️');
@@ -1538,7 +1310,7 @@
                 }, 3000);
             } catch(err) {
                 addLogToUI('System', 'Upload failed: ' + err.message, '❌');
-                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('uploadBtnAction').disabled = false;
             }
         }
         
@@ -1548,9 +1320,9 @@
                 return;
             }
             
-            const wsData = [['Name'], ...appState.scannedData.map(item => [item.Name])];
+            const wsData = [['Name', 'Date'], ...appState.scannedData.map(item => [item.Name, item.Date])];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            ws['!cols'] = [{wch: 30}];
+            ws['!cols'] = [{wch: 30}, {wch: 12}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Attendance");
             const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
@@ -1578,19 +1350,20 @@
             if (!config) return;
             
             try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
-                const dates = await response.json();
-                const select = document.getElementById('absenceDateSelect');
-                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                
-                const todayStr = getTodayDateString();
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === todayStr) {
-                        select.selectedIndex = i;
-                        break;
+                const result = await apiCall('getDates', { sheetId: config.SHEET_ID });
+                if (!result.error) {
+                    const select = document.getElementById('absenceDateSelect');
+                    select.innerHTML = result.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                    
+                    const todayStr = getTodayDateString();
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value === todayStr) {
+                            select.selectedIndex = i;
+                            break;
+                        }
                     }
+                    await loadAbsenceData();
                 }
-                await loadAbsenceData();
             } catch(e) {
                 addLogToUI('System', 'Failed to load absence dates', '❌');
             }
@@ -1608,13 +1381,12 @@
             document.getElementById('exportAbsenceBtn').style.display = 'none';
             
             try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-                const data = await response.json();
+                const result = await apiCall('getAllAttendance', { sheetId: config.SHEET_ID, date: date });
                 
-                if (data.error) throw new Error(data.error);
+                if (result.error) throw new Error(result.error);
                 
-                absenceData = data;
-                renderAbsenceGroups(data);
+                absenceData = result;
+                renderAbsenceGroups(result);
                 document.getElementById('exportAbsenceBtn').style.display = 'block';
             } catch(e) {
                 document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
@@ -1686,6 +1458,41 @@
             addLogToUI('System', 'Absence report exported', '📊');
         }
         
+        // ============ UI HELPER FUNCTIONS ============
+        function addLogToUI(name, status, icon = '📌') {
+            const container = document.getElementById('logsList');
+            if (!container) return;
+            
+            let statusText = status;
+            if (status === 'processing') statusText = 'processing';
+            if (status === 'success') statusText = '✓ marked';
+            if (status === 'already') statusText = 'already marked';
+            if (status === 'error') statusText = 'error';
+            if (status === 'notfound') statusText = 'not found';
+            if (status === 'queued') statusText = 'queued';
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${statusText}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            while (container.children.length > 30) container.removeChild(container.lastChild);
+        }
+        
+        function clearLogs() {
+            const container = document.getElementById('logsList');
+            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
+        }
+        
+        function getTodayDateString() {
+            const now = new Date();
+            return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+        
         // ============ NAVIGATION ============
         async function showApp(mode) {
             const config = getCurrentConfig();
@@ -1726,6 +1533,11 @@
                 await loadGroupStats();
                 addLogToUI('System', `Upload mode ready - ${currentSheet.name}`, '📁');
             }
+            
+            document.getElementById('fileInput').onchange = function(e) {
+                const fileName = e.target.files[0]?.name || 'No file selected';
+                document.getElementById('fileName').innerHTML = fileName;
+            };
         }
         
         function resetAppState() {
@@ -1751,15 +1563,13 @@
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('welcomeView').classList.remove('hidden');
             loadUserSheets();
+            resetSessionTimeout();
         }
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-        }
-        
-        // Initialize
-        checkSavedSession();
+        // Add event listeners for session timeout
+        document.addEventListener('click', resetSessionTimeout);
+        document.addEventListener('keypress', resetSessionTimeout);
+        document.addEventListener('touchstart', resetSessionTimeout);
     </script>
 </body>
 </html>
