@@ -234,14 +234,19 @@ async function login() {
     const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('loginError');
     const btn = document.querySelector('.login-btn');
+    
     if (!username || !password) {
         errorDiv.classList.remove('hidden');
         errorDiv.innerHTML = '❌ Please enter both username and password';
         return;
     }
+    
     btn.disabled = true;
     btn.textContent = '⏳ Logging in...';
-    const result = await apiGet('login', { name: username, date: password });
+    
+    // Use POST instead of GET
+    const result = await apiPost('login', { username, password });
+    
     if (result.error) {
         errorDiv.classList.remove('hidden');
         errorDiv.innerHTML = '❌ ' + result.error;
@@ -249,6 +254,7 @@ async function login() {
         btn.textContent = '🔐 Login';
         return;
     }
+    
     if (result.success) {
         sessionToken = result.token;
         currentUser = result.user;
@@ -262,6 +268,7 @@ async function login() {
         addLog('System', 'Welcome ' + currentUser.username + '!', '✅');
         resetSessionTimeout();
     }
+    
     btn.disabled = false;
     btn.textContent = '🔐 Login';
 }
