@@ -1121,6 +1121,7 @@
                 if (text.includes("Success")) {
                     addLogToUI(name, 'success', '✅');
                     appState.scannedNamesSet.add(name);
+                    appState.scannedData.push({ Name: name });
                     if (!isBatch) {
                         document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
                         setTimeout(() => {
