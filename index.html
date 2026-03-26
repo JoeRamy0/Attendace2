@@ -719,11 +719,11 @@
 
     <script>
         // ============ CONFIGURATION ============
-        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3IS7k1C1FmERWIra4OtNRCTVL04Injd3Y8_2J_kIEGlUQ1MW_t1o1E7ICGGT8r3eXcg/exec'; // Replace with your Apps Script web app URL
+        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3IS7k1C1FmERWIra4OtNRCTVL04Injd3Y8_2J_kIEGlUQ1MW_t1o1E7ICGGT8r3eXcg/exec';
         const STORAGE_USER_KEY = 'attendance_user';
         
         // ============ GLOBAL STATE ============
-        let allSheets = [];         // will be filled from auth response
+        let allSheets = [];
         let currentUser = null;
         let currentSheet = null;
         let currentAccess = null;
@@ -767,7 +767,6 @@
                 currentUser = data.user;
                 allSheets = data.sheets;
                 
-                // Save user session
                 localStorage.setItem(STORAGE_USER_KEY, JSON.stringify({
                     username: currentUser.username,
                     email: currentUser.email,
@@ -775,14 +774,12 @@
                     sheets: allSheets
                 }));
                 
-                // Set default sheet if any
                 if (allSheets.length > 0) {
                     currentSheet = allSheets[0];
                     currentAccess = currentSheet.access;
                     currentGroups = currentSheet.groups;
                 }
                 
-                // UI setup
                 document.getElementById('loginView').classList.add('hidden');
                 document.getElementById('welcomeView').classList.remove('hidden');
                 
@@ -792,7 +789,7 @@
                 document.getElementById('displayEmail').innerHTML = currentUser.email;
                 document.getElementById('displayRole').innerHTML = currentUser.role;
                 
-                loadUserSheets(); // populate sheet list
+                loadUserSheets();
                 addLogToUI('System', `Welcome ${currentUser.username}! You have access to ${allSheets.length} sheet(s)`, '✅');
                 
             } catch (err) {
@@ -810,7 +807,6 @@
             currentGroups = [];
             localStorage.removeItem(STORAGE_USER_KEY);
             
-            // Stop scanner and intervals
             if (appState.scanner) {
                 try { appState.scanner.stop(); } catch(e) {}
                 appState.scanner = null;
@@ -830,7 +826,6 @@
             if (saved) {
                 const session = JSON.parse(saved);
                 currentUser = session;
-                // We need to re‑fetch sheets because they might have changed
                 fetch(`${AUTH_SCRIPT_URL}?action=login&username=${encodeURIComponent(session.username)}&email=${encodeURIComponent(session.email)}`)
                     .then(res => res.json())
                     .then(data => {
@@ -879,7 +874,6 @@
             document.getElementById('uploadBtn').classList.remove('disabled');
             document.getElementById('absenceBtn').classList.remove('disabled');
             
-            // Ensure currentSheet is valid
             if (!currentSheet || !allSheets.some(s => s.sheetId === currentSheet.sheetId)) {
                 currentSheet = allSheets[0];
                 currentAccess = currentSheet.access;
@@ -988,26 +982,25 @@
         }
         
         async function loadDates() {
-    const config = getCurrentConfig();
-    if (!config) return;
-    try {
-        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
-        const text = await response.text();
-        let dates;
-        try {
-            dates = JSON.parse(text);
-        } catch (e) {
-            // Not JSON – likely an error message
-            addLogToUI('System', text, '❌');
-            return;
+            const config = getCurrentConfig();
+            if (!config) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
+                const text = await response.text();
+                let dates;
+                try {
+                    dates = JSON.parse(text);
+                } catch (e) {
+                    addLogToUI('System', text, '❌');
+                    return;
+                }
+                const select = document.getElementById('dateSelect');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                toggleAutoDate();
+            } catch(e) {
+                addLogToUI('System', 'Failed to load dates', '❌');
+            }
         }
-        const select = document.getElementById('dateSelect');
-        select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-        toggleAutoDate();
-    } catch(e) {
-        addLogToUI('System', 'Failed to load dates', '❌');
-    }
-}
         
         function toggleAutoDate() {
             const isAuto = document.getElementById('autoDateToggle').checked;
@@ -1036,26 +1029,26 @@
             loadGroupStats();
         }
         
-       async function loadGroupStats() {
-    const config = getCurrentConfig();
-    if (!config) return;
-    const date = document.getElementById('dateSelect').value;
-    if (!date) return;
-    try {
-        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-        const text = await response.text();
-        let stats;
-        try {
-            stats = JSON.parse(text);
-        } catch (e) {
-            addLogToUI('System', text, '❌');
-            return;
+        async function loadGroupStats() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            const date = document.getElementById('dateSelect').value;
+            if (!date) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const text = await response.text();
+                let stats;
+                try {
+                    stats = JSON.parse(text);
+                } catch (e) {
+                    addLogToUI('System', text, '❌');
+                    return;
+                }
+                if (!stats.error) renderGroupStats(stats);
+            } catch(e) {
+                console.error(e);
+            }
         }
-        if (!stats.error) renderGroupStats(stats);
-    } catch(e) {
-        console.error(e);
-    }
-}
         
         function renderGroupStats(stats) {
             const container = document.getElementById('groupStatsContainer');
@@ -1212,7 +1205,7 @@
                 for (let i = 0; i < toSync.length; i += 20) {
                     const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
                     try {
-                        
+                        const response = await fetch(`${config.SCRIPT_URL}`, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'batchMark',
@@ -1300,7 +1293,15 @@
                                 date: currentDate
                             })
                         });
-                        const result = await response.json();
+                        const text = await response.text();
+                        let result;
+                        try {
+                            result = JSON.parse(text);
+                        } catch (e) {
+                            batch.forEach(name => addLogToUI(name, 'error', '❌'));
+                            notFound += batch.length;
+                            continue;
+                        }
                         if (result.error) {
                             batch.forEach(name => addLogToUI(name, 'error', '❌'));
                             notFound += batch.length;
@@ -1401,35 +1402,35 @@
             }
         }
         
-       async function loadAbsenceData() {
-    const config = getCurrentConfig();
-    if (!config) return;
-    const date = document.getElementById('absenceDateSelect').value;
-    if (!date) return;
-
-    document.getElementById('absenceLoading').style.display = 'block';
-    document.getElementById('absenceGroupsContainer').innerHTML = '';
-    document.getElementById('exportAbsenceBtn').style.display = 'none';
-
-    try {
-        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error(text);
+        async function loadAbsenceData() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            const date = document.getElementById('absenceDateSelect').value;
+            if (!date) return;
+            
+            document.getElementById('absenceLoading').style.display = 'block';
+            document.getElementById('absenceGroupsContainer').innerHTML = '';
+            document.getElementById('exportAbsenceBtn').style.display = 'none';
+            
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error(text);
+                }
+                if (data.error) throw new Error(data.error);
+                absenceData = data;
+                renderAbsenceGroups(data);
+                document.getElementById('exportAbsenceBtn').style.display = 'block';
+            } catch(e) {
+                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
+            } finally {
+                document.getElementById('absenceLoading').style.display = 'none';
+            }
         }
-        if (data.error) throw new Error(data.error);
-        absenceData = data;
-        renderAbsenceGroups(data);
-        document.getElementById('exportAbsenceBtn').style.display = 'block';
-    } catch(e) {
-        document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
-    } finally {
-        document.getElementById('absenceLoading').style.display = 'none';
-    }
-}
         
         function renderAbsenceGroups(data) {
             const container = document.getElementById('absenceGroupsContainer');
