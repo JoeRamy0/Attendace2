@@ -37,7 +37,6 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             overflow: hidden;
             margin-bottom: 16px;
-            backdrop-filter: blur(0px);
         }
 
         /* Login View */
@@ -283,8 +282,18 @@
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 
         .hidden { display: none; }
-        #reader { width: 100%; border-radius: 14px; display: none; background: #000; margin: 10px 0; }
-        .scanner-status { background: #f1f5f9; padding: 10px; border-radius: 12px; text-align: center; font-size: 12px; margin: 10px 0; display: none; }
+        #reader { width: 100%; border-radius: 14px; display: none; background: #000; margin: 10px 0; min-height: 250px; }
+        .scanner-status { 
+            background: #f1f5f9; 
+            padding: 10px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-size: 12px; 
+            margin: 10px 0; 
+            display: none;
+        }
+        .scanner-status.error { background: #fee2e2; color: #dc2626; }
+        .scanner-status.success { background: #d1fae5; color: #059669; }
         .upload-section { border: 2px dashed #e2e8f0; border-radius: 14px; padding: 16px; text-align: center; margin: 12px 0; }
         .file-input-label {
             display: inline-block;
@@ -303,6 +312,22 @@
         
         .card-body { padding: 16px; }
         #groupStatsContainer { margin-bottom: 12px; }
+        
+        .manual-input-section {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px;
+            margin-top: 10px;
+            display: none;
+        }
+        .manual-input-section input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -380,6 +405,11 @@
 
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus">📷 Ready</div>
+                
+                <div class="manual-input-section" id="manualInputSection">
+                    <input type="text" id="manualName" placeholder="Enter name manually">
+                    <button class="btn btn-primary" onclick="processManualName()">✓ Mark Attendance</button>
+                </div>
 
                 <div id="fileSection" class="hidden">
                     <div class="upload-section">
@@ -438,7 +468,8 @@
             logsList: () => document.getElementById('logsList'),
             scannerStatus: () => document.getElementById('scannerStatus'),
             syncBtn: () => document.getElementById('syncBtn'),
-            queueCount: () => document.getElementById('queueCount')
+            queueCount: () => document.getElementById('queueCount'),
+            manualInputSection: () => document.getElementById('manualInputSection')
         };
         
         let allSheets = [], currentUser = null, currentSheet = null, currentAccess = null, currentGroups = [];
@@ -646,15 +677,61 @@
         }
         
         async function startScanner() {
-            if(!canWrite()) { DOM.scannerStatus().innerHTML = '🔒 Read-only'; DOM.scannerStatus().style.display='block'; return; }
-            document.getElementById('reader').style.display = 'block';
+            if(!canWrite()) { 
+                DOM.scannerStatus().innerHTML = '🔒 Read-only mode';
+                DOM.scannerStatus().className = 'scanner-status error';
+                DOM.scannerStatus().style.display = 'block';
+                DOM.manualInputSection().style.display = 'block';
+                return; 
+            }
+            
+            const readerDiv = document.getElementById('reader');
+            readerDiv.style.display = 'block';
             DOM.scannerStatus().style.display = 'block';
+            DOM.scannerStatus().innerHTML = '📷 Requesting camera...';
+            DOM.manualInputSection().style.display = 'block';
+            
+            // Check if camera is available first
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const hasCamera = devices.some(device => device.kind === 'videoinput');
+                if (!hasCamera) {
+                    throw new Error('No camera found on this device');
+                }
+            } catch(e) {
+                DOM.scannerStatus().innerHTML = '⚠️ No camera detected. Use manual entry.';
+                DOM.scannerStatus().className = 'scanner-status error';
+                return;
+            }
+            
             try {
                 appState.scanner = new Html5Qrcode("reader");
-                await appState.scanner.start({ facingMode: "environment" }, { fps: 8, qrbox: { width: 200, height: 200 } },
-                    (text) => { if(!appState.isProcessing) processScan(text.trim()); }, () => {});
-                DOM.scannerStatus().innerHTML = '📷 Ready';
-            } catch(err) { addLog('System', 'Camera failed', '❌'); DOM.scannerStatus().innerHTML = '❌ Camera denied'; }
+                await appState.scanner.start(
+                    { facingMode: "environment" }, 
+                    { fps: 8, qrbox: { width: 250, height: 250 } },
+                    (text) => { if(!appState.isProcessing) processScan(text.trim()); }, 
+                    () => {}
+                );
+                DOM.scannerStatus().innerHTML = '📷 Ready - Scan QR code';
+                DOM.scannerStatus().className = 'scanner-status success';
+            } catch(err) {
+                console.error('Camera error:', err);
+                DOM.scannerStatus().innerHTML = '❌ Camera error. Use manual entry below.';
+                DOM.scannerStatus().className = 'scanner-status error';
+                addLog('System', 'Camera error: ' + (err.message || 'Access denied'), '❌');
+                readerDiv.style.display = 'none';
+            }
+        }
+        
+        async function processManualName() {
+            const nameInput = document.getElementById('manualName');
+            const name = nameInput.value.trim();
+            if(!name) {
+                alert('Please enter a name');
+                return;
+            }
+            nameInput.value = '';
+            await processScan(name);
         }
         
         async function processScan(name, isBatch=false) {
@@ -670,10 +747,10 @@
                 const text = await res.text();
                 if(text.includes("Success")) {
                     addLog(name, '✓', '✅'); appState.scannedNamesSet.add(name); appState.scannedData.push({Name:name});
-                    if(!isBatch) { DOM.scannerStatus().innerHTML = `✅ ${escapeHtml(name)}`; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; },1000); }
+                    if(!isBatch) { DOM.scannerStatus().innerHTML = `✅ ${escapeHtml(name)}`; DOM.scannerStatus().className = 'scanner-status success'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },1000); }
                     await loadGroupStats();
-                } else if(text.includes("Already")) { addLog(name, 'already', '⚠️'); if(!isBatch){ DOM.scannerStatus().innerHTML=`⚠️ Already`; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; },800); } }
-                else if(text.includes("not found")) { addLog(name, 'not found', '🔍'); if(!isBatch){ DOM.scannerStatus().innerHTML=`🔍 Not found`; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; },800); } }
+                } else if(text.includes("Already")) { addLog(name, 'already', '⚠️'); if(!isBatch){ DOM.scannerStatus().innerHTML=`⚠️ Already marked`; DOM.scannerStatus().className = 'scanner-status error'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },800); } }
+                else if(text.includes("not found")) { addLog(name, 'not found', '🔍'); if(!isBatch){ DOM.scannerStatus().innerHTML=`🔍 Not found`; DOM.scannerStatus().className = 'scanner-status error'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },800); } }
                 else { addLog(name, 'error', '❌'); }
                 appState.isProcessing=false; return true;
             } catch(e) {
@@ -681,7 +758,7 @@
                 if(!isBatch && !appState.offlineQueue.includes(name)) appState.offlineQueue.push(name);
                 updateQueueUI();
                 appState.isProcessing=false;
-                if(!isBatch) { DOM.scannerStatus().innerHTML='📱 Queued'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; },800); }
+                if(!isBatch) { DOM.scannerStatus().innerHTML='📱 Queued'; DOM.scannerStatus().className = 'scanner-status error'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },800); }
                 return false;
             }
         }
@@ -761,9 +838,12 @@
         
         function exportToExcel() {
             if(!appState.scannedData.length) { alert('No data to export'); return; }
-            const ws = XLSX.utils.aoa_to_sheet([['Name'], ...appState.scannedData.map(i=>[i.Name])]);
+            const wsData = [['Name'], ...appState.scannedData.map(i=>[i.Name])];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
             ws['!cols'] = [{wch:30}];
-            XLSX.writeFile(XLSX.utils.book_new(), `Attendance_${DOM.dateSelect().value.replace(/\//g,'-')}.xlsx`);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+            XLSX.writeFile(wb, `Attendance_${DOM.dateSelect().value.replace(/\//g,'-')}.xlsx`);
             addLog('System', `Exported ${appState.scannedData.length} names`, '📊');
         }
         
@@ -835,7 +915,9 @@
                 } else if(g) wsData.push([`${gn} - All present ✅`], []);
             }
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            XLSX.writeFile(XLSX.utils.book_new(), `Absence_${absenceData.date.replace(/\//g,'-')}.xlsx`);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
+            XLSX.writeFile(wb, `Absence_${absenceData.date.replace(/\//g,'-')}.xlsx`);
             addLog('System', 'Absence exported', '📊');
         }
         
