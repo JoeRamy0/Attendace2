@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>St. Joseph Attendance Pro</title>
-    <!-- Load libraries from local files -->
     <script src="html5-qrcode.min.js"></script>
     <script src="xlsx.full.min.js"></script>
     
@@ -17,11 +16,22 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 12px;
+            padding: 16px;
             position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .container {
@@ -33,82 +43,153 @@
 
         .card {
             background: rgba(255,255,255,0.98);
-            border-radius: 28px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
             overflow: hidden;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(0px);
+            transition: transform 0.2s ease;
         }
 
         /* Login View */
         #loginView .card-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 32px 24px;
+            padding: 40px 24px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .app-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-        .app-subtitle { font-size: 11px; opacity: 0.8; margin-top: 6px; }
-        .creator-credit { font-size: 9px; opacity: 0.7; margin-top: 10px; }
+        #loginView .card-header::after {
+            content: '⛪';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            bottom: -20px;
+            right: -20px;
+            transform: rotate(-10deg);
+        }
 
-        .login-form { padding: 24px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #1e293b; font-size: 13px; }
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-subtitle {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .creator-credit {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .login-form {
+            padding: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 13px;
+        }
+
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
             border-radius: 14px;
             font-size: 14px;
-            background: #f8fafc;
+            background: #fafcff;
+            transition: border-color 0.2s;
         }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .login-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 40px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: transform 0.15s, box-shadow 0.15s;
         }
-        .login-btn:active { transform: scale(0.98); }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
         .error-message {
             background: #fee2e2;
             color: #dc2626;
-            padding: 10px;
+            padding: 12px;
             border-radius: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             text-align: center;
             font-size: 13px;
+            font-weight: 500;
         }
+
         .hidden { display: none; }
 
         /* Welcome View */
         #welcomeView .card-header {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            padding: 20px 16px;
+            padding: 24px 20px;
             text-align: center;
         }
-        .welcome-app-title { font-size: 22px; font-weight: 700; }
-        .welcome-creator { font-size: 9px; opacity: 0.8; margin-top: 4px; }
+
+        .welcome-app-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .welcome-creator {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
 
         /* User Profile */
         .user-profile {
-            background: #f8fafc;
-            border-radius: 18px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: 20px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #eef2f6;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
+
         .user-avatar {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             border-radius: 50%;
             display: flex;
@@ -117,116 +198,269 @@
             font-size: 24px;
             font-weight: 600;
             color: white;
+            box-shadow: 0 4px 12px rgba(44,125,160,0.2);
         }
-        .user-details { flex: 1; }
-        .user-name { font-size: 16px; font-weight: 700; color: #1e293b; }
-        .user-email { font-size: 10px; color: #64748b; }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: #64748b;
+        }
+
         .user-role-badge {
             display: inline-block;
             background: #2c7da0;
             color: white;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 20px;
             font-size: 9px;
-            margin-top: 4px;
+            font-weight: 500;
+            margin-top: 5px;
         }
+
         .logout-btn-side {
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 30px;
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn-side:active {
+            transform: scale(0.96);
         }
 
         /* Sheet Selector */
         .sheet-selector {
             background: #f8fafc;
-            border-radius: 18px;
-            padding: 12px;
-            margin-bottom: 16px;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #eef2f6;
         }
+
         .current-sheet {
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
-            padding: 8px;
-            border-radius: 12px;
-            font-size: 11px;
+            padding: 10px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-        .sheet-list { max-height: 250px; overflow-y: auto; }
+
+        .sheet-list {
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
         .sheet-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 12px;
             background: white;
-            border-radius: 12px;
-            margin-bottom: 6px;
+            border-radius: 14px;
+            margin-bottom: 8px;
             border: 1px solid #e2e8f0;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .sheet-item.active { background: #eef2ff; border-color: #667eea; }
-        .sheet-name { font-weight: 600; font-size: 13px; }
-        .sheet-details { font-size: 9px; color: #64748b; }
-        .access-badge { padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; }
-        .access-badge.full { background: #d1fae5; color: #059669; }
+
+        .sheet-item:hover {
+            border-color: #2c7da0;
+            transform: translateX(4px);
+        }
+
+        .sheet-item.active {
+            background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+            border-color: #667eea;
+        }
+
+        .sheet-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        .sheet-details {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .access-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .access-badge.full {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .access-badge.readonly {
+            background: #fef3c7;
+            color: #d97706;
+        }
 
         /* Welcome Buttons */
         .welcome-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
+
         .welcome-btn {
             flex: 1;
-            padding: 12px 6px;
-            font-size: 12px;
+            padding: 14px 8px;
+            font-size: 13px;
             font-weight: 600;
             border: none;
-            border-radius: 14px;
+            border-radius: 18px;
             cursor: pointer;
             text-align: center;
+            transition: transform 0.15s, opacity 0.2s;
         }
-        .welcome-btn .btn-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-        .welcome-btn.scanner { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
-        .welcome-btn.upload { background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%); color: white; }
-        .welcome-btn.absence { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: white; }
-        .welcome-btn.disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Cards */
+        .welcome-btn:active {
+            transform: scale(0.96);
+        }
+
+        .welcome-btn .btn-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .welcome-btn .btn-text {
+            font-size: 12px;
+        }
+
+        .welcome-btn.scanner {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+        }
+
+        .welcome-btn.upload {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
+            color: white;
+        }
+
+        .welcome-btn.absence {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+        }
+
+        .welcome-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Group Cards */
         .group-card {
             background: #f8fafc;
-            border-radius: 14px;
-            padding: 10px;
-            margin-bottom: 8px;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #eef2f6;
+            transition: transform 0.15s;
         }
-        .group-title { font-weight: 700; font-size: 13px; display: flex; justify-content: space-between; }
-        .group-stats { display: flex; gap: 12px; justify-content: space-around; margin: 8px 0; }
-        .stat-number { font-size: 18px; font-weight: 700; }
-        .stat-number.present { color: #27ae60; }
-        .stat-number.absent { color: #e74c3c; }
-        .stat-label { font-size: 9px; color: #64748b; }
-        .progress-bar { background: #e2e8f0; border-radius: 6px; height: 4px; overflow: hidden; }
-        .progress-fill { background: #27ae60; height: 100%; transition: width 0.2s; }
 
+        .group-title {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .group-stats {
+            display: flex;
+            gap: 16px;
+            justify-content: space-around;
+            margin: 12px 0;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-number.present {
+            color: #27ae60;
+        }
+
+        .stat-number.absent {
+            color: #e74c3c;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 8px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #27ae60;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Date Section */
         .date-section {
             background: #f8fafc;
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 12px;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 16px;
         }
-        .auto-toggle { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; }
+
+        .auto-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 40px;
-            height: 20px;
+            width: 44px;
+            height: 24px;
         }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
         .toggle-slider {
             position: absolute;
             cursor: pointer;
@@ -235,107 +469,249 @@
             right: 0;
             bottom: 0;
             background-color: #cbd5e1;
-            transition: 0.2s;
-            border-radius: 20px;
+            transition: 0.25s;
+            border-radius: 24px;
         }
+
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             border-radius: 50%;
-            transition: 0.2s;
+            transition: 0.25s;
         }
-        input:checked + .toggle-slider { background-color: #27ae60; }
-        input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        input:checked + .toggle-slider {
+            background-color: #27ae60;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
 
         select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 13px;
             background: white;
+            font-family: inherit;
         }
 
+        select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        /* Logs */
         .logs-container {
             background: #f8fafc;
-            border-radius: 14px;
-            padding: 10px;
-            margin: 12px 0;
-            max-height: 180px;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 16px 0;
+            max-height: 200px;
             overflow-y: auto;
         }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
         .log-entry {
-            padding: 6px;
-            margin-bottom: 4px;
-            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 10px;
             font-size: 11px;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             background: white;
+            border: 1px solid #eef2f6;
         }
 
+        /* Buttons */
         .btn {
-            padding: 10px;
+            padding: 12px;
             border: none;
             border-radius: 40px;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
+            transition: transform 0.15s, opacity 0.2s;
         }
-        .btn-primary { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
-        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 
-        #reader { width: 100%; border-radius: 14px; display: none; background: #000; margin: 10px 0; min-height: 250px; }
-        .scanner-status { 
-            background: #f1f5f9; 
-            padding: 10px; 
-            border-radius: 12px; 
-            text-align: center; 
-            font-size: 12px; 
-            margin: 10px 0; 
-            display: none;
+        .btn:active {
+            transform: scale(0.97);
         }
-        .scanner-status.error { background: #fee2e2; color: #dc2626; }
-        .scanner-status.success { background: #d1fae5; color: #059669; }
-        .upload-section { border: 2px dashed #e2e8f0; border-radius: 14px; padding: 16px; text-align: center; margin: 12px 0; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Scanner */
+        #reader {
+            width: 100%;
+            border-radius: 16px;
+            display: none;
+            background: #000;
+            margin: 12px 0;
+            min-height: 260px;
+        }
+
+        .scanner-status {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 14px;
+            text-align: center;
+            font-size: 12px;
+            margin: 12px 0;
+            display: none;
+            font-weight: 500;
+        }
+
+        .scanner-status.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .scanner-status.success {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* Upload */
+        .upload-section {
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 16px 0;
+            background: #fafcff;
+        }
+
         .file-input-label {
             display: inline-block;
-            padding: 8px 20px;
+            padding: 10px 24px;
             background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
             color: white;
             border-radius: 40px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: transform 0.15s;
         }
-        input[type="file"] { display: none; }
-        .progress-container { background: #e2e8f0; border-radius: 6px; height: 4px; margin: 8px 0; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: #27ae60; border-radius: 6px; transition: width 0.2s; }
-        .processing-pulse { animation: pulse 0.8s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        .card-body { padding: 16px; }
-        #groupStatsContainer { margin-bottom: 12px; }
-        
+
+        .file-input-label:active {
+            transform: scale(0.97);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 8px;
+            height: 6px;
+            margin: 12px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #27ae60;
+            border-radius: 8px;
+            transition: width 0.25s;
+        }
+
+        .processing-pulse {
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        #groupStatsContainer {
+            margin-bottom: 16px;
+        }
+
+        /* Manual Input */
         .manual-input-section {
             background: #f8fafc;
-            border-radius: 14px;
-            padding: 12px;
-            margin-top: 10px;
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 12px;
+            border: 1px solid #eef2f6;
         }
+
         .manual-input-section input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            background: white;
+            font-family: inherit;
+        }
+
+        .manual-input-section input:focus {
+            outline: none;
+            border-color: #2c7da0;
+        }
+
+        /* Scrollbar Styling */
+        .sheet-list::-webkit-scrollbar,
+        .logs-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sheet-list::-webkit-scrollbar-track,
+        .logs-container::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .sheet-list::-webkit-scrollbar-thumb,
+        .logs-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        /* RTL Support for Arabic */
+        [dir="rtl"] {
+            text-align: right;
         }
     </style>
 </head>
@@ -346,17 +722,17 @@
             <div class="card-header">
                 <div class="app-title">⛪ St. Joseph</div>
                 <div class="app-subtitle">Attendance Pro</div>
-                <div class="creator-credit">Youssef Ramy</div>
+                <div class="creator-credit">Created by: Youssef Ramy</div>
             </div>
             <div class="login-form">
                 <div id="loginError" class="error-message hidden"></div>
                 <div class="form-group">
                     <label>👤 Username</label>
-                    <input type="text" id="username" placeholder="Username">
+                    <input type="text" id="username" placeholder="Enter your username">
                 </div>
                 <div class="form-group">
                     <label>📧 Email</label>
-                    <input type="email" id="email" placeholder="Email">
+                    <input type="email" id="email" placeholder="Enter your email">
                 </div>
                 <button class="login-btn" onclick="login()">🔐 Login</button>
             </div>
@@ -366,7 +742,7 @@
         <div class="card hidden" id="welcomeView">
             <div class="card-header">
                 <div class="welcome-app-title">⛪ Attendance Pro</div>
-                <div class="welcome-creator">Youssef Ramy</div>
+                <div class="welcome-creator">Created by: Youssef Ramy</div>
             </div>
             <div class="card-body">
                 <div class="user-profile">
@@ -376,7 +752,7 @@
                         <div class="user-email" id="displayEmail"></div>
                         <div class="user-role-badge" id="displayRole"></div>
                     </div>
-                    <button class="logout-btn-side" onclick="logout()">🚪</button>
+                    <button class="logout-btn-side" onclick="logout()">🚪 Logout</button>
                 </div>
 
                 <div class="sheet-selector">
@@ -385,9 +761,18 @@
                 </div>
 
                 <div class="welcome-buttons">
-                    <button class="welcome-btn scanner" id="scannerBtn" onclick="showApp('scan')"><div class="btn-icon">📸</div><div>Scan</div></button>
-                    <button class="welcome-btn upload" id="uploadBtn" onclick="showApp('upload')"><div class="btn-icon">📁</div><div>Upload</div></button>
-                    <button class="welcome-btn absence" id="absenceBtn" onclick="showAbsenceExport()"><div class="btn-icon">📋</div><div>Absent</div></button>
+                    <button class="welcome-btn scanner" id="scannerBtn" onclick="showApp('scan')">
+                        <div class="btn-icon">📸</div>
+                        <div class="btn-text">Scan</div>
+                    </button>
+                    <button class="welcome-btn upload" id="uploadBtn" onclick="showApp('upload')">
+                        <div class="btn-icon">📁</div>
+                        <div class="btn-text">Upload</div>
+                    </button>
+                    <button class="welcome-btn absence" id="absenceBtn" onclick="showAbsenceExport()">
+                        <div class="btn-icon">📋</div>
+                        <div class="btn-text">Absent</div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -395,8 +780,8 @@
         <!-- Main App View -->
         <div class="card hidden" id="mainApp">
             <div class="card-header">
-                <h2 id="modeTitle" style="font-size: 18px;">Scanner</h2>
-                <div id="activeSheetInfo" style="font-size: 10px;"></div>
+                <h2 id="modeTitle">Scanner Mode</h2>
+                <div id="activeSheetInfo"></div>
             </div>
             <div class="card-body">
                 <div id="groupStatsContainer"></div>
@@ -424,35 +809,41 @@
                     <div class="upload-section">
                         <label class="file-input-label">📁 Choose File<input type="file" id="fileInput" accept=".txt,.csv"></label>
                         <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-                        <button class="btn btn-primary" id="uploadBtnAction" onclick="handleBulkUpload()" style="margin-top: 8px;">🚀 Upload</button>
-                        <div id="uploadStats" style="font-size: 10px; margin-top: 6px;"></div>
+                        <button class="btn btn-primary" id="uploadBtnAction" onclick="handleBulkUpload()">🚀 Start Upload</button>
+                        <div id="uploadStats"></div>
                     </div>
                 </div>
 
                 <div class="logs-container">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>📋 Log</span><button onclick="clearLogs()" style="background:none; border:none; font-size: 11px;">Clear</button></div>
-                    <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready</span></div></div>
+                    <div class="logs-header">
+                        <span>📋 Activity Log</span>
+                        <button onclick="clearLogs()" style="background:none; border:none; cursor:pointer; color:#64748b; font-size:11px;">Clear</button>
+                    </div>
+                    <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div>
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export</button>
+                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
                     <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
                 </div>
-                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top: 8px;">📤 Sync (<span id="queueCount">0</span>)</button>
+                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top: 12px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
             </div>
         </div>
 
         <!-- Absence View -->
         <div class="card hidden" id="absenceView">
-            <div class="card-header"><h2 style="font-size: 18px;">📋 Absence</h2><div id="absenceSheetInfo" style="font-size: 10px;"></div></div>
+            <div class="card-header">
+                <h2>📋 Absence Report</h2>
+                <div id="absenceSheetInfo"></div>
+            </div>
             <div class="card-body">
                 <div class="date-section">
                     <select id="absenceDateSelect" onchange="loadAbsenceData()"></select>
                 </div>
-                <div id="absenceLoading" style="display:none; text-align:center; padding:16px;">⏳ Loading...</div>
+                <div id="absenceLoading" style="display:none; text-align:center; padding:20px;">⏳ Loading...</div>
                 <div id="absenceGroupsContainer"></div>
-                <div class="button-group" style="margin-top: 12px;">
-                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export</button>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export Absence</button>
                     <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
                 </div>
             </div>
@@ -469,10 +860,6 @@
         
         // Cache DOM elements
         const DOM = {
-            loginView: () => document.getElementById('loginView'),
-            welcomeView: () => document.getElementById('welcomeView'),
-            mainApp: () => document.getElementById('mainApp'),
-            absenceView: () => document.getElementById('absenceView'),
             dateSelect: () => document.getElementById('dateSelect'),
             absenceDateSelect: () => document.getElementById('absenceDateSelect'),
             groupStatsContainer: () => document.getElementById('groupStatsContainer'),
@@ -495,7 +882,7 @@
             
             if (!username || !email) {
                 errorDiv.classList.remove('hidden');
-                errorDiv.innerHTML = '❌ Enter username and email';
+                errorDiv.innerHTML = '❌ Please enter both username and email';
                 return;
             }
             
@@ -518,7 +905,7 @@
                 document.getElementById('displayRole').innerHTML = currentUser.role;
                 
                 loadUserSheets();
-                addLog('System', `Welcome ${currentUser.username}`, '✅');
+                addLog('System', `Welcome ${currentUser.username}!`, '✅');
             } catch (err) {
                 errorDiv.classList.remove('hidden');
                 errorDiv.innerHTML = `❌ ${err.message}`;
@@ -534,6 +921,8 @@
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
         }
         
         function checkSavedSession() {
@@ -553,7 +942,7 @@
                             document.getElementById('displayEmail').innerHTML = currentUser.email;
                             document.getElementById('displayRole').innerHTML = currentUser.role;
                             loadUserSheets();
-                            addLog('System', `Welcome back ${currentUser.username}`, '✅');
+                            addLog('System', `Welcome back ${currentUser.username}!`, '✅');
                         } else logout();
                     }).catch(() => logout());
             }
@@ -562,20 +951,37 @@
         function loadUserSheets() {
             const container = document.getElementById('sheetListContainer');
             const currentDisplay = document.getElementById('currentSheetDisplay');
+            
             if (!currentUser || !allSheets.length) {
-                container.innerHTML = '<div style="text-align:center;padding:12px;">No sheets</div>';
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#64748b;">No sheets available</div>';
+                if (currentDisplay) currentDisplay.innerHTML = 'No sheets available';
+                document.getElementById('scannerBtn').classList.add('disabled');
+                document.getElementById('uploadBtn').classList.add('disabled');
+                document.getElementById('absenceBtn').classList.add('disabled');
                 return;
             }
+            
+            document.getElementById('scannerBtn').classList.remove('disabled');
+            document.getElementById('uploadBtn').classList.remove('disabled');
+            document.getElementById('absenceBtn').classList.remove('disabled');
+            
             if (!currentSheet || !allSheets.some(s => s.sheetId === currentSheet.sheetId)) {
                 currentSheet = allSheets[0];
                 currentAccess = currentSheet.access;
                 currentGroups = currentSheet.groups;
             }
-            currentDisplay.innerHTML = `📄 ${currentSheet.name} (${currentGroups.length} groups)`;
+            
+            if (currentDisplay) {
+                currentDisplay.innerHTML = `📄 Active: ${currentSheet.name} (${currentGroups.length} groups)`;
+            }
+            
             container.innerHTML = allSheets.map((sheet, idx) => `
-                <div class="sheet-item ${currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${idx})">
-                    <div><div class="sheet-name">${escapeHtml(sheet.name)}</div><div class="sheet-details">${sheet.groups.length} groups</div></div>
-                    <div class="access-badge full">${sheet.access === 'full' ? 'Full' : 'View'}</div>
+                <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${idx})">
+                    <div>
+                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
+                        <div class="sheet-details">${sheet.groups.length} groups</div>
+                    </div>
+                    <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full' : 'View'}</div>
                 </div>
             `).join('');
         }
@@ -592,6 +998,7 @@
         
         function getConfig() { return currentSheet ? { SCRIPT_URL: currentSheet.url, SHEET_ID: currentSheet.sheetId, ACCESS: currentSheet.access, GROUPS: currentSheet.groups } : null; }
         function canWrite() { return currentAccess === 'full'; }
+        
         function addLog(name, status, icon = '📌') {
             const container = DOM.logsList();
             if (!container) return;
@@ -599,9 +1006,10 @@
             entry.className = 'log-entry';
             entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${status}</span>`;
             container.insertBefore(entry, container.firstChild);
-            while (container.children.length > 20) container.removeChild(container.lastChild);
+            while (container.children.length > 25) container.removeChild(container.lastChild);
         }
-        function clearLogs() { const c = DOM.logsList(); if(c) c.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready</span></div>'; }
+        
+        function clearLogs() { const c = DOM.logsList(); if(c) c.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>'; }
         function getToday() { const d = new Date(); return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; }
         function escapeHtml(s) { return s ? s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
         
@@ -609,34 +1017,27 @@
             for(let i=0;i<retries;i++) {
                 try {
                     const ctrl = new AbortController();
-                    const tid = setTimeout(() => ctrl.abort(), 8000);
+                    const tid = setTimeout(() => ctrl.abort(), 10000);
                     const res = await fetch(url, { signal: ctrl.signal });
                     clearTimeout(tid);
                     if(res.ok) return res;
-                } catch(e) { if(i===retries-1) throw e; await new Promise(r=>setTimeout(r,500)); }
+                    if(res.status === 429) await new Promise(r => setTimeout(r, 1000));
+                } catch(e) { if(i===retries-1) throw e; await new Promise(r => setTimeout(r, 500)); }
             }
         }
         
         async function loadDates() {
             const cfg = getConfig();
             if(!cfg) return;
-            const cacheKey = `${cfg.SHEET_ID}_dates`;
-            if(datesCache[cacheKey]) {
-                const select = DOM.dateSelect();
-                select.innerHTML = datesCache[cacheKey].map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                toggleAutoDate();
-                return;
-            }
             try {
                 const res = await fetchFast(`${cfg.SCRIPT_URL}?action=getDates&sheetId=${cfg.SHEET_ID}`);
                 const text = await res.text();
                 let dates;
                 try { dates = JSON.parse(text); } catch(e) { addLog('System', text, '❌'); return; }
-                datesCache[cacheKey] = dates;
                 const select = DOM.dateSelect();
                 select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
                 toggleAutoDate();
-            } catch(e) { addLog('System', 'Failed dates', '❌'); }
+            } catch(e) { addLog('System', 'Failed to load dates', '❌'); }
         }
         
         function toggleAutoDate() {
@@ -662,14 +1063,12 @@
             if(!cfg) return;
             const date = DOM.dateSelect().value;
             if(!date) return;
-            const cacheKey = `${cfg.SHEET_ID}_${date}_stats`;
-            if(statsCache[cacheKey]) { renderGroupStats(statsCache[cacheKey]); return; }
             try {
                 const res = await fetchFast(`${cfg.SCRIPT_URL}?action=getGroupStats&sheetId=${cfg.SHEET_ID}&date=${encodeURIComponent(date)}`);
                 const text = await res.text();
                 let stats;
                 try { stats = JSON.parse(text); } catch(e) { addLog('System', text, '❌'); return; }
-                if(!stats.error) { statsCache[cacheKey] = stats; renderGroupStats(stats); }
+                if(!stats.error) renderGroupStats(stats);
             } catch(e) { console.error(e); }
         }
         
@@ -679,11 +1078,18 @@
             container.innerHTML = currentGroups.map(gn => {
                 const g = stats[gn];
                 if(!g) return '';
-                return `<div class="group-card"><div class="group-title"><span>${gn}</span><span>${g.percentage}%</span></div>
-                        <div class="group-stats"><div><div class="stat-number">${g.total}</div><div class="stat-label">Total</div></div>
-                        <div><div class="stat-number present">${g.present}</div><div class="stat-label">Present</div></div>
-                        <div><div class="stat-number absent">${g.absent}</div><div class="stat-label">Absent</div></div></div>
-                        <div class="progress-bar"><div class="progress-fill" style="width: ${g.percentage}%"></div></div></div>`;
+                return `<div class="group-card">
+                            <div class="group-title">
+                                <span>${gn}</span>
+                                <span>${g.percentage}%</span>
+                            </div>
+                            <div class="group-stats">
+                                <div><div class="stat-number">${g.total}</div><div class="stat-label">Total</div></div>
+                                <div><div class="stat-number present">${g.present}</div><div class="stat-label">Present</div></div>
+                                <div><div class="stat-number absent">${g.absent}</div><div class="stat-label">Absent</div></div>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${g.percentage}%"></div></div>
+                        </div>`;
             }).join('');
         }
         
@@ -696,7 +1102,7 @@
             }
             
             if(!canWrite()) { 
-                DOM.scannerStatus().innerHTML = '🔒 Read-only mode';
+                DOM.scannerStatus().innerHTML = '🔒 Read-only mode. Cannot mark attendance.';
                 DOM.scannerStatus().className = 'scanner-status error';
                 DOM.scannerStatus().style.display = 'block';
                 return; 
@@ -707,16 +1113,13 @@
             DOM.scannerStatus().style.display = 'block';
             DOM.scannerStatus().innerHTML = '📷 Requesting camera...';
             
-            // Check if camera is available first
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
                     throw new Error('Camera API not supported');
                 }
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const hasCamera = devices.some(device => device.kind === 'videoinput');
-                if (!hasCamera) {
-                    throw new Error('No camera found');
-                }
+                if (!hasCamera) throw new Error('No camera found');
             } catch(e) {
                 DOM.scannerStatus().innerHTML = '⚠️ No camera detected. Use manual entry.';
                 DOM.scannerStatus().className = 'scanner-status error';
@@ -735,10 +1138,9 @@
                 DOM.scannerStatus().innerHTML = '📷 Ready - Scan QR code';
                 DOM.scannerStatus().className = 'scanner-status success';
             } catch(err) {
-                console.error('Camera error:', err);
                 DOM.scannerStatus().innerHTML = '❌ Camera error. Use manual entry below.';
                 DOM.scannerStatus().className = 'scanner-status error';
-                addLog('System', 'Camera error: ' + (err.message || 'Access denied'), '❌');
+                addLog('System', 'Camera error', '❌');
                 readerDiv.style.display = 'none';
             }
         }
@@ -766,7 +1168,9 @@
                 const res = await fetchFast(`${cfg.SCRIPT_URL}?action=mark&sheetId=${cfg.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`, 1);
                 const text = await res.text();
                 if(text.includes("Success")) {
-                    addLog(name, '✓', '✅'); appState.scannedNamesSet.add(name); appState.scannedData.push({Name:name});
+                    addLog(name, '✓', '✅');
+                    appState.scannedNamesSet.add(name);
+                    appState.scannedData.push({Name:name});
                     if(!isBatch) { DOM.scannerStatus().innerHTML = `✅ ${escapeHtml(name)}`; DOM.scannerStatus().className = 'scanner-status success'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },1000); }
                     await loadGroupStats();
                 } else if(text.includes("Already")) { addLog(name, 'already', '⚠️'); if(!isBatch){ DOM.scannerStatus().innerHTML=`⚠️ Already marked`; DOM.scannerStatus().className = 'scanner-status error'; setTimeout(()=>{ DOM.scannerStatus().innerHTML='📷 Ready'; DOM.scannerStatus().className = 'scanner-status'; },800); } }
@@ -790,7 +1194,7 @@
             const cfg = getConfig();
             if(!cfg || appState.isSyncing || !appState.offlineQueue.length) return;
             appState.isSyncing = true;
-            addLog('System', `Syncing ${appState.offlineQueue.length}`, '🔄');
+            addLog('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
             const date = DOM.dateSelect().value;
             if(date) {
                 const toSync = [...appState.offlineQueue];
@@ -807,7 +1211,7 @@
                 await loadGroupStats();
             }
             appState.isSyncing = false;
-            addLog('System', 'Sync done', '✅');
+            addLog('System', 'Sync completed', '✅');
         }
         
         function startBackgroundSync() {
@@ -816,16 +1220,16 @@
         }
         
         async function handleBulkUpload() {
-            if(!canWrite()) { alert('Read-only'); return; }
+            if(!canWrite()) { alert('Read-only mode. Cannot upload.'); return; }
             const cfg = getConfig();
-            if(!cfg) { alert('Select sheet first'); return; }
+            if(!cfg) { alert('Please select a sheet first!'); return; }
             const file = document.getElementById('fileInput').files[0];
-            if(!file) { alert('Select file'); return; }
+            if(!file) { alert("Please select a file!"); return; }
             try {
                 const text = await file.text();
                 let names = text.split(/\r?\n/).filter(l=>l.trim()).map(n=>n.split(',')[0].replace(/["']/g,'').trim()).filter(n=>n);
                 names = [...new Map(names.map(n=>[n.toLowerCase(),n])).values()];
-                if(!names.length) { alert('No valid names'); return; }
+                if(!names.length) { alert("No valid names found!"); return; }
                 document.getElementById('progressContainer').style.display='block';
                 const upBtn = document.getElementById('uploadBtnAction');
                 upBtn.disabled = true;
@@ -847,7 +1251,7 @@
                     } catch(e) { notFound+=batch.length; }
                     const progress = ((i+batch.length)/names.length)*100;
                     document.getElementById('progressBar').style.width = `${progress}%`;
-                    document.getElementById('uploadStats').innerHTML = `✓${successful} ⚠️${already} 🔍${notFound}`;
+                    document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${already} | 🔍 ${notFound}`;
                 }
                 await loadGroupStats();
                 addLog('System', `Done: +${successful}, ${already} already, ${notFound} missing`, '✅');
@@ -857,7 +1261,7 @@
         }
         
         function exportToExcel() {
-            if(!appState.scannedData.length) { alert('No data to export'); return; }
+            if(!appState.scannedData.length) { alert('No data to export!'); return; }
             const wsData = [['Name'], ...appState.scannedData.map(i=>[i.Name])];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             ws['!cols'] = [{wch:30}];
@@ -869,7 +1273,7 @@
         
         async function showAbsenceExport() {
             const cfg = getConfig();
-            if(!cfg) { alert('Select sheet first'); return; }
+            if(!cfg) { alert('Please select a sheet first!'); return; }
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('absenceView').classList.remove('hidden');
@@ -888,7 +1292,7 @@
                 const today = getToday();
                 for(let i=0;i<select.options.length;i++) { if(select.options[i].value===today) { select.selectedIndex=i; break; } }
                 await loadAbsenceData();
-            } catch(e) { addLog('System', 'Failed dates', '❌'); }
+            } catch(e) { addLog('System', 'Failed to load dates', '❌'); }
         }
         
         async function loadAbsenceData() {
@@ -910,13 +1314,16 @@
                 container.innerHTML = currentGroups.map(gn => {
                     const g = data.groups[gn];
                     if(!g) return '';
-                    return `<div class="group-card"><div class="group-title"><span>${gn}</span><span>${g.percentage}%</span></div>
-                            <div class="group-stats"><div><div class="stat-number">${g.total}</div><div class="stat-label">Total</div></div>
-                            <div><div class="stat-number present">${g.present}</div><div class="stat-label">Present</div></div>
-                            <div><div class="stat-number absent">${g.absent}</div><div class="stat-label">Absent</div></div></div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: ${g.percentage}%"></div></div>
-                            ${g.absent ? `<div style="margin-top:8px;"><strong>Absent (${g.absent}):</strong>${g.absentNames.map(n=>`<div style="padding:4px 8px; background:#fee2e2; margin:2px 0; border-radius:6px;">❌ ${escapeHtml(n)}</div>`).join('')}</div>` : '<div style="margin-top:8px;color:#27ae60;">✅ All present</div>'}
-                        </div>`;
+                    return `<div class="group-card">
+                                <div class="group-title"><span>${gn}</span><span>${g.percentage}%</span></div>
+                                <div class="group-stats">
+                                    <div><div class="stat-number">${g.total}</div><div class="stat-label">Total</div></div>
+                                    <div><div class="stat-number present">${g.present}</div><div class="stat-label">Present</div></div>
+                                    <div><div class="stat-number absent">${g.absent}</div><div class="stat-label">Absent</div></div>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${g.percentage}%"></div></div>
+                                ${g.absent ? `<div style="margin-top:12px;"><strong>📋 Absent (${g.absent}):</strong>${g.absentNames.map(n=>`<div style="padding:6px 10px; background:#fee2e2; margin:4px 0; border-radius:8px;">❌ ${escapeHtml(n)}</div>`).join('')}</div>` : '<div style="margin-top:12px; color:#27ae60;">✅ All students present</div>'}
+                            </div>`;
                 }).join('');
                 document.getElementById('exportAbsenceBtn').style.display='block';
             } catch(e) { document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`; }
@@ -938,26 +1345,26 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
             XLSX.writeFile(wb, `Absence_${absenceData.date.replace(/\//g,'-')}.xlsx`);
-            addLog('System', 'Absence exported', '📊');
+            addLog('System', 'Absence report exported', '📊');
         }
         
         async function showApp(mode) {
             const cfg = getConfig();
-            if(!cfg) { alert('Select sheet first'); return; }
+            if(!cfg) { alert('Please select a sheet first!'); return; }
             resetAppState();
             document.getElementById('welcomeView').classList.add('hidden');
             document.getElementById('absenceView').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} | ${currentGroups.length} groups`;
+            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} | ${currentGroups.length} groups | ${currentAccess} access`;
             appState.currentMode = mode;
             if(mode === 'scan') {
-                document.getElementById('modeTitle').innerText = '📸 Scanner';
+                document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
                 document.getElementById('fileSection').classList.add('hidden');
                 await loadDates(); await loadGroupStats(); await startScanner(); startBackgroundSync();
                 addLog('System', `Scanner ready - ${currentSheet.name}`, '📸');
             } else {
-                if(!canWrite()) { alert('Read-only, upload disabled'); backToWelcome(); return; }
-                document.getElementById('modeTitle').innerText = '📁 Upload';
+                if(!canWrite()) { alert('⚠️ Read-only access. Bulk upload disabled.'); backToWelcome(); return; }
+                document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
                 document.getElementById('fileSection').classList.remove('hidden');
                 await loadDates(); await loadGroupStats();
                 addLog('System', `Upload ready - ${currentSheet.name}`, '📁');
@@ -979,7 +1386,6 @@
             loadUserSheets();
         }
         
-        // Check if libraries loaded on page load
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof Html5Qrcode === 'undefined') {
                 console.warn('QR library not loaded - manual entry only');
