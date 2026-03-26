@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>St. Joseph Attendance Pro</title>
-    <!-- Load only what's needed, defer non-critical -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js" defer></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js" defer></script>
+    <!-- Load libraries with better reliability -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <style>
         * {
@@ -75,6 +75,15 @@
             transition: transform 0.1s;
         }
         .login-btn:active { transform: scale(0.98); }
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 13px;
+        }
 
         /* Welcome View */
         #welcomeView .card-header {
@@ -84,6 +93,7 @@
             text-align: center;
         }
         .welcome-app-title { font-size: 22px; font-weight: 700; }
+        .welcome-creator { font-size: 9px; opacity: 0.8; margin-top: 4px; }
 
         /* User Profile */
         .user-profile {
@@ -318,7 +328,6 @@
             border-radius: 14px;
             padding: 12px;
             margin-top: 10px;
-            display: none;
         }
         .manual-input-section input {
             width: 100%;
@@ -406,7 +415,7 @@
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus">📷 Ready</div>
                 
-                <div class="manual-input-section" id="manualInputSection">
+                <div class="manual-input-section">
                     <input type="text" id="manualName" placeholder="Enter name manually">
                     <button class="btn btn-primary" onclick="processManualName()">✓ Mark Attendance</button>
                 </div>
@@ -455,6 +464,9 @@
         const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFSTDYPIg6wSk1i5fiC0uH2zi6R7vgOeSEVy-NliLN_5V2_B061DEyKqLADp8itHsR6w/exec';
         const STORAGE_USER_KEY = 'attendance_user';
         
+        // Check if libraries loaded
+        let qrLibraryLoaded = typeof Html5Qrcode !== 'undefined';
+        
         // Cache DOM elements
         const DOM = {
             loginView: () => document.getElementById('loginView'),
@@ -468,8 +480,7 @@
             logsList: () => document.getElementById('logsList'),
             scannerStatus: () => document.getElementById('scannerStatus'),
             syncBtn: () => document.getElementById('syncBtn'),
-            queueCount: () => document.getElementById('queueCount'),
-            manualInputSection: () => document.getElementById('manualInputSection')
+            queueCount: () => document.getElementById('queueCount')
         };
         
         let allSheets = [], currentUser = null, currentSheet = null, currentAccess = null, currentGroups = [];
@@ -677,11 +688,17 @@
         }
         
         async function startScanner() {
+            if(!qrLibraryLoaded) {
+                DOM.scannerStatus().innerHTML = '⚠️ QR library not loaded. Using manual entry.';
+                DOM.scannerStatus().className = 'scanner-status error';
+                DOM.scannerStatus().style.display = 'block';
+                return;
+            }
+            
             if(!canWrite()) { 
                 DOM.scannerStatus().innerHTML = '🔒 Read-only mode';
                 DOM.scannerStatus().className = 'scanner-status error';
                 DOM.scannerStatus().style.display = 'block';
-                DOM.manualInputSection().style.display = 'block';
                 return; 
             }
             
@@ -689,18 +706,21 @@
             readerDiv.style.display = 'block';
             DOM.scannerStatus().style.display = 'block';
             DOM.scannerStatus().innerHTML = '📷 Requesting camera...';
-            DOM.manualInputSection().style.display = 'block';
             
             // Check if camera is available first
             try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                    throw new Error('Camera API not supported');
+                }
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const hasCamera = devices.some(device => device.kind === 'videoinput');
                 if (!hasCamera) {
-                    throw new Error('No camera found on this device');
+                    throw new Error('No camera found');
                 }
             } catch(e) {
                 DOM.scannerStatus().innerHTML = '⚠️ No camera detected. Use manual entry.';
                 DOM.scannerStatus().className = 'scanner-status error';
+                readerDiv.style.display = 'none';
                 return;
             }
             
@@ -958,6 +978,21 @@
             document.getElementById('welcomeView').classList.remove('hidden');
             loadUserSheets();
         }
+        
+        // Initialize and check if QR library loaded
+        window.addEventListener('load', () => {
+            if (typeof Html5Qrcode === 'undefined') {
+                console.warn('QR library not loaded');
+                qrLibraryLoaded = false;
+                // Try to load from alternative CDN
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js';
+                script.onload = () => { qrLibraryLoaded = true; };
+                document.head.appendChild(script);
+            } else {
+                qrLibraryLoaded = true;
+            }
+        });
         
         checkSavedSession();
     </script>
