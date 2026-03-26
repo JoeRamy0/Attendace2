@@ -988,18 +988,26 @@
         }
         
         async function loadDates() {
-            const config = getCurrentConfig();
-            if (!config) return;
-            try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
-                const dates = await response.json();
-                const select = document.getElementById('dateSelect');
-                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-                toggleAutoDate();
-            } catch(e) {
-                addLogToUI('System', 'Failed to load dates', '❌');
-            }
+    const config = getCurrentConfig();
+    if (!config) return;
+    try {
+        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
+        const text = await response.text();
+        let dates;
+        try {
+            dates = JSON.parse(text);
+        } catch (e) {
+            // Not JSON – likely an error message
+            addLogToUI('System', text, '❌');
+            return;
         }
+        const select = document.getElementById('dateSelect');
+        select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+        toggleAutoDate();
+    } catch(e) {
+        addLogToUI('System', 'Failed to load dates', '❌');
+    }
+}
         
         function toggleAutoDate() {
             const isAuto = document.getElementById('autoDateToggle').checked;
@@ -1028,19 +1036,26 @@
             loadGroupStats();
         }
         
-        async function loadGroupStats() {
-            const config = getCurrentConfig();
-            if (!config) return;
-            const date = document.getElementById('dateSelect').value;
-            if (!date) return;
-            try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-                const stats = await response.json();
-                if (!stats.error) renderGroupStats(stats);
-            } catch(e) {
-                console.error(e);
-            }
+       async function loadGroupStats() {
+    const config = getCurrentConfig();
+    if (!config) return;
+    const date = document.getElementById('dateSelect').value;
+    if (!date) return;
+    try {
+        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+        const text = await response.text();
+        let stats;
+        try {
+            stats = JSON.parse(text);
+        } catch (e) {
+            addLogToUI('System', text, '❌');
+            return;
         }
+        if (!stats.error) renderGroupStats(stats);
+    } catch(e) {
+        console.error(e);
+    }
+}
         
         function renderGroupStats(stats) {
             const container = document.getElementById('groupStatsContainer');
@@ -1197,7 +1212,7 @@
                 for (let i = 0; i < toSync.length; i += 20) {
                     const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
                     try {
-                        const response = await fetch(`${config.SCRIPT_URL}`, {
+                        
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'batchMark',
@@ -1386,32 +1401,35 @@
             }
         }
         
-        async function loadAbsenceData() {
-            const config = getCurrentConfig();
-            if (!config) return;
-            
-            const date = document.getElementById('absenceDateSelect').value;
-            if (!date) return;
-            
-            document.getElementById('absenceLoading').style.display = 'block';
-            document.getElementById('absenceGroupsContainer').innerHTML = '';
-            document.getElementById('exportAbsenceBtn').style.display = 'none';
-            
-            try {
-                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
-                
-                absenceData = data;
-                renderAbsenceGroups(data);
-                document.getElementById('exportAbsenceBtn').style.display = 'block';
-            } catch(e) {
-                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
-            } finally {
-                document.getElementById('absenceLoading').style.display = 'none';
-            }
+       async function loadAbsenceData() {
+    const config = getCurrentConfig();
+    if (!config) return;
+    const date = document.getElementById('absenceDateSelect').value;
+    if (!date) return;
+
+    document.getElementById('absenceLoading').style.display = 'block';
+    document.getElementById('absenceGroupsContainer').innerHTML = '';
+    document.getElementById('exportAbsenceBtn').style.display = 'none';
+
+    try {
+        const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error(text);
         }
+        if (data.error) throw new Error(data.error);
+        absenceData = data;
+        renderAbsenceGroups(data);
+        document.getElementById('exportAbsenceBtn').style.display = 'block';
+    } catch(e) {
+        document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
+    } finally {
+        document.getElementById('absenceLoading').style.display = 'none';
+    }
+}
         
         function renderAbsenceGroups(data) {
             const container = document.getElementById('absenceGroupsContainer');
