@@ -3,12 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta name="format-detection" content="telephone=no">
-    
     <title>St. Joseph Attendance Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -211,12 +205,6 @@
             color: #1e293b;
         }
 
-        .user-email {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 4px;
-        }
-
         .user-role-badge {
             display: inline-block;
             background: #2c7da0;
@@ -374,10 +362,6 @@
         .welcome-btn.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .welcome-btn.disabled:hover {
-            transform: none;
         }
 
         /* Main App Styles */
@@ -662,7 +646,6 @@
                     <div class="user-avatar" id="userAvatar">👤</div>
                     <div class="user-details">
                         <div class="user-name" id="displayName"></div>
-                        <div class="user-email" id="displayEmail"></div>
                         <div class="user-role-badge" id="displayRole"></div>
                     </div>
                     <button class="logout-btn-side" onclick="logout()">🚪 Logout</button>
@@ -855,7 +838,6 @@
                     }
                     
                     document.getElementById('displayName').innerHTML = currentUser.username;
-                    document.getElementById('displayEmail').innerHTML = currentUser.email;
                     document.getElementById('displayRole').innerHTML = currentUser.role;
                     
                     loadUserSheets();
