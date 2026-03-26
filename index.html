@@ -6,695 +6,1544 @@
     <title>St. Joseph Attendance Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; margin-bottom: 20px; }
-        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-        .card-body { padding: 20px; }
-        .app-title { font-size: 28px; font-weight: 700; }
-        .creator-credit { font-size: 10px; opacity: 0.7; margin-top: 8px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #1e293b; }
-        .form-group input { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 16px; font-size: 14px; }
-        .login-btn, .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .error-message { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
-        .user-profile { background: #f8fafc; border-radius: 20px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
-        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: white; }
-        .user-details { flex: 1; }
-        .user-name { font-size: 18px; font-weight: 700; }
-        .user-role-badge { display: inline-block; background: #2c7da0; color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; margin-top: 6px; }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-size: 12px; cursor: pointer; }
-        .sheet-selector { background: #f8fafc; border-radius: 20px; padding: 15px; margin-bottom: 20px; }
-        .current-sheet { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; padding: 8px 12px; border-radius: 12px; font-size: 12px; text-align: center; margin-bottom: 10px; }
-        .sheet-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 12px; margin-bottom: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
-        .sheet-item.active { border-color: #667eea; background: #f5f3ff; }
-        .sheet-name { font-weight: 600; }
-        .access-badge { padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="85" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="70" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-repeat: repeat;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Login View */
+        #loginView .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #loginView .card-header::before {
+            content: '⛪';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.1;
+            bottom: -20px;
+            right: -20px;
+            transform: rotate(-15deg);
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .app-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .creator-credit {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .login-form {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Welcome View */
+        #welcomeView .card-header {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .welcome-app-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .welcome-creator {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* User Profile Sidebar Style */
+        .user-profile {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #eef2f6;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 12px rgba(44,125,160,0.3);
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .user-role-badge {
+            display: inline-block;
+            background: #2c7da0;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-top: 6px;
+        }
+
+        .logout-btn-side {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn-side:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* Sheet Selector */
+        .sheet-selector {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #eef2f6;
+        }
+
+        .sheet-selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .current-sheet {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .sheet-list {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .sheet-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sheet-item:hover {
+            border-color: #2c7da0;
+            transform: translateX(5px);
+        }
+
+        .sheet-item.active {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-color: #667eea;
+        }
+
+        .sheet-info {
+            flex: 1;
+        }
+
+        .sheet-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .sheet-details {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .access-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
         .access-badge.full { background: #d1fae5; color: #059669; }
-        .welcome-buttons { display: flex; gap: 12px; margin-bottom: 20px; }
-        .welcome-btn { flex: 1; padding: 15px 8px; background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; border: none; border-radius: 16px; cursor: pointer; text-align: center; }
-        .welcome-btn.disabled { opacity: 0.5; cursor: not-allowed; }
-        .group-card { background: #f8fafc; border-radius: 16px; padding: 12px; margin-bottom: 10px; }
-        .group-title { font-weight: 700; display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .group-stats { display: flex; gap: 15px; justify-content: space-around; margin: 10px 0; }
-        .stat-number { font-size: 20px; font-weight: 700; }
+        .access-badge.readonly { background: #fef3c7; color: #d97706; }
+
+        /* Welcome Buttons */
+        .welcome-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-btn {
+            flex: 1;
+            padding: 15px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .welcome-btn .btn-icon { font-size: 24px; }
+        .welcome-btn .btn-text { font-size: 12px; }
+
+        .welcome-btn.scanner {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+        }
+
+        .welcome-btn.upload {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
+            color: white;
+        }
+
+        .welcome-btn.absence {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+        }
+
+        .welcome-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Main App Styles */
+        #mainApp .card-header, #absenceView .card-header {
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .group-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #eef2f6;
+        }
+
+        .group-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .group-stats {
+            display: flex;
+            gap: 15px;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
         .stat-number.present { color: #27ae60; }
         .stat-number.absent { color: #e74c3c; }
         .stat-label { font-size: 10px; color: #64748b; }
-        .progress-bar { background: #e2e8f0; border-radius: 10px; height: 6px; overflow: hidden; }
-        .progress-fill { background: #27ae60; height: 100%; transition: width 0.3s; }
-        .date-section { background: #f8fafc; padding: 15px; border-radius: 16px; margin-bottom: 15px; }
-        .auto-toggle { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
-        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: 0.3s; border-radius: 24px; }
-        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #27ae60;
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .date-section {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+        }
+
+        .auto-toggle {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
         input:checked + .toggle-slider { background-color: #27ae60; }
         input:checked + .toggle-slider:before { transform: translateX(20px); }
-        select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; }
-        .logs-container { background: #f8fafc; border-radius: 16px; padding: 12px; margin: 15px 0; max-height: 250px; overflow-y: auto; }
-        .logs-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; font-weight: 600; }
-        .log-entry { padding: 8px; margin-bottom: 6px; border-radius: 10px; font-size: 12px; display: flex; gap: 8px; background: white; }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+        }
+
+        select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .logs-container {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 15px 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            gap: 8px;
+            background: white;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+        }
+
         .btn-primary { background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; }
         .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
         .hidden { display: none; }
-        #reader { width: 100%; border-radius: 16px; display: none; background: #000; margin: 10px 0; }
-        .scanner-status { background: #f1f5f9; padding: 12px; border-radius: 12px; text-align: center; margin: 10px 0; display: none; }
-        .upload-section { border: 2px dashed #e2e8f0; border-radius: 16px; padding: 20px; text-align: center; margin: 15px 0; }
-        .file-input-label { display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%); color: white; border-radius: 40px; cursor: pointer; }
+
+        #reader {
+            width: 100%;
+            border-radius: 16px;
+            display: none;
+            background: #000;
+            margin: 10px 0;
+        }
+
+        .scanner-status {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 13px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .upload-section {
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #2c7da0 0%, #1f5e7a 100%);
+            color: white;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
         input[type="file"] { display: none; }
-        .progress-container { background: #e2e8f0; border-radius: 10px; height: 6px; margin: 10px 0; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: #27ae60; border-radius: 10px; transition: width 0.3s; }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #27ae60;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
         .processing-pulse { animation: pulse 1s ease-in-out infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Login View -->
-    <div class="card" id="loginView">
-        <div class="card-header">
-            <div class="app-title">⛪ St. Joseph Attendance Pro</div>
-            <div class="creator-credit">Created by: Youssef Ramy</div>
-        </div>
-        <div class="card-body">
-            <div id="loginError" class="error-message hidden"></div>
-            <div class="form-group">
-                <label>👤 Username</label>
-                <input type="text" id="username" placeholder="Enter your username">
+    <div class="container">
+        <!-- Login View -->
+        <div class="card" id="loginView">
+            <div class="card-header">
+                <div class="app-title">⛪ St. Joseph Attendance Pro</div>
+                <div class="app-subtitle">Smart Attendance Management System</div>
+                <div class="creator-credit">Created by: Youssef Ramy</div>
             </div>
-            <div class="form-group">
-                <label>🔒 Password</label>
-                <input type="password" id="password" placeholder="Enter your password">
-            </div>
-            <button class="login-btn" onclick="login()">🔐 Login</button>
-        </div>
-    </div>
-
-    <!-- Welcome View -->
-    <div class="card hidden" id="welcomeView">
-        <div class="card-header">
-            <div class="app-title">⛪ St. Joseph Attendance Pro</div>
-            <div class="creator-credit">Created by: Youssef Ramy</div>
-        </div>
-        <div class="card-body">
-            <div class="user-profile">
-                <div class="user-avatar" id="userAvatar">👤</div>
-                <div class="user-details">
-                    <div class="user-name" id="displayName"></div>
-                    <div class="user-role-badge" id="displayRole"></div>
+            <div class="login-form">
+                <div id="loginError" class="error-message hidden"></div>
+                <div class="form-group">
+                    <label>👤 Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
                 </div>
-                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-            </div>
-            <div class="sheet-selector">
-                <div id="currentSheetDisplay" class="current-sheet"></div>
-                <div id="sheetListContainer"></div>
-            </div>
-            <div class="welcome-buttons">
-                <button class="welcome-btn scanner" id="scannerBtn" onclick="showApp('scan')">📸 QR Scanner</button>
-                <button class="welcome-btn upload" id="uploadBtn" onclick="showApp('upload')">📁 Bulk Upload</button>
-                <button class="welcome-btn absence" id="absenceBtn" onclick="showAbsenceExport()">📋 Export Absence</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App View -->
-    <div class="card hidden" id="mainApp">
-        <div class="card-header">
-            <h2 id="modeTitle">Scanner Mode</h2>
-            <p id="modeDescription">Scan QR code to mark attendance</p>
-            <div id="activeSheetInfo"></div>
-        </div>
-        <div class="card-body">
-            <div id="groupStatsContainer"></div>
-            <div class="date-section">
-                <div class="auto-toggle">
-                    <span>📅 Auto-select today</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
-                        <span class="toggle-slider"></span>
-                    </label>
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="email" placeholder="Enter your email">
                 </div>
-                <select id="dateSelect" onchange="onDateManuallySelected()"></select>
+                <button class="login-btn" onclick="login()">🔐 Login</button>
             </div>
-            <div id="reader"></div>
-            <div class="scanner-status" id="scannerStatus">📷 Ready to scan</div>
-            <div id="fileSection" class="hidden">
-                <div class="upload-section">
-                    <label class="file-input-label">📁 Choose File<input type="file" id="fileInput" accept=".txt,.csv"></label>
-                    <div id="fileName" style="margin-top:10px; font-size:12px;">No file selected</div>
-                    <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-                    <button class="btn btn-primary" id="uploadBtnAction" onclick="handleBulkUpload()" style="margin-top:10px;">🚀 Start Upload</button>
-                    <div id="uploadStats" style="font-size:11px; margin-top:8px;"></div>
+        </div>
+
+        <!-- Welcome View -->
+        <div class="card hidden" id="welcomeView">
+            <div class="card-header">
+                <div class="welcome-app-title">⛪ St. Joseph Attendance Pro</div>
+                <div class="welcome-creator">Created by: Youssef Ramy</div>
+            </div>
+            <div class="card-body">
+                <!-- User Profile -->
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="displayName"></div>
+                        <div class="user-email" id="displayEmail"></div>
+                        <div class="user-role-badge" id="displayRole"></div>
+                    </div>
+                    <button class="logout-btn-side" onclick="logout()">🚪 Logout</button>
+                </div>
+
+                <div class="sheet-selector">
+                    <div class="sheet-selector-header">
+                        <span class="sheet-selector-title">📊 Available Sheets</span>
+                    </div>
+                    <div id="currentSheetDisplay" class="current-sheet"></div>
+                    <div id="sheetListContainer"></div>
+                </div>
+
+                <div class="welcome-buttons">
+                    <button class="welcome-btn scanner" id="scannerBtn" onclick="showApp('scan')">
+                        <div class="btn-icon">📸</div>
+                        <div class="btn-text">QR Scanner</div>
+                    </button>
+                    <button class="welcome-btn upload" id="uploadBtn" onclick="showApp('upload')">
+                        <div class="btn-icon">📁</div>
+                        <div class="btn-text">Bulk Upload</div>
+                    </button>
+                    <button class="welcome-btn absence" id="absenceBtn" onclick="showAbsenceExport()">
+                        <div class="btn-icon">📋</div>
+                        <div class="btn-text">Export Absence</div>
+                    </button>
                 </div>
             </div>
-            <div class="logs-container">
-                <div class="logs-header"><span>📋 Activity Log</span><button onclick="clearLogs()" style="background:none; border:none; cursor:pointer;">Clear</button></div>
-                <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div>
+        </div>
+
+        <!-- Main App View -->
+        <div class="card hidden" id="mainApp">
+            <div class="card-header">
+                <h2 id="modeTitle">Scanner Mode</h2>
+                <p id="modeDescription">Scan QR code to mark attendance</p>
+                <div id="activeSheetInfo" style="font-size: 11px; margin-top: 5px;"></div>
             </div>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
-                <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
+            <div class="card-body">
+                <div id="groupStatsContainer"></div>
+                
+                <div class="date-section">
+                    <div class="auto-toggle">
+                        <span>📅 Auto-select today</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoDateToggle" checked onchange="toggleAutoDate()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <select id="dateSelect" onchange="onDateManuallySelected()"></select>
+                </div>
+
+                <div id="reader"></div>
+                <div class="scanner-status" id="scannerStatus"><span>📷 Ready to scan</span></div>
+
+                <div id="fileSection" class="hidden">
+                    <div class="upload-section">
+                        <label class="file-input-label">📁 Choose File (.txt or .csv)<input type="file" id="fileInput" accept=".txt,.csv"></label>
+                        <div id="fileName" style="margin-top: 10px; font-size: 12px;">No file selected</div>
+                        <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
+                        <button class="btn btn-primary" id="uploadBtn" onclick="handleBulkUpload()" style="margin-top: 10px;">🚀 Start Upload</button>
+                        <div id="uploadStats" style="font-size: 11px; margin-top: 8px;"></div>
+                    </div>
+                </div>
+
+                <div class="logs-container">
+                    <div class="logs-header"><span>📋 Activity Log</span><button onclick="clearLogs()" style="background:none; border:none; cursor:pointer;">Clear</button></div>
+                    <div id="logsList"><div class="log-entry"><span>⏳</span><span>Ready to start</span></div></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="exportToExcel()">📊 Export Excel</button>
+                    <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
+                </div>
+                <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()" style="margin-top: 10px;">📤 Sync Queue (<span id="queueCount">0</span>)</button>
             </div>
-            <button id="syncBtn" class="btn btn-primary hidden" onclick="syncQueue()">📤 Sync Queue (<span id="queueCount">0</span>)</button>
+        </div>
+
+        <!-- Absence View -->
+        <div class="card hidden" id="absenceView">
+            <div class="card-header"><h2>📋 Absence Report</h2><p>View absence list by group</p><div id="absenceSheetInfo" style="font-size: 11px; margin-top: 5px;"></div></div>
+            <div class="card-body">
+                <div class="date-section">
+                    <label>Select Date:</label>
+                    <select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top: 10px;"></select>
+                </div>
+                <div id="absenceLoading" style="display:none; text-align:center; padding:20px;">⏳ Loading...</div>
+                <div id="absenceGroupsContainer"></div>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export Absence</button>
+                    <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Absence View -->
-    <div class="card hidden" id="absenceView">
-        <div class="card-header"><h2>📋 Absence Report</h2><div id="absenceSheetInfo"></div></div>
-        <div class="card-body">
-            <div class="date-section">
-                <label>Select Date:</label>
-                <select id="absenceDateSelect" onchange="loadAbsenceData()" style="margin-top:10px;"></select>
-            </div>
-            <div id="absenceLoading" style="display:none; text-align:center; padding:20px;">⏳ Loading...</div>
-            <div id="absenceGroupsContainer"></div>
-            <div class="button-group" style="margin-top:15px;">
-                <button class="btn btn-primary" id="exportAbsenceBtn" onclick="exportAbsenceToExcel()" style="display:none;">📥 Export Absence</button>
-                <button class="btn btn-secondary" onclick="backToWelcome()">🏠 Back</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// ============ CONFIGURATION ============
-// !!! REPLACE THIS URL WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL !!!
-const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3IS7k1C1FmERWIra4OtNRCTVL04Injd3Y8_2J_kIEGlUQ1MW_t1o1E7ICGGT8r3eXcg/exec";
-
-// ============ GLOBAL STATE ============
-let sessionToken = null;
-let currentUser = null;
-let allSheets = [];
-let currentSheet = null;
-let currentAccess = null;
-let currentGroups = [];
-let sessionTimeout = null;
-
-let appState = {
-    scanner: null,
-    scannedNamesSet: new Set(),
-    scannedData: [],
-    offlineQueue: [],
-    isSyncing: false,
-    currentMode: null,
-    syncInterval: null,
-    isProcessing: false
-};
-
-let absenceData = null;
-
-// ============ API HELPERS ============
-async function apiGet(action, params) {
-    let url = APP_SCRIPT_URL + '?action=' + encodeURIComponent(action);
-    if (sessionToken) url += '&token=' + encodeURIComponent(sessionToken);
-    for (let k in params) if (params[k]) url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-    const resp = await fetch(url);
-    const text = await resp.text();
-    try { return JSON.parse(text); } catch(e) { return { error: 'Invalid response' }; }
-}
-
-async function apiPost(action, data) {
-    const resp = await fetch(APP_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, token: sessionToken, ...data })
-    });
-    const text = await resp.text();
-    try { return JSON.parse(text); } catch(e) { return { error: 'Invalid response' }; }
-}
-
-// ============ LOGIN ============
-async function login() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-    const errorDiv = document.getElementById('loginError');
-    const btn = document.querySelector('.login-btn');
-    
-    if (!username || !password) {
-        errorDiv.classList.remove('hidden');
-        errorDiv.innerHTML = '❌ Please enter both username and password';
-        return;
-    }
-    
-    btn.disabled = true;
-    btn.textContent = '⏳ Logging in...';
-    
-    // Use POST instead of GET
-    const result = await apiPost('login', { username, password });
-    
-    if (result.error) {
-        errorDiv.classList.remove('hidden');
-        errorDiv.innerHTML = '❌ ' + result.error;
-        btn.disabled = false;
-        btn.textContent = '🔐 Login';
-        return;
-    }
-    
-    if (result.success) {
-        sessionToken = result.token;
-        currentUser = result.user;
-        allSheets = result.sheets || [];
-        document.getElementById('loginView').classList.add('hidden');
-        document.getElementById('welcomeView').classList.remove('hidden');
-        document.getElementById('userAvatar').innerHTML = currentUser.username.charAt(0).toUpperCase();
-        document.getElementById('displayName').innerHTML = currentUser.username;
-        document.getElementById('displayRole').innerHTML = currentUser.role;
-        loadUserSheets();
-        addLog('System', 'Welcome ' + currentUser.username + '!', '✅');
-        resetSessionTimeout();
-    }
-    
-    btn.disabled = false;
-    btn.textContent = '🔐 Login';
-}
-
-function logout() {
-    if (sessionTimeout) clearTimeout(sessionTimeout);
-    sessionToken = null;
-    currentUser = null;
-    currentSheet = null;
-    allSheets = [];
-    if (appState.scanner) try { appState.scanner.stop(); } catch(e) {}
-    if (appState.syncInterval) clearInterval(appState.syncInterval);
-    document.getElementById('welcomeView').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('absenceView').classList.add('hidden');
-    document.getElementById('loginView').classList.remove('hidden');
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-}
-
-function resetSessionTimeout() {
-    if (sessionTimeout) clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(() => {
-        if (currentUser) { alert('Session expired. Please login again.'); logout(); }
-    }, 30 * 60 * 1000);
-}
-
-// ============ SHEET FUNCTIONS ============
-function loadUserSheets() {
-    const container = document.getElementById('sheetListContainer');
-    const display = document.getElementById('currentSheetDisplay');
-    if (!currentUser || !allSheets.length) {
-        container.innerHTML = '<div class="loading">No sheets available</div>';
-        display.innerHTML = 'No sheets';
-        document.getElementById('scannerBtn').classList.add('disabled');
-        document.getElementById('uploadBtn').classList.add('disabled');
-        document.getElementById('absenceBtn').classList.add('disabled');
-        return;
-    }
-    document.getElementById('scannerBtn').classList.remove('disabled');
-    document.getElementById('uploadBtn').classList.remove('disabled');
-    document.getElementById('absenceBtn').classList.remove('disabled');
-    if (!currentSheet && allSheets.length) { currentSheet = allSheets[0]; currentAccess = currentSheet.access; currentGroups = currentSheet.groups; }
-    if (display && currentSheet) display.innerHTML = '📄 Active: ' + currentSheet.name + ' (' + currentGroups.length + ' groups)';
-    let html = '';
-    for (let i = 0; i < allSheets.length; i++) {
-        let s = allSheets[i];
-        let active = (currentSheet && currentSheet.sheetId === s.sheetId) ? 'active' : '';
-        html += `<div class="sheet-item ${active}" onclick="selectSheet(${i})">
-            <div><div class="sheet-name">${escapeHtml(s.name)}</div><div class="sheet-details">${s.groups.length} groups</div></div>
-            <div class="access-badge ${s.access}">${s.access === 'full' ? 'Full' : 'View'}</div>
-        </div>`;
-    }
-    container.innerHTML = html;
-}
-
-function selectSheet(idx) {
-    currentSheet = allSheets[idx];
-    currentAccess = currentSheet.access;
-    currentGroups = currentSheet.groups;
-    loadUserSheets();
-    addLog('System', 'Switched to: ' + currentSheet.name, '🔄');
-    if (!document.getElementById('mainApp').classList.contains('hidden')) { loadDates(); loadGroupStats(); }
-    if (!document.getElementById('absenceView').classList.contains('hidden')) { loadAbsenceDates(); loadAbsenceData(); }
-}
-
-function getCurrentConfig() {
-    return currentSheet ? { SHEET_ID: currentSheet.sheetId, ACCESS: currentSheet.access, GROUPS: currentSheet.groups } : null;
-}
-function canWrite() { return currentAccess === 'full'; }
-
-// ============ DATA LOADING ============
-async function loadDates() {
-    const cfg = getCurrentConfig(); if (!cfg) return;
-    const res = await apiGet('getDates', { sheetId: cfg.SHEET_ID });
-    if (!res.error && Array.isArray(res)) {
-        const sel = document.getElementById('dateSelect');
-        sel.innerHTML = res.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-        toggleAutoDate();
-    }
-}
-
-function toggleAutoDate() {
-    const auto = document.getElementById('autoDateToggle').checked;
-    const sel = document.getElementById('dateSelect');
-    if (auto && sel.options.length) {
-        sel.disabled = true;
-        const today = getToday();
-        for (let i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value === today) { sel.selectedIndex = i; loadGroupStats(); break; }
+    <script>
+        // ============ CONFIGURATION ============
+        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3IS7k1C1FmERWIra4OtNRCTVL04Injd3Y8_2J_kIEGlUQ1MW_t1o1E7ICGGT8r3eXcg/exec'; // Replace with your Apps Script web app URL
+        const STORAGE_USER_KEY = 'attendance_user';
+        
+        // ============ GLOBAL STATE ============
+        let allSheets = [];         // will be filled from auth response
+        let currentUser = null;
+        let currentSheet = null;
+        let currentAccess = null;
+        let currentGroups = [];
+        
+        let appState = {
+            scanner: null,
+            scannedNamesSet: new Set(),
+            scannedData: [],
+            offlineQueue: [],
+            isSyncing: false,
+            currentMode: null,
+            syncInterval: null,
+            isProcessing: false
+        };
+        
+        let absenceData = null;
+        
+        // ============ AUTHENTICATION ============
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!username || !email) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Please enter both username and email';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${AUTH_SCRIPT_URL}?action=login&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.innerHTML = `❌ ${data.error}`;
+                    return;
+                }
+                
+                currentUser = data.user;
+                allSheets = data.sheets;
+                
+                // Save user session
+                localStorage.setItem(STORAGE_USER_KEY, JSON.stringify({
+                    username: currentUser.username,
+                    email: currentUser.email,
+                    role: currentUser.role,
+                    sheets: allSheets
+                }));
+                
+                // Set default sheet if any
+                if (allSheets.length > 0) {
+                    currentSheet = allSheets[0];
+                    currentAccess = currentSheet.access;
+                    currentGroups = currentSheet.groups;
+                }
+                
+                // UI setup
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('welcomeView').classList.remove('hidden');
+                
+                const avatar = document.getElementById('userAvatar');
+                if (avatar) avatar.innerHTML = currentUser.username.charAt(0).toUpperCase();
+                document.getElementById('displayName').innerHTML = currentUser.username;
+                document.getElementById('displayEmail').innerHTML = currentUser.email;
+                document.getElementById('displayRole').innerHTML = currentUser.role;
+                
+                loadUserSheets(); // populate sheet list
+                addLogToUI('System', `Welcome ${currentUser.username}! You have access to ${allSheets.length} sheet(s)`, '✅');
+                
+            } catch (err) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.innerHTML = '❌ Network error. Please try again.';
+                console.error(err);
+            }
         }
-    } else { sel.disabled = false; }
-}
-
-function onDateManuallySelected() {
-    const auto = document.getElementById('autoDateToggle');
-    if (auto.checked) { auto.checked = false; document.getElementById('dateSelect').disabled = false; }
-    loadGroupStats();
-}
-
-async function loadGroupStats() {
-    const cfg = getCurrentConfig(); if (!cfg) return;
-    const date = document.getElementById('dateSelect').value; if (!date) return;
-    const res = await apiGet('getGroupStats', { sheetId: cfg.SHEET_ID, date: date });
-    if (!res.error) renderGroupStats(res);
-}
-
-function renderGroupStats(stats) {
-    const cont = document.getElementById('groupStatsContainer');
-    if (!cont) return;
-    let html = '';
-    for (let g of currentGroups) {
-        let group = stats[g];
-        if (!group) continue;
-        let pct = group.percentage || 0;
-        html += `<div class="group-card">
-            <div class="group-title"><span>${g}</span><span>${pct}%</span></div>
-            <div class="group-stats">
-                <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
-                <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
-                <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%"></div></div>
-        </div>`;
-    }
-    cont.innerHTML = html;
-}
-
-// ============ SCANNER ============
-async function startScanner() {
-    if (!canWrite()) {
-        document.getElementById('scannerStatus').style.display = 'block';
-        document.getElementById('scannerStatus').innerHTML = '🔒 Read-only mode. Cannot mark attendance.';
-        return;
-    }
-    document.getElementById('reader').style.display = 'block';
-    document.getElementById('scannerStatus').style.display = 'block';
-    try {
-        appState.scanner = new Html5Qrcode("reader");
-        await appState.scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
-            (text) => { if (!appState.isProcessing) processScan(text.trim()); },
-            () => {});
-        document.getElementById('scannerStatus').innerHTML = '📷 Ready - Point at QR code';
-    } catch(err) { addLog('System', 'Camera access failed', '❌'); }
-}
-
-async function processScan(name, isBatch = false) {
-    if (!canWrite()) return false;
-    const cfg = getCurrentConfig(); if (!cfg) return false;
-    if (!name || appState.scannedNamesSet.has(name) || appState.isProcessing) return false;
-    appState.isProcessing = true;
-    if (!isBatch) { addLog(name, 'processing', '⏳'); document.getElementById('scannerStatus').innerHTML = '⏳ Processing...'; }
-    const date = document.getElementById('dateSelect').value; if (!date) { appState.isProcessing = false; return false; }
-    const res = await apiGet('mark', { sheetId: cfg.SHEET_ID, name: name, date: date });
-    if (res.success) {
-        addLog(name, 'success', '✅');
-        appState.scannedNamesSet.add(name);
-        appState.scannedData.push({ Name: name, Date: date });
-        if (!isBatch) { document.getElementById('scannerStatus').innerHTML = '✅ Marked'; setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '📷 Ready'; }, 1500); }
-        await loadGroupStats();
-    } else if (res.error === 'Already marked') {
-        addLog(name, 'already', '⚠️');
-        if (!isBatch) { document.getElementById('scannerStatus').innerHTML = '⚠️ Already marked'; setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '📷 Ready'; }, 1500); }
-    } else {
-        addLog(name, res.error || 'error', '❌');
-        if (!isBatch) { document.getElementById('scannerStatus').innerHTML = '❌ ' + (res.error || 'Error'); setTimeout(() => { document.getElementById('scannerStatus').innerHTML = '📷 Ready'; }, 1500); }
-    }
-    appState.isProcessing = false;
-    return res.success;
-}
-
-function updateQueueUI() {
-    document.getElementById('queueCount').innerText = appState.offlineQueue.length;
-    document.getElementById('syncBtn').classList.toggle('hidden', !appState.offlineQueue.length);
-}
-
-async function syncQueue() {
-    if (!canWrite()) return;
-    const cfg = getCurrentConfig(); if (!cfg || appState.isSyncing || !appState.offlineQueue.length) return;
-    appState.isSyncing = true;
-    addLog('System', 'Syncing ' + appState.offlineQueue.length + ' items', '🔄');
-    const date = document.getElementById('dateSelect').value;
-    if (date) {
-        const toSync = [...appState.offlineQueue];
-        for (let i = 0; i < toSync.length; i += 20) {
-            const batch = toSync.slice(i, i + 20);
-            const res = await apiPost('batchMark', { sheetId: cfg.SHEET_ID, names: batch, date: date });
-            if (!res.error && res.success) {
-                for (let n of res.success) {
-                    if (!appState.scannedNamesSet.has(n)) {
-                        appState.scannedNamesSet.add(n);
-                        appState.scannedData.push({ Name: n, Date: date });
-                        addLog(n, 'success', '✅');
-                    }
+        
+        function logout() {
+            currentUser = null;
+            allSheets = [];
+            currentSheet = null;
+            currentAccess = null;
+            currentGroups = [];
+            localStorage.removeItem(STORAGE_USER_KEY);
+            
+            // Stop scanner and intervals
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
+        }
+        
+        function checkSavedSession() {
+            const saved = localStorage.getItem(STORAGE_USER_KEY);
+            if (saved) {
+                const session = JSON.parse(saved);
+                currentUser = session;
+                // We need to re‑fetch sheets because they might have changed
+                fetch(`${AUTH_SCRIPT_URL}?action=login&username=${encodeURIComponent(session.username)}&email=${encodeURIComponent(session.email)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            logout();
+                            return;
+                        }
+                        currentUser = data.user;
+                        allSheets = data.sheets;
+                        if (allSheets.length > 0) {
+                            currentSheet = allSheets[0];
+                            currentAccess = currentSheet.access;
+                            currentGroups = currentSheet.groups;
+                        }
+                        document.getElementById('loginView').classList.add('hidden');
+                        document.getElementById('welcomeView').classList.remove('hidden');
+                        
+                        const avatar = document.getElementById('userAvatar');
+                        if (avatar) avatar.innerHTML = currentUser.username.charAt(0).toUpperCase();
+                        document.getElementById('displayName').innerHTML = currentUser.username;
+                        document.getElementById('displayEmail').innerHTML = currentUser.email;
+                        document.getElementById('displayRole').innerHTML = currentUser.role;
+                        
+                        loadUserSheets();
+                        addLogToUI('System', `Welcome back ${currentUser.username}`, '✅');
+                    })
+                    .catch(() => logout());
+            }
+        }
+        
+        // ============ SHEET MANAGEMENT ============
+        function loadUserSheets() {
+            const container = document.getElementById('sheetListContainer');
+            const currentDisplay = document.getElementById('currentSheetDisplay');
+            
+            if (!currentUser || allSheets.length === 0) {
+                container.innerHTML = '';
+                if (currentDisplay) currentDisplay.innerHTML = 'No sheets available';
+                document.getElementById('scannerBtn').classList.add('disabled');
+                document.getElementById('uploadBtn').classList.add('disabled');
+                document.getElementById('absenceBtn').classList.add('disabled');
+                return;
+            }
+            
+            document.getElementById('scannerBtn').classList.remove('disabled');
+            document.getElementById('uploadBtn').classList.remove('disabled');
+            document.getElementById('absenceBtn').classList.remove('disabled');
+            
+            // Ensure currentSheet is valid
+            if (!currentSheet || !allSheets.some(s => s.sheetId === currentSheet.sheetId)) {
+                currentSheet = allSheets[0];
+                currentAccess = currentSheet.access;
+                currentGroups = currentSheet.groups;
+            }
+            
+            if (currentDisplay) {
+                currentDisplay.innerHTML = `📄 Active: ${currentSheet.name} (${currentGroups.length} groups)`;
+            }
+            
+            container.innerHTML = allSheets.map((sheet, index) => `
+                <div class="sheet-item ${currentSheet && currentSheet.sheetId === sheet.sheetId ? 'active' : ''}" onclick="selectSheet(${index})">
+                    <div class="sheet-info">
+                        <div class="sheet-name">${escapeHtml(sheet.name)}</div>
+                        <div class="sheet-details">${sheet.groups.length} groups | ${sheet.sheetId.substring(0, 15)}...</div>
+                    </div>
+                    <div class="sheet-actions">
+                        <div class="access-badge ${sheet.access}">${sheet.access === 'full' ? 'Full' : 'View'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectSheet(index) {
+            currentSheet = allSheets[index];
+            currentAccess = currentSheet.access;
+            currentGroups = currentSheet.groups;
+            loadUserSheets();
+            addLogToUI('System', `Switched to: ${currentSheet.name}`, '🔄');
+            
+            if (!document.getElementById('mainApp').classList.contains('hidden')) {
+                loadDates();
+                loadGroupStats();
+            }
+            if (!document.getElementById('absenceView').classList.contains('hidden')) {
+                loadAbsenceDates();
+                loadAbsenceData();
+            }
+        }
+        
+        // ============ HELPER FUNCTIONS ============
+        function getCurrentConfig() {
+            if (!currentSheet) return null;
+            return {
+                SCRIPT_URL: currentSheet.url,
+                SHEET_ID: currentSheet.sheetId,
+                ACCESS: currentSheet.access,
+                GROUPS: currentSheet.groups
+            };
+        }
+        
+        function canWrite() {
+            return currentAccess === 'full';
+        }
+        
+        function addLogToUI(name, status, icon = '📌') {
+            const container = document.getElementById('logsList');
+            if (!container) return;
+            
+            let statusText = status;
+            if (status === 'processing') statusText = 'processing';
+            if (status === 'success') statusText = '✓ marked';
+            if (status === 'already') statusText = 'already marked';
+            if (status === 'error') statusText = 'error';
+            if (status === 'notfound') statusText = 'not found';
+            if (status === 'queued') statusText = 'queued';
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${statusText}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            while (container.children.length > 30) container.removeChild(container.lastChild);
+        }
+        
+        function clearLogs() {
+            const container = document.getElementById('logsList');
+            if (container) container.innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>';
+        }
+        
+        function getTodayDateString() {
+            const now = new Date();
+            return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+        
+        // ============ API FUNCTIONS ============
+        async function fetchWithRetry(url, retries = 2) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const response = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (response.ok) return response;
+                    if (response.status === 429) await new Promise(r => setTimeout(r, 1000));
+                } catch(e) {
+                    if (i === retries - 1) throw e;
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
+            throw new Error('Fetch failed');
         }
-        appState.offlineQueue = [];
-        updateQueueUI();
-        addLog('System', 'Sync completed', '✅');
-        await loadGroupStats();
-    }
-    appState.isSyncing = false;
-}
-
-function startBackgroundSync() {
-    if (appState.syncInterval) clearInterval(appState.syncInterval);
-    appState.syncInterval = setInterval(() => {
-        if (appState.offlineQueue.length && navigator.onLine && appState.currentMode === 'scan') syncQueue();
-    }, 5000);
-}
-
-// ============ BULK UPLOAD ============
-async function handleBulkUpload() {
-    if (!canWrite()) { alert('Read-only mode. Cannot upload.'); return; }
-    const cfg = getCurrentConfig(); if (!cfg) { alert('Please select a sheet first!'); return; }
-    const file = document.getElementById('fileInput').files[0];
-    if (!file) { alert('Please select a file!'); return; }
-    try {
-        const text = await file.text();
-        let lines = text.split(/\r?\n/);
-        let names = [];
-        for (let l of lines) {
-            let n = l.trim();
-            if (n) {
-                n = n.split(',')[0].trim();
-                n = n.replace(/^["']|["']$/g, '');
-                if (n) names.push(n);
+        
+        async function loadDates() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
+                const dates = await response.json();
+                const select = document.getElementById('dateSelect');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                toggleAutoDate();
+            } catch(e) {
+                addLogToUI('System', 'Failed to load dates', '❌');
             }
         }
-        let unique = [], seen = new Set();
-        for (let n of names) { let low = n.toLowerCase(); if (!seen.has(low)) { seen.add(low); unique.push(n); } }
-        names = unique;
-        if (!names.length) { alert('No valid names found!'); return; }
-        if (names.length > 500 && !confirm(`You're about to upload ${names.length} names. Continue?`)) return;
-        document.getElementById('progressContainer').style.display = 'block';
-        const uploadBtn = document.getElementById('uploadBtnAction');
-        uploadBtn.disabled = true;
-        let processed = 0, success = 0, already = 0, notFound = 0;
-        const start = Date.now();
-        addLog('System', 'Uploading ' + names.length + ' names', '📁');
-        const date = document.getElementById('dateSelect').value;
-        for (let i = 0; i < names.length; i += 50) {
-            const batch = names.slice(i, i + 50);
-            const res = await apiPost('batchMark', { sheetId: cfg.SHEET_ID, names: batch, date: date });
-            if (res.error) {
-                for (let n of batch) addLog(n, 'error', '❌');
-                notFound += batch.length;
+        
+        function toggleAutoDate() {
+            const isAuto = document.getElementById('autoDateToggle').checked;
+            const select = document.getElementById('dateSelect');
+            if (isAuto && select.options.length > 0) {
+                select.disabled = true;
+                const todayStr = getTodayDateString();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        loadGroupStats();
+                        break;
+                    }
+                }
             } else {
-                if (res.success) for (let n of res.success) { addLog(n, 'success', '✅'); success++; appState.scannedData.push({ Name: n, Date: date }); }
-                if (res.alreadyMarked) for (let n of res.alreadyMarked) { addLog(n, 'already', '⚠️'); already++; }
-                if (res.notFound) for (let n of res.notFound) { addLog(n, 'notfound', '🔍'); notFound++; }
+                select.disabled = false;
             }
-            processed += batch.length;
-            document.getElementById('progressBar').style.width = (processed / names.length * 100) + '%';
-            const speed = (processed / ((Date.now() - start) / 1000)).toFixed(1);
-            document.getElementById('uploadStats').innerHTML = `✓ ${success} | ⚠️ ${already} | 🔍 ${notFound} | ⚡ ${speed}/s`;
         }
-        await loadGroupStats();
-        addLog('System', `Completed: +${success} new, ${already} already, ${notFound} not found`, '✅');
-        uploadBtn.disabled = false;
-        setTimeout(() => {
-            document.getElementById('progressContainer').style.display = 'none';
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('uploadStats').innerHTML = '';
-        }, 3000);
-    } catch(err) { addLog('System', 'Upload failed: ' + err.message, '❌'); document.getElementById('uploadBtnAction').disabled = false; }
-}
-
-function exportToExcel() {
-    if (!appState.scannedData.length) { alert('No data to export!'); return; }
-    const ws = XLSX.utils.aoa_to_sheet([['Name', 'Date'], ...appState.scannedData.map(i => [i.Name, i.Date])]);
-    ws['!cols'] = [{wch:30}, {wch:12}];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
-    XLSX.writeFile(wb, `Attendance_${document.getElementById('dateSelect').value.replace(/\//g, '-')}.xlsx`);
-    addLog('System', `Exported ${appState.scannedData.length} names`, '📊');
-}
-
-// ============ ABSENCE ============
-async function showAbsenceExport() {
-    if (!getCurrentConfig()) { alert('Please select a sheet first!'); return; }
-    document.getElementById('welcomeView').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('absenceView').classList.remove('hidden');
-    document.getElementById('absenceSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentGroups.length} groups)`;
-    await loadAbsenceDates();
-}
-
-async function loadAbsenceDates() {
-    const cfg = getCurrentConfig(); if (!cfg) return;
-    const res = await apiGet('getDates', { sheetId: cfg.SHEET_ID });
-    if (!res.error && Array.isArray(res)) {
-        const sel = document.getElementById('absenceDateSelect');
-        sel.innerHTML = res.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
-        const today = getToday();
-        for (let i = 0; i < sel.options.length; i++) { if (sel.options[i].value === today) { sel.selectedIndex = i; break; } }
-        await loadAbsenceData();
-    }
-}
-
-async function loadAbsenceData() {
-    const cfg = getCurrentConfig(); if (!cfg) return;
-    const date = document.getElementById('absenceDateSelect').value; if (!date) return;
-    document.getElementById('absenceLoading').style.display = 'block';
-    document.getElementById('absenceGroupsContainer').innerHTML = '';
-    document.getElementById('exportAbsenceBtn').style.display = 'none';
-    const res = await apiGet('getAllAttendance', { sheetId: cfg.SHEET_ID, date: date });
-    if (!res.error) {
-        absenceData = res;
-        renderAbsenceGroups(res);
-        document.getElementById('exportAbsenceBtn').style.display = 'block';
-    } else {
-        document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${res.error}</div>`;
-    }
-    document.getElementById('absenceLoading').style.display = 'none';
-}
-
-function renderAbsenceGroups(data) {
-    const cont = document.getElementById('absenceGroupsContainer');
-    if (!cont) return;
-    let html = '';
-    for (let g of currentGroups) {
-        let group = data.groups[g];
-        if (!group) continue;
-        let pct = group.percentage || 0;
-        let absentList = '';
-        for (let n of group.absentNames) absentList += `<div style="padding:8px 12px; background:#fee2e2; margin:4px 0; border-radius:8px;">❌ ${escapeHtml(n)}</div>`;
-        html += `<div class="group-card">
-            <div class="group-title"><span>${g}</span><span>${pct}%</span></div>
-            <div class="group-stats">
-                <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
-                <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
-                <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%"></div></div>
-            ${group.absent > 0 ? `<div style="margin-top:12px;"><strong>📋 Absent List (${group.absent}):</strong><div style="margin-top:8px;">${absentList}</div></div>` : '<div style="margin-top:12px; color:#27ae60;">✅ All students are present</div>'}
-        </div>`;
-    }
-    cont.innerHTML = html;
-}
-
-function exportAbsenceToExcel() {
-    if (!absenceData) return;
-    let wsData = [['Absence Report'], ['Date: ' + absenceData.date], []];
-    for (let g of currentGroups) {
-        let group = absenceData.groups[g];
-        if (group && group.absentNames.length) {
-            wsData.push([g + ' - Absent Students (' + group.absentNames.length + ')']);
-            for (let n of group.absentNames) wsData.push([n]);
-            wsData.push([]);
-        } else if (group) wsData.push([g + ' - All students present ✅'], []);
-    }
-    wsData.push([], ['Summary']);
-    for (let g of currentGroups) {
-        let group = absenceData.groups[g];
-        if (group) wsData.push([g, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
-    }
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [{wch:25}];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Absence Report');
-    XLSX.writeFile(wb, `Absence_Report_${absenceData.date.replace(/\//g, '-')}.xlsx`);
-    addLog('System', 'Absence report exported', '📊');
-}
-
-// ============ UI HELPERS ============
-function addLog(name, status, icon = '📌') {
-    const cont = document.getElementById('logsList');
-    if (!cont) return;
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.innerHTML = `<span>${icon}</span><span><strong>${escapeHtml(name)}</strong></span><span>${status}</span>`;
-    cont.insertBefore(entry, cont.firstChild);
-    while (cont.children.length > 30) cont.removeChild(cont.lastChild);
-}
-
-function clearLogs() { document.getElementById('logsList').innerHTML = '<div class="log-entry"><span>⏳</span><span>Ready to start</span></div>'; }
-
-function getToday() { const d = new Date(); return (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear(); }
-
-function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-
-// ============ NAVIGATION ============
-async function showApp(mode) {
-    if (!getCurrentConfig()) { alert('Please select a sheet first!'); return; }
-    resetState();
-    document.getElementById('welcomeView').classList.add('hidden');
-    document.getElementById('absenceView').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access) | ${currentGroups.length} groups`;
-    appState.currentMode = mode;
-    if (mode === 'scan') {
-        document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
-        document.getElementById('modeDescription').innerText = canWrite() ? 'Scan QR code to mark attendance' : 'Read-only mode - cannot mark attendance';
-        document.getElementById('fileSection').classList.add('hidden');
-        await loadDates(); await loadGroupStats(); await startScanner(); startBackgroundSync();
-        addLog('System', `Scanner ready - ${currentSheet.name}`, '📸');
-    } else {
-        if (!canWrite()) { alert('⚠️ You have read-only access. Bulk upload is disabled.'); backToWelcome(); return; }
-        document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
-        document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
-        document.getElementById('fileSection').classList.remove('hidden');
-        await loadDates(); await loadGroupStats();
-        addLog('System', `Upload mode ready - ${currentSheet.name}`, '📁');
-    }
-    document.getElementById('fileInput').onchange = function(e) { document.getElementById('fileName').innerHTML = e.target.files[0]?.name || 'No file selected'; };
-}
-
-function resetState() {
-    if (appState.scanner) try { appState.scanner.stop(); } catch(e) {}
-    if (appState.syncInterval) clearInterval(appState.syncInterval);
-    appState.scannedNamesSet.clear(); appState.scannedData = []; appState.offlineQueue = []; appState.isSyncing = false; appState.isProcessing = false;
-}
-
-function backToWelcome() {
-    if (appState.scanner) try { appState.scanner.stop(); } catch(e) {}
-    if (appState.syncInterval) clearInterval(appState.syncInterval);
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('absenceView').classList.add('hidden');
-    document.getElementById('welcomeView').classList.remove('hidden');
-    loadUserSheets(); resetSessionTimeout();
-}
-
-document.addEventListener('click', resetSessionTimeout);
-document.addEventListener('keypress', resetSessionTimeout);
-</script>
+        
+        function onDateManuallySelected() {
+            const autoToggle = document.getElementById('autoDateToggle');
+            if (autoToggle.checked) {
+                autoToggle.checked = false;
+                document.getElementById('dateSelect').disabled = false;
+            }
+            loadGroupStats();
+        }
+        
+        async function loadGroupStats() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            const date = document.getElementById('dateSelect').value;
+            if (!date) return;
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getGroupStats&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const stats = await response.json();
+                if (!stats.error) renderGroupStats(stats);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function renderGroupStats(stats) {
+            const container = document.getElementById('groupStatsContainer');
+            if (!container) return;
+            
+            container.innerHTML = currentGroups.map(groupName => {
+                const group = stats[groupName];
+                if (!group) return '';
+                const percentage = group.percentage || 0;
+                return `
+                    <div class="group-card">
+                        <div class="group-title">
+                            <span>${groupName}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="group-stats">
+                            <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
+                            <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
+                            <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ============ SCANNER FUNCTIONS ============
+        async function startScanner() {
+            if (!canWrite()) {
+                document.getElementById('scannerStatus').style.display = 'block';
+                document.getElementById('scannerStatus').innerHTML = '<span>🔒 Read-only mode. Cannot mark attendance.</span>';
+                return;
+            }
+            
+            const readerDiv = document.getElementById('reader');
+            readerDiv.style.display = 'block';
+            document.getElementById('scannerStatus').style.display = 'block';
+            
+            try {
+                appState.scanner = new Html5Qrcode("reader");
+                await appState.scanner.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        if (!appState.isProcessing) processScan(decodedText.trim());
+                    },
+                    () => {}
+                );
+                document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+            } catch(err) {
+                addLogToUI('System', 'Camera access failed', '❌');
+                document.getElementById('scannerStatus').innerHTML = '<span>❌ Camera access denied</span>';
+            }
+        }
+        
+        async function processScan(name, isBatch = false) {
+            if (!canWrite()) return false;
+            const config = getCurrentConfig();
+            if (!config) return false;
+            if (!name || appState.scannedNamesSet.has(name) || appState.isProcessing) return false;
+            
+            appState.isProcessing = true;
+            if (!isBatch) {
+                addLogToUI(name, 'processing', '⏳');
+                document.getElementById('scannerStatus').innerHTML = `<span class="processing-pulse">⏳ Processing: ${escapeHtml(name)}...</span>`;
+            }
+            
+            const currentDate = document.getElementById('dateSelect').value;
+            if (!currentDate) {
+                appState.isProcessing = false;
+                return false;
+            }
+            
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=mark&sheetId=${config.SHEET_ID}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(currentDate)}`, 1);
+                const text = await response.text();
+                
+                if (text.includes("Success")) {
+                    addLogToUI(name, 'success', '✅');
+                    appState.scannedNamesSet.add(name);
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>✅ Marked: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
+                    await loadGroupStats();
+                    appState.isProcessing = false;
+                    return true;
+                } else if (text.includes("Already Marked")) {
+                    addLogToUI(name, 'already', '⚠️');
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>⚠️ Already marked: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
+                    appState.isProcessing = false;
+                    return false;
+                } else if (text.includes("not found")) {
+                    addLogToUI(name, 'notfound', '🔍');
+                    if (!isBatch) {
+                        document.getElementById('scannerStatus').innerHTML = `<span>🔍 Name not found: ${escapeHtml(name)}</span>`;
+                        setTimeout(() => {
+                            document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                        }, 1500);
+                    }
+                    appState.isProcessing = false;
+                    return false;
+                } else {
+                    addLogToUI(name, 'error', '❌');
+                    appState.isProcessing = false;
+                    return false;
+                }
+            } catch (error) {
+                addLogToUI(name, 'queued', '📱');
+                if (!isBatch && !appState.offlineQueue.includes(name)) appState.offlineQueue.push(name);
+                updateQueueUI();
+                appState.isProcessing = false;
+                if (!isBatch) {
+                    document.getElementById('scannerStatus').innerHTML = '<span>📱 Offline - Saved to queue</span>';
+                    setTimeout(() => {
+                        document.getElementById('scannerStatus').innerHTML = '<span>📷 Ready - Point at QR code</span>';
+                    }, 1500);
+                }
+                return false;
+            }
+        }
+        
+        function updateQueueUI() {
+            document.getElementById('queueCount').innerText = appState.offlineQueue.length;
+            const syncBtn = document.getElementById('syncBtn');
+            if (appState.offlineQueue.length > 0) {
+                syncBtn.classList.remove('hidden');
+            } else {
+                syncBtn.classList.add('hidden');
+            }
+        }
+        
+        async function syncQueue() {
+            if (!canWrite()) return;
+            const config = getCurrentConfig();
+            if (!config || appState.isSyncing || appState.offlineQueue.length === 0) return;
+            
+            appState.isSyncing = true;
+            addLogToUI('System', `Syncing ${appState.offlineQueue.length} items...`, '🔄');
+            
+            try {
+                const currentDate = document.getElementById('dateSelect').value;
+                if (!currentDate) return;
+                
+                const toSync = [...appState.offlineQueue];
+                for (let i = 0; i < toSync.length; i += 20) {
+                    const batch = toSync.slice(i, Math.min(i + 20, toSync.length));
+                    try {
+                        const response = await fetch(`${config.SCRIPT_URL}`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'batchMark',
+                                sheetId: config.SHEET_ID,
+                                names: batch,
+                                date: currentDate
+                            })
+                        });
+                        const result = await response.json();
+                        if (!result.error && result.success) {
+                            result.success.forEach(name => {
+                                if (!appState.scannedNamesSet.has(name)) {
+                                    appState.scannedNamesSet.add(name);
+                                    addLogToUI(name, 'success', '✅');
+                                }
+                            });
+                        }
+                    } catch(e) {}
+                }
+                appState.offlineQueue = [];
+                updateQueueUI();
+                addLogToUI('System', 'Sync completed', '✅');
+                await loadGroupStats();
+            } finally {
+                appState.isSyncing = false;
+                updateQueueUI();
+            }
+        }
+        
+        function startBackgroundSync() {
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            appState.syncInterval = setInterval(() => {
+                if (appState.offlineQueue.length > 0 && navigator.onLine && appState.currentMode === 'scan') {
+                    syncQueue();
+                }
+            }, 5000);
+        }
+        
+        // ============ BULK UPLOAD ============
+        async function handleBulkUpload() {
+            if (!canWrite()) {
+                alert('Read-only mode. Cannot upload.');
+                return;
+            }
+            
+            const config = getCurrentConfig();
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
+            
+            try {
+                const text = await file.text();
+                let names = text.split(/\r?\n/).filter(l => l.trim().length > 0).map(n => n.split(',')[0].replace(/["']/g, '').trim()).filter(n => n.length > 0);
+                names = [...new Map(names.map(n => [n.toLowerCase(), n])).values()];
+                if (names.length === 0) {
+                    alert("No valid names found!");
+                    return;
+                }
+                
+                document.getElementById('progressContainer').style.display = 'block';
+                const uploadBtn = document.getElementById('uploadBtn');
+                uploadBtn.disabled = true;
+                
+                let processed = 0, successful = 0, alreadyMarked = 0, notFound = 0;
+                const startTime = Date.now();
+                addLogToUI('System', `Starting upload: ${names.length} names`, '📁');
+                
+                const currentDate = document.getElementById('dateSelect').value;
+                for (let i = 0; i < names.length; i += 50) {
+                    const batch = names.slice(i, Math.min(i + 50, names.length));
+                    try {
+                        const response = await fetch(`${config.SCRIPT_URL}`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'batchMark',
+                                sheetId: config.SHEET_ID,
+                                names: batch,
+                                date: currentDate
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.error) {
+                            batch.forEach(name => addLogToUI(name, 'error', '❌'));
+                            notFound += batch.length;
+                        } else {
+                            (result.success || []).forEach(name => {
+                                addLogToUI(name, 'success', '✅');
+                                successful++;
+                            });
+                            (result.alreadyMarked || []).forEach(name => {
+                                addLogToUI(name, 'already', '⚠️');
+                                alreadyMarked++;
+                            });
+                            (result.notFound || []).forEach(name => {
+                                addLogToUI(name, 'notfound', '🔍');
+                                notFound++;
+                            });
+                        }
+                    } catch(err) {
+                        batch.forEach(name => addLogToUI(name, 'error', '❌'));
+                        notFound += batch.length;
+                    }
+                    
+                    processed += batch.length;
+                    const progress = (processed / names.length) * 100;
+                    document.getElementById('progressBar').style.width = `${progress}%`;
+                    
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const speed = (processed / elapsed).toFixed(1);
+                    document.getElementById('uploadStats').innerHTML = `✓ ${successful} | ⚠️ ${alreadyMarked} | 🔍 ${notFound} | ⚡ ${speed}/s`;
+                }
+                
+                await loadGroupStats();
+                addLogToUI('System', `Completed: +${successful} new, ${alreadyMarked} already, ${notFound} not found`, '✅');
+                uploadBtn.disabled = false;
+                
+                setTimeout(() => {
+                    document.getElementById('progressContainer').style.display = 'none';
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.getElementById('uploadStats').innerHTML = '';
+                }, 3000);
+            } catch(err) {
+                addLogToUI('System', 'Upload failed: ' + err.message, '❌');
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+        
+        function exportToExcel() {
+            if (appState.scannedData.length === 0) {
+                alert("No data to export! Please mark some attendance first.");
+                return;
+            }
+            
+            const wsData = [['Name'], ...appState.scannedData.map(item => [item.Name])];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{wch: 30}];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+            const date = document.getElementById('dateSelect').value.replace(/\//g, '-');
+            XLSX.writeFile(wb, `Attendance_${date}.xlsx`);
+            addLogToUI('System', `Exported ${appState.scannedData.length} names`, '📊');
+        }
+        
+        // ============ ABSENCE FUNCTIONS ============
+        async function showAbsenceExport() {
+            const config = getCurrentConfig();
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.remove('hidden');
+            document.getElementById('absenceSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentGroups.length} groups)`;
+            await loadAbsenceDates();
+        }
+        
+        async function loadAbsenceDates() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getDates&sheetId=${config.SHEET_ID}`);
+                const dates = await response.json();
+                const select = document.getElementById('absenceDateSelect');
+                select.innerHTML = dates.map(d => `<option value="${escapeHtml(d)}">📅 ${escapeHtml(d)}</option>`).join('');
+                
+                const todayStr = getTodayDateString();
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === todayStr) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+                await loadAbsenceData();
+            } catch(e) {
+                addLogToUI('System', 'Failed to load absence dates', '❌');
+            }
+        }
+        
+        async function loadAbsenceData() {
+            const config = getCurrentConfig();
+            if (!config) return;
+            
+            const date = document.getElementById('absenceDateSelect').value;
+            if (!date) return;
+            
+            document.getElementById('absenceLoading').style.display = 'block';
+            document.getElementById('absenceGroupsContainer').innerHTML = '';
+            document.getElementById('exportAbsenceBtn').style.display = 'none';
+            
+            try {
+                const response = await fetchWithRetry(`${config.SCRIPT_URL}?action=getAllAttendance&sheetId=${config.SHEET_ID}&date=${encodeURIComponent(date)}`);
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                
+                absenceData = data;
+                renderAbsenceGroups(data);
+                document.getElementById('exportAbsenceBtn').style.display = 'block';
+            } catch(e) {
+                document.getElementById('absenceGroupsContainer').innerHTML = `<div style="text-align:center;color:red;">Error: ${e.message}</div>`;
+            } finally {
+                document.getElementById('absenceLoading').style.display = 'none';
+            }
+        }
+        
+        function renderAbsenceGroups(data) {
+            const container = document.getElementById('absenceGroupsContainer');
+            if (!container) return;
+            
+            container.innerHTML = currentGroups.map(groupName => {
+                const group = data.groups[groupName];
+                if (!group) return '';
+                
+                const percentage = group.percentage || 0;
+                const absentList = group.absentNames.map(name => 
+                    `<div style="padding: 8px 12px; background: #fee2e2; margin: 4px 0; border-radius: 8px;">❌ ${escapeHtml(name)}</div>`
+                ).join('');
+                
+                return `
+                    <div class="group-card" style="margin-bottom: 15px;">
+                        <div class="group-title">
+                            <span>${groupName}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="group-stats">
+                            <div><div class="stat-number">${group.total}</div><div class="stat-label">Total</div></div>
+                            <div><div class="stat-number present">${group.present}</div><div class="stat-label">Present</div></div>
+                            <div><div class="stat-number absent">${group.absent}</div><div class="stat-label">Absent</div></div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                        ${group.absent > 0 ? `<div style="margin-top: 12px;"><strong>📋 Absent List (${group.absent}):</strong><div style="margin-top: 8px;">${absentList}</div></div>` : '<div style="margin-top: 12px; color: #27ae60;">✅ All students are present</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function exportAbsenceToExcel() {
+            if (!absenceData) return;
+            
+            const wsData = [['Absence Report'], ['Date: ' + absenceData.date], []];
+            
+            for (const groupName of currentGroups) {
+                const group = absenceData.groups[groupName];
+                if (group && group.absentNames.length > 0) {
+                    wsData.push([groupName + ' - Absent Students (' + group.absentNames.length + ')']);
+                    group.absentNames.forEach(name => wsData.push([name]));
+                    wsData.push([]);
+                } else if (group) {
+                    wsData.push([groupName + ' - All students present ✅'], []);
+                }
+            }
+            
+            wsData.push([], ['Summary']);
+            for (const groupName of currentGroups) {
+                const group = absenceData.groups[groupName];
+                if (group) {
+                    wsData.push([groupName, `Total: ${group.total}`, `Present: ${group.present}`, `Absent: ${group.absent}`, `Percentage: ${group.percentage}%`]);
+                }
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{wch: 25}];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Absence Report");
+            XLSX.writeFile(wb, `Absence_Report_${absenceData.date.replace(/\//g, '-')}.xlsx`);
+            addLogToUI('System', 'Absence report exported', '📊');
+        }
+        
+        // ============ NAVIGATION ============
+        async function showApp(mode) {
+            const config = getCurrentConfig();
+            if (!config) {
+                alert('Please select a sheet first!');
+                return;
+            }
+            
+            resetAppState();
+            
+            document.getElementById('welcomeView').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} (${currentAccess} access) | ${currentGroups.length} groups`;
+            
+            appState.currentMode = mode;
+            
+            if (mode === 'scan') {
+                document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
+                document.getElementById('modeDescription').innerText = canWrite() ? 'Scan QR code to mark attendance' : 'Read-only mode - cannot mark attendance';
+                document.getElementById('fileSection').classList.add('hidden');
+                await loadDates();
+                await loadGroupStats();
+                await startScanner();
+                startBackgroundSync();
+                addLogToUI('System', `Scanner ready - ${currentSheet.name}`, '📸');
+            } else {
+                if (!canWrite()) {
+                    alert('⚠️ You have read-only access. Bulk upload is disabled.');
+                    backToWelcome();
+                    return;
+                }
+                document.getElementById('modeTitle').innerText = '📁 Bulk Upload Mode';
+                document.getElementById('modeDescription').innerText = 'Upload file to mark multiple names';
+                document.getElementById('fileSection').classList.remove('hidden');
+                await loadDates();
+                await loadGroupStats();
+                addLogToUI('System', `Upload mode ready - ${currentSheet.name}`, '📁');
+            }
+        }
+        
+        function resetAppState() {
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            appState.scannedNamesSet.clear();
+            appState.scannedData = [];
+            appState.offlineQueue = [];
+            appState.isSyncing = false;
+            appState.isProcessing = false;
+        }
+        
+        function backToWelcome() {
+            if (appState.scanner) {
+                try { appState.scanner.stop(); } catch(e) {}
+                appState.scanner = null;
+            }
+            if (appState.syncInterval) clearInterval(appState.syncInterval);
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('absenceView').classList.add('hidden');
+            document.getElementById('welcomeView').classList.remove('hidden');
+            loadUserSheets();
+        }
+        
+        // Initialize
+        checkSavedSession();
+    </script>
 </body>
 </html>
