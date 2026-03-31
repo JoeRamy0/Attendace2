@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>St. Joseph Attendance Pro</title>
-    <script src="html5-qrcode.min.js"></script>
-    <script src="xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <style>
         * {
@@ -666,52 +666,134 @@
             margin-bottom: 16px;
         }
 
-        /* Manual Input */
+        /* Enhanced Manual Input Section with Autocomplete */
         .manual-input-section {
             background: #f8fafc;
             border-radius: 16px;
             padding: 14px;
             margin-top: 12px;
             border: 1px solid #eef2f6;
+            position: relative;
         }
-
-        .manual-input-section input {
+        
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             border-radius: 14px;
             font-size: 14px;
-            margin-bottom: 10px;
             background: white;
             font-family: inherit;
+            transition: all 0.2s;
         }
-
-        .manual-input-section input:focus {
+        
+        .search-input:focus {
             outline: none;
             border-color: #2c7da0;
+            box-shadow: 0 0 0 2px rgba(44,125,160,0.2);
+        }
+        
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .autocomplete-list.show {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+        
+        .autocomplete-item:hover {
+            background: #eef2ff;
+        }
+        
+        .autocomplete-item.selected {
+            background: #d9f0ff;
+            font-weight: 500;
+        }
+        
+        .mark-btn {
+            margin-top: 10px;
+            background: linear-gradient(135deg, #27ae60 0%, #1e8e50 100%);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.15s;
+            width: 100%;
+        }
+        
+        .mark-btn:active {
+            transform: scale(0.97);
+        }
+        
+        .mark-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .manual-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .manual-header span {
+            background: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
         }
 
         /* Scrollbar Styling */
         .sheet-list::-webkit-scrollbar,
-        .logs-container::-webkit-scrollbar {
+        .logs-container::-webkit-scrollbar,
+        .autocomplete-list::-webkit-scrollbar {
             width: 4px;
         }
 
         .sheet-list::-webkit-scrollbar-track,
-        .logs-container::-webkit-scrollbar-track {
+        .logs-container::-webkit-scrollbar-track,
+        .autocomplete-list::-webkit-scrollbar-track {
             background: #e2e8f0;
             border-radius: 10px;
         }
 
         .sheet-list::-webkit-scrollbar-thumb,
-        .logs-container::-webkit-scrollbar-thumb {
+        .logs-container::-webkit-scrollbar-thumb,
+        .autocomplete-list::-webkit-scrollbar-thumb {
             background: #94a3b8;
             border-radius: 10px;
-        }
-
-        /* RTL Support for Arabic */
-        [dir="rtl"] {
-            text-align: right;
         }
     </style>
 </head>
@@ -800,9 +882,16 @@
                 <div id="reader"></div>
                 <div class="scanner-status" id="scannerStatus">📷 Ready</div>
                 
+                <!-- ENHANCED MANUAL SECTION: Name search with autocomplete -->
                 <div class="manual-input-section">
-                    <input type="text" id="manualName" placeholder="Enter name manually">
-                    <button class="btn btn-primary" onclick="processManualName()">✓ Mark Attendance</button>
+                    <div class="manual-header">
+                        🔍 <span>Search & Attend</span> (Type name to search)
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="nameSearchInput" class="search-input" placeholder="Start typing name... (e.g., 'John', 'Mark')" autocomplete="off">
+                        <div id="autocompleteList" class="autocomplete-list"></div>
+                    </div>
+                    <button id="markAttendBtn" class="mark-btn" onclick="markSelectedAttendee()" disabled>✓ Mark Attendance</button>
                 </div>
 
                 <div id="fileSection" class="hidden">
@@ -855,7 +944,6 @@
         const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFSTDYPIg6wSk1i5fiC0uH2zi6R7vgOeSEVy-NliLN_5V2_B061DEyKqLADp8itHsR6w/exec';
         const STORAGE_USER_KEY = 'attendance_user';
         
-        // Check if libraries loaded
         let qrLibraryLoaded = typeof Html5Qrcode !== 'undefined';
         
         // Cache DOM elements
@@ -867,12 +955,19 @@
             logsList: () => document.getElementById('logsList'),
             scannerStatus: () => document.getElementById('scannerStatus'),
             syncBtn: () => document.getElementById('syncBtn'),
-            queueCount: () => document.getElementById('queueCount')
+            queueCount: () => document.getElementById('queueCount'),
+            nameSearchInput: () => document.getElementById('nameSearchInput'),
+            autocompleteList: () => document.getElementById('autocompleteList'),
+            markBtn: () => document.getElementById('markAttendBtn')
         };
         
         let allSheets = [], currentUser = null, currentSheet = null, currentAccess = null, currentGroups = [];
         let appState = { scanner: null, scannedNamesSet: new Set(), scannedData: [], offlineQueue: [], isSyncing: false, currentMode: null, syncInterval: null, isProcessing: false };
         let absenceData = null, statsCache = {}, datesCache = {};
+        
+        // NEW: Store all student names for autocomplete
+        let allStudentNames = [];
+        let selectedName = null;
         
         // ============ AUTHENTICATION ============
         async function login() {
@@ -992,8 +1087,92 @@
             currentGroups = currentSheet.groups;
             loadUserSheets();
             addLog('System', `Switched to ${currentSheet.name}`, '🔄');
-            if (!document.getElementById('mainApp').classList.contains('hidden')) { loadDates(); loadGroupStats(); }
+            if (!document.getElementById('mainApp').classList.contains('hidden')) { loadDates(); loadGroupStats(); loadStudentNamesForAutocomplete(); }
             if (!document.getElementById('absenceView').classList.contains('hidden')) { loadAbsenceDates(); loadAbsenceData(); }
+        }
+        
+        // NEW: Fetch all student names for autocomplete
+        async function loadStudentNamesForAutocomplete() {
+            const cfg = getConfig();
+            if(!cfg) return;
+            try {
+                const res = await fetchFast(`${cfg.SCRIPT_URL}?action=getAllStudents&sheetId=${cfg.SHEET_ID}`);
+                const data = await res.json();
+                if(data.names && Array.isArray(data.names)) {
+                    allStudentNames = data.names;
+                    setupAutocomplete();
+                } else {
+                    allStudentNames = [];
+                }
+            } catch(e) {
+                console.warn("Could not load student names for autocomplete", e);
+                allStudentNames = [];
+            }
+        }
+        
+        function setupAutocomplete() {
+            const input = DOM.nameSearchInput();
+            const listDiv = DOM.autocompleteList();
+            if(!input || !listDiv) return;
+            
+            input.addEventListener('input', function(e) {
+                const value = this.value.trim().toLowerCase();
+                if(value === '') {
+                    listDiv.classList.remove('show');
+                    DOM.markBtn().disabled = true;
+                    selectedName = null;
+                    return;
+                }
+                
+                const filtered = allStudentNames.filter(name => name.toLowerCase().includes(value)).slice(0, 12);
+                if(filtered.length === 0) {
+                    listDiv.classList.remove('show');
+                    DOM.markBtn().disabled = true;
+                    selectedName = null;
+                    return;
+                }
+                
+                listDiv.innerHTML = filtered.map(name => `<div class="autocomplete-item" data-name="${escapeHtml(name)}">${escapeHtml(name)}</div>`).join('');
+                listDiv.classList.add('show');
+                
+                document.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        input.value = this.getAttribute('data-name');
+                        selectedName = this.getAttribute('data-name');
+                        DOM.markBtn().disabled = false;
+                        listDiv.classList.remove('show');
+                    });
+                });
+            });
+            
+            document.addEventListener('click', function(e) {
+                if(!input.contains(e.target) && !listDiv.contains(e.target)) {
+                    listDiv.classList.remove('show');
+                }
+            });
+            
+            input.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter' && selectedName) {
+                    markSelectedAttendee();
+                }
+            });
+        }
+        
+        async function markSelectedAttendee() {
+            const name = selectedName || DOM.nameSearchInput().value.trim();
+            if(!name) {
+                alert('Please select a name from the list or type a valid name');
+                return;
+            }
+            if(!canWrite()) {
+                alert('Read-only mode. Cannot mark attendance.');
+                return;
+            }
+            await processScan(name);
+            DOM.nameSearchInput().value = '';
+            selectedName = null;
+            DOM.markBtn().disabled = true;
+            DOM.autocompleteList().classList.remove('show');
         }
         
         function getConfig() { return currentSheet ? { SCRIPT_URL: currentSheet.url, SHEET_ID: currentSheet.sheetId, ACCESS: currentSheet.access, GROUPS: currentSheet.groups } : null; }
@@ -1138,22 +1317,11 @@
                 DOM.scannerStatus().innerHTML = '📷 Ready - Scan QR code';
                 DOM.scannerStatus().className = 'scanner-status success';
             } catch(err) {
-                DOM.scannerStatus().innerHTML = '❌ Camera error. Use manual entry below.';
+                DOM.scannerStatus().innerHTML = '❌ Camera error. Use manual search below.';
                 DOM.scannerStatus().className = 'scanner-status error';
                 addLog('System', 'Camera error', '❌');
                 readerDiv.style.display = 'none';
             }
-        }
-        
-        async function processManualName() {
-            const nameInput = document.getElementById('manualName');
-            const name = nameInput.value.trim();
-            if(!name) {
-                alert('Please enter a name');
-                return;
-            }
-            nameInput.value = '';
-            await processScan(name);
         }
         
         async function processScan(name, isBatch=false) {
@@ -1357,6 +1525,7 @@
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('activeSheetInfo').innerHTML = `📄 ${currentSheet.name} | ${currentGroups.length} groups | ${currentAccess} access`;
             appState.currentMode = mode;
+            await loadStudentNamesForAutocomplete();
             if(mode === 'scan') {
                 document.getElementById('modeTitle').innerText = '📸 Scanner Mode';
                 document.getElementById('fileSection').classList.add('hidden');
